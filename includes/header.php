@@ -94,7 +94,42 @@ background: white; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.2);
 z-index: 2000; border: 1px solid #eee; overflow: hidden;
 
 }
+/* Optionnel : ajoute un léger flou au reste du site quand les notifs sont ouvertes */
+body.notif-open {
+    overflow: hidden; /* Empêche de scroller le site derrière */
+}
 
+.notif-list {
+    max-height: 300px; /* Hauteur maximale avant de commencer à défiler */
+    overflow-y: auto;  /* Active le défilement vertical si nécessaire */
+    background: #fff;
+}
+
+/* Optionnel : Rendre la barre de défilement plus fine et élégante */
+.notif-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.notif-list::-webkit-scrollbar-thumb {
+    background-color: #ddd;
+    border-radius: 10px;
+}
+
+@media (max-width: 480px) {
+    .notif-dropdown {
+        position: fixed;
+        top: 80px;
+        left: 5%;
+        right: 5%;
+        width: 90%;
+        margin: 0 auto;
+        max-height: 70vh; /* L'appli de notifs peut prendre jusqu'à 70% de la hauteur de l'écran */
+    }
+
+    .notif-list {
+        max-height: 60vh; /* La liste défilante s'adapte à l'écran mobile */
+    }
+}
 .notif-dropdown.active { display: block !important; }
 
 .notif-header { padding: 12px; background: #f8f9fa; font-weight: bold; border-bottom: 1px solid #eee; }
@@ -204,6 +239,28 @@ z-index: 2000; border: 1px solid #eee; overflow: hidden;
         font-weight: 600; 
         border-bottom: 1px solid #f1f5f9; 
     }
+
+    /* Style pour les notifications non lues */
+.notif-item.unread {
+    background-color: #f0f7ff; /* Bleu très clair */
+    font-weight: 600;
+}
+
+/* Le petit point bleu indicateur */
+.unread-dot {
+    width: 8px;
+    height: 8px;
+    background-color: var(--info);
+    border-radius: 50%;
+    margin-left: 10px;
+    flex-shrink: 0;
+    margin-top: 5px;
+}
+
+/* Changement au survol */
+.notif-item:hover {
+    background-color: #f8f9fa;
+}
 </style>
 </head>
 <body>
@@ -234,17 +291,23 @@ z-index: 2000; border: 1px solid #eee; overflow: hidden;
                                 <div class="notif-item">Aucune notification</div>
                             <?php else: ?>
                                 <?php foreach ($recent_notifications as $notif): 
-                                    $type = strtolower($notif['type'] ?? '');
-                                    $class = 'normal';
-                                    if (strpos($type, 'arrivee') !== false) $class = 'arrivee';
-                                    elseif (strpos($type, 'depart') !== false) $class = 'depart';
-                                    elseif (strpos($type, 'urgence') !== false) $class = 'urgence';
-                                ?>
-                                    <a href="#" class="notif-item <?= $class ?>">
+                                $type = strtolower($notif['type'] ?? '');
+                                $is_unread = isset($notif['is_read']) && $notif['is_read'] == 0; // Vérifie si non lu
+                                $class = 'normal';
+                                if (strpos($type, 'arrivee') !== false) $class = 'arrivee';
+                                elseif (strpos($type, 'depart') !== false) $class = 'depart';
+                                elseif (strpos($type, 'urgence') !== false) $class = 'urgence';
+                            ?>
+                                <a href="/admin/notification.php?id=<?= $notif['id'] ?>" class="notif-item <?= $class ?> <?= $is_unread ? 'unread' : '' ?>">
+                                    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
                                         <strong><?= htmlspecialchars($notif['message']) ?></strong>
-                                        <small><?= date('H:i', strtotime($notif['created_at'])) ?></small>
-                                    </a>
-                                <?php endforeach; ?>
+                                        <?php if ($is_unread): ?>
+                                            <span class="unread-dot"></span>
+                                        <?php endif; ?>
+                                    </div>
+                                    <small><?= date('d/m H:i', strtotime($notif['created_at'])) ?></small>
+                                </a>
+                            <?php endforeach; ?>
                             <?php endif; ?>
                         </div>
                         <a href="/admin/notifications.php" class="notif-footer">Voir toutes les notifications</a>
@@ -279,14 +342,28 @@ z-index: 2000; border: 1px solid #eee; overflow: hidden;
             const navMobile = document.getElementById('navMobile');
 
             // Toggle Notifications
+            // Toggle Notifications
             if (bell && dropdown) {
                 bell.addEventListener('click', function(e) {
                     e.stopPropagation();
-                    dropdown.classList.toggle('active');
-                    if(navMobile) navMobile.classList.remove('active');
+                    const isActive = dropdown.classList.toggle('active');
+                    
+                    // Si on vient d'ouvrir le menu
+                    if (isActive) {
+                        if(navMobile) navMobile.classList.remove('active');
+
+                        // Appel AJAX pour marquer comme lu sur le serveur
+                        fetch('/admin/mark_notifications_read.php')
+                            .then(response => response.json())
+                            .then(data => {
+                                // On fait disparaître le badge rouge visuellement
+                                const badge = document.querySelector('.notif-badge');
+                                if (badge) badge.style.display = 'none';
+                            })
+                            .catch(err => console.error('Erreur SQL:', err));
+                    }
                 });
             }
-
             // Toggle Hamburger
             if (hamburger && navMobile) {
                 hamburger.addEventListener('click', function(e) {
