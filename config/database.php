@@ -8,8 +8,9 @@ $pass = getenv('MYSQLPASSWORD') ?: "MonSuperMdp_2024!";
 
 try {
     // Notez l'ajout du port dans le DSN, important pour Railway
+    $dsn = "mysql:host=$host;port=$port;dbname=$dbname;charset=utf8mb4";
     $pdo = new PDO(
-        "mysql:host=$host;port=$port;dbname=$dbname;charset=utf8mb4",
+        $dsn,
         $user,
         $pass,
         [
