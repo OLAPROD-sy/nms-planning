@@ -4,7 +4,7 @@ require_once __DIR__ . '/../config/database.php';
 
 if ($_SESSION['role'] !== 'ADMIN') {
     $_SESSION['flash_error'] = 'Accès refusé.';
-    header('Location: /nms-planning/'); exit;
+    header('Location: /'); exit;
 }
 
 // 1. Détection dynamique du nom du site
@@ -189,7 +189,7 @@ include_once __DIR__ . '/../includes/header.php';
     </div>
 
     <div style="margin-top: 10px;">
-        <a class="btn-main" href="/nms-planning/stock/gest_stock.php" style="background: var(--success); text-decoration:none; display:inline-block; padding: 15px 25px; color:white; border-radius:8px; font-weight: bold;">📦 Gérer les stocks</a>
+        <a class="btn-main" href="/stock/gest_stock.php" style="background: var(--success); text-decoration:none; display:inline-block; padding: 15px 25px; color:white; border-radius:8px; font-weight: bold;">📦 Gérer les stocks</a>
     </div>
 </div>
 

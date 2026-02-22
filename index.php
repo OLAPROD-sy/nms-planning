@@ -239,27 +239,27 @@ if ($_SESSION['role'] === 'ADMIN') {
     <div class="section-title">⚡ Accès Rapide</div>
     <div class="quick-actions-grid">
         <?php if ($_SESSION['role'] === 'AGENT'): ?>
-            <a href="/nms-planning/admin/pointage.php" class="action-tile"><i>📍</i><span>Présence</span></a>
-            <a href="/nms-planning/planning/agent_schedule.php" class="action-tile"><i>📅</i><span>Mon Planning</span></a>
+            <a href="/admin/pointage.php" class="action-tile"><i>📍</i><span>Présence</span></a>
+            <a href="/planning/agent_schedule.php" class="action-tile"><i>📅</i><span>Mon Planning</span></a>
         <?php endif; ?>
 
         <?php if ($_SESSION['role'] === 'SUPERVISEUR'): ?>
-            <a href="/nms-planning/admin/postes.php" class="action-tile"><i>👔</i><span>Gérer les Postes</span></a>
-            <a href="/nms-planning/admin/pointage.php" class="action-tile"><i>📍</i><span>Présence</span></a>
-            <a href="/nms-planning/planning/planning_superviseur.php" class="action-tile"><i>📅</i><span>Planning</span></a>
-            <a href="/nms-planning/stock/manage_stock.php" class="action-tile"><i>📦</i><span>Stocks</span></a>
+            <a href="/admin/postes.php" class="action-tile"><i>👔</i><span>Gérer les Postes</span></a>
+            <a href="/admin/pointage.php" class="action-tile"><i>📍</i><span>Présence</span></a>
+            <a href="/planning/planning_superviseur.php" class="action-tile"><i>📅</i><span>Planning</span></a>
+            <a href="/stock/manage_stock.php" class="action-tile"><i>📦</i><span>Stocks</span></a>
         <?php endif; ?>
 
         <?php if ($_SESSION['role'] === 'ADMIN'): ?>
-            <a href="/nms-planning/admin/sites.php" class="action-tile"><i>🏢</i><span>Gérer les Sites</span></a>
-            <a href="/nms-planning/admin/users.php" class="action-tile"><i>👥</i><span>Utilisateurs</span></a>
-            <a href="/nms-planning/admin/gestion_pointages.php" class="action-tile"><i>📍</i><span>Pointages</span></a>
-            <a href="/nms-planning/stock/gest_stock.php" class="action-tile"><i>📦</i><span>Stocks</span></a>
-            <a href="/nms-planning/stock/alerts.php" class="action-tile"><i>⚠️</i><span>Alertes</span></a>
-            <a href="/nms-planning/reports/inventory.php" class="action-tile"><i>📊</i><span>Rapports</span></a>
+            <a href="/admin/sites.php" class="action-tile"><i>🏢</i><span>Gérer les Sites</span></a>
+            <a href="/admin/users.php" class="action-tile"><i>👥</i><span>Utilisateurs</span></a>
+            <a href="/admin/gestion_pointages.php" class="action-tile"><i>📍</i><span>Pointages</span></a>
+            <a href="/stock/gest_stock.php" class="action-tile"><i>📦</i><span>Stocks</span></a>
+            <a href="/stock/alerts.php" class="action-tile"><i>⚠️</i><span>Alertes</span></a>
+            <a href="/reports/inventory.php" class="action-tile"><i>📊</i><span>Rapports</span></a>
         <?php endif; ?>
         
-        <a href="/nms-planning/admin/view_profile.php" class="action-tile"><i>👤</i><span>Mon Profil</span></a>
+        <a href="/admin/view_profile.php" class="action-tile"><i>👤</i><span>Mon Profil</span></a>
     </div>
 
     <div class="section-title">📊 Vos Statistiques</div>

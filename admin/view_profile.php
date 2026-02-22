@@ -22,7 +22,7 @@ $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
 if (!$user) {
     $_SESSION['flash_error'] = 'Utilisateur introuvable.';
-    header('Location: /nms-planning/'); exit;
+    header('Location: /'); exit;
 }
 
 // Calcul années d'expérience
@@ -217,7 +217,7 @@ if ($user['id_site']) {
     <div class="profile-hero">
         <div class="photo-container">
             <?php if ($user['photo']): ?>
-                <img src="/nms-planning/<?= htmlspecialchars($user['photo']) ?>" class="profile-photo" alt="Photo">
+                <img src="/<?= htmlspecialchars($user['photo']) ?>" class="profile-photo" alt="Photo">
             <?php else: ?>
                 <div class="profile-photo" style="display:flex;align-items:center;justify-content:center;font-size:50px;background:#555;">👤</div>
             <?php endif; ?>
@@ -268,7 +268,7 @@ if ($user['id_site']) {
                 </div>
             </div>
             <?php if ($user['cv']): ?>
-                <a href="/nms-planning/<?= htmlspecialchars($user['cv']) ?>" target="_blank" class="btn-download">
+                <a href="/<?= htmlspecialchars($user['cv']) ?>" target="_blank" class="btn-download">
                     👁️ Consulter le CV
                 </a>
             <?php endif; ?>

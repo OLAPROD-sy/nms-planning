@@ -6,7 +6,7 @@ require_once __DIR__ . '/../config/database.php';
 // Vérifier que seul l'admin peut accéder
 if ($_SESSION['role'] !== 'ADMIN') {
     $_SESSION['flash_error'] = 'Accès refusé. Seul l\'admin peut ajouter des utilisateurs.';
-    header('Location: /nms-planning/index.php');
+    header('Location: /index.php');
     exit;
 }
 
@@ -127,7 +127,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         ]);
                         
                         $_SESSION['flash_success'] = 'Utilisateur ajouté avec succès !';
-                        header('Location: /nms-planning/admin/users.php');
+                        header('Location: /admin/users.php');
                         exit;
                     } catch (PDOException $e) {
                         $error = 'Erreur lors de l\'ajout : ' . $e->getMessage();
@@ -523,7 +523,7 @@ $sites = $pdo->query('SELECT id_site, nom_site FROM sites ORDER BY nom_site')->f
                 <button type="submit" class="btn-primary">
                     ✅ Créer l'utilisateur
                 </button>
-                <a href="/nms-planning/admin/users.php" class="btn-secondary">
+                <a href="/admin/users.php" class="btn-secondary">
                     ⬅️ Annuler
                 </a>
             </div>

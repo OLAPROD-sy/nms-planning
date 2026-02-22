@@ -3,7 +3,7 @@ require_once "../includes/auth_check.php";
 require_once "../config/database.php";
 
 if ($_SESSION['role'] !== 'SUPERVISEUR') {
-    header("Location: ../auth/login.php");
+    header("Location: /auth/login.php");
     exit();
 }
 

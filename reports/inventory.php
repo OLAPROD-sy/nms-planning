@@ -4,7 +4,7 @@ require_once __DIR__ . '/../config/database.php';
 
 if ($_SESSION['role'] !== 'ADMIN' && $_SESSION['role'] !== 'SUPERVISOR') {
     $_SESSION['flash_error'] = 'Accès refusé.';
-    header('Location: /nms-planning/'); exit;
+    header('Location: /'); exit;
 }
 
 // 1. Gestion des périodes

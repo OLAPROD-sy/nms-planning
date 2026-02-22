@@ -4,7 +4,7 @@ require_once __DIR__ . '/../config/database.php';
 
 $id_agent = $_SESSION['id_user'] ?? null;
 if (!$id_agent) {
-    header('Location: /nms-planning/auth/login.php');
+    header('Location: /auth/login.php');
     exit;
 }
 

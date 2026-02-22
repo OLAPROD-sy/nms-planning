@@ -6,7 +6,7 @@ if (session_status() === PHP_SESSION_NONE) {
 
 // Vérifier que l'utilisateur est connecté
 if (!isset($_SESSION['id_user'])) {
-    header('Location: /nms-planning/auth/login.php');
+    header('Location: /auth/login.php');
     exit;
 }
 
@@ -209,15 +209,15 @@ z-index: 2000; border: 1px solid #eee; overflow: hidden;
 <body>
     <header>
         <nav>
-            <div class="nav-brand"><a href="/nms-planning/"> <img src="/nms-planning/assets/images/logo_nms.png" alt="NMS Planning"> </a></div>
+            <div class="nav-brand"><a href="/"> <img src="/assets/images/logo_nms.png" alt="NMS Planning"> </a></div>
             
             <div class="nav-center">
-                <a href="/nms-planning/">🏠 Accueil</a>
+                <a href="/">🏠 Accueil</a>
                 <?php if ($role === 'ADMIN'): ?>
-                    <a href="/nms-planning/admin/gestion_pointages.php">📍 Pointages</a>
-                    <a href="/nms-planning/stock/gest_stock.php">📦 Stock</a>
+                    <a href="/admin/gestion_pointages.php">📍 Pointages</a>
+                    <a href="/admin/gest_stock.php">📦 Stock</a>
                 <?php else: ?>
-                    <a href="/nms-planning/admin/pointage.php">📍 Présence</a>
+                    <a href="/admin/pointage.php">📍 Présence</a>
                 <?php endif; ?>
             </div>
 
@@ -247,27 +247,27 @@ z-index: 2000; border: 1px solid #eee; overflow: hidden;
                                 <?php endforeach; ?>
                             <?php endif; ?>
                         </div>
-                        <a href="/nms-planning/admin/notifications.php" class="notif-footer">Voir toutes les notifications</a>
+                        <a href="/admin/notifications.php" class="notif-footer">Voir toutes les notifications</a>
                     </div>
                 </div>
                 <?php endif; ?>
 
-                <a href="/nms-planning/admin/view_profile.php" class="user-profile-btn">👤 <span class="desktop-text"><?= htmlspecialchars($prenom) ?></span></a>
-                <a href="/nms-planning/admin/logout.php" class="logout-desktop-btn">🚪Déconnexion</a>
+                <a href="/admin/view_profile.php" class="user-profile-btn">👤 <span class="desktop-text"><?= htmlspecialchars($prenom) ?></span></a>
+                <a href="/admin/logout.php" class="logout-desktop-btn">🚪Déconnexion</a>
                 <div class="hamburger" id="hamburger"><span></span><span></span><span></span></div>
             </div>
         </nav>
 
         <div class="nav-mobile" id="navMobile">
-    <a href="/nms-planning/">🏠 Accueil</a>
+    <a href="/">🏠 Accueil</a>
     <?php if ($role === 'ADMIN'): ?>
-        <a href="/nms-planning/admin/gestion_pointages.php">📍 Pointages</a>
-        <a href="/nms-planning/stock/gest_stock.php">📦 Stock</a>
+        <a href="/admin/gestion_pointages.php">📍 Pointages</a>
+        <a href="/admin/gest_stock.php">📦 Stock</a>
     <?php else: ?>
-        <a href="/nms-planning/admin/pointage.php">📍 Présence</a>
+        <a href="/admin/pointage.php">📍 Présence</a>
     <?php endif; ?>
-    <a href="/nms-planning/admin/view_profile.php">👤 Mon Profil</a>
-    <a href="/nms-planning/admin/logout.php" style="color: var(--danger);">🚪 Déconnexion</a>
+    <a href="/admin/view_profile.php">👤 Mon Profil</a>
+    <a href="/admin/logout.php" style="color: var(--danger);">🚪 Déconnexion</a>
 </div>
     </header>
 

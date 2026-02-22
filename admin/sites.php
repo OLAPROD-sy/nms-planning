@@ -5,7 +5,7 @@ require_once __DIR__ . '/../includes/csrf.php';
 
 if ($_SESSION['role'] !== 'ADMIN') {
     $_SESSION['flash_error'] = 'Accès réservé aux administrateurs.';
-    header('Location: /nms-planning/'); exit;
+    header('Location: /'); exit;
 }
 
 // Ajout d'un site

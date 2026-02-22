@@ -5,12 +5,11 @@ require_once __DIR__ . '/../includes/csrf.php';
 
 if ($_SESSION['role'] === 'AGENT') {
     $_SESSION['flash_error'] = 'Accès refusé.';
-    header('Location: /nms-planning/index.php'); exit;
+    header('Location: /index.php'); exit;
 }
 
 $id_site = ($_SESSION['role'] === 'SUPERVISEUR') ? $_SESSION['id_site'] : ($_GET['id_site'] ?? $_SESSION['id_site'] ?? NULL);
-if (!$id_site) { header('Location: /nms-planning/index.php'); exit; }
-
+if (!$id_site) { header('Location: /index.php'); exit; }
 // --- 1. DÉTECTION DU NOM DU SITE ---
 $site_nom = "Site #$id_site"; 
 try {

@@ -9,7 +9,7 @@ $colId = in_array('id_notify', $cols) ? 'id_notify' : (in_array('id', $cols) ? '
 
 if (!$colUser || !$colId) {
     $_SESSION['flash_error'] = 'Table notifications mal configurée.';
-    header('Location: /nms-planning/');
+    header('Location: /');
     exit;
 }
 

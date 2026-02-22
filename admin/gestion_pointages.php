@@ -5,7 +5,7 @@ require_once __DIR__ . '/../includes/csrf.php';
 
 if ($_SESSION['role'] !== 'ADMIN') {
     $_SESSION['flash_error'] = 'Accès réservé aux administrateurs.';
-    header('Location: /nms-planning/'); exit;
+    header('Location: /'); exit;
 }
 
 function formatDateLongue($date) {
@@ -205,7 +205,7 @@ foreach ($pointages as $p) {
 
         <div style="display:flex; gap:10px;">
             <button type="submit" style="flex:2; background:var(--p-blue); color:white; border:none; padding:10px; border-radius:8px; cursor:pointer; font-weight:bold;">Filtrer</button>
-            <a href="/nms-planning/admin/gestion_pointages.php" style="flex:1; background:#eee; color:#666; text-align:center; padding:10px; border-radius:8px; text-decoration:none;">🔄</a>
+            <a href="/admin/gestion_pointages.php" style="flex:1; background:#eee; color:#666; text-align:center; padding:10px; border-radius:8px; text-decoration:none;">🔄</a>
         </div>
     </form>
 </div>

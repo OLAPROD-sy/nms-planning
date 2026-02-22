@@ -6,14 +6,14 @@ require_once __DIR__ . '/../config/database.php';
 // Vérifier que seul l'admin peut accéder
 if ($_SESSION['role'] !== 'ADMIN') {
     $_SESSION['flash_error'] = 'Accès refusé.';
-    header('Location: /nms-planning/index.php');
+    header('Location: /index.php');
     exit;
 }
 
 $id = (int)($_GET['id'] ?? 0);
 if (!$id) {
     $_SESSION['flash_error'] = 'Utilisateur non trouvé.';
-    header('Location: /nms-planning/admin/users.php');
+    header('Location: /admin/users.php');
     exit;
 }
 
@@ -24,7 +24,7 @@ $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
 if (!$user) {
     $_SESSION['flash_error'] = 'Utilisateur non trouvé.';
-    header('Location: /nms-planning/admin/users.php');
+    header('Location: /admin/users.php');
     exit;
 }
 
@@ -150,7 +150,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         }
                         
                         $_SESSION['flash_success'] = 'Utilisateur modifié avec succès !';
-                        header('Location: /nms-planning/admin/users.php');
+                        header('Location: /admin/users.php');
                         exit;
                     } catch (PDOException $e) {
                         $error = 'Erreur lors de la modification : ' . $e->getMessage();
@@ -483,7 +483,7 @@ $sites = $pdo->query('SELECT id_site, nom_site FROM sites ORDER BY nom_site')->f
                     <label>Photo de profil</label>
                     <?php if ($user['photo']): ?>
                         <div class="photo-preview">
-                            <img src="/nms-planning/<?= htmlspecialchars($user['photo']) ?>" alt="Photo de profil">
+                            <img src="/<?= htmlspecialchars($user['photo']) ?>" alt="Photo de profil">
                             <p>✅ Photo actuelle</p>
                         </div>
                     <?php endif; ?>
@@ -494,7 +494,7 @@ $sites = $pdo->query('SELECT id_site, nom_site FROM sites ORDER BY nom_site')->f
                     <label>CV</label>
                     <?php if ($user['cv']): ?>
                         <div style="margin-bottom: 15px; padding: 12px; background: #E8F5E9; border-radius: 8px; border-left: 4px solid #4CAF50;">
-                            <a href="/nms-planning/<?= htmlspecialchars($user['cv']) ?>" target="_blank" style="color: #2E7D32; text-decoration: none; font-weight: 600;">📄 Télécharger le CV actuel</a>
+                            <a href="/<?= htmlspecialchars($user['cv']) ?>" target="_blank" style="color: #2E7D32; text-decoration: none; font-weight: 600;">📄 Télécharger le CV actuel</a>
                             <p style="font-size: 12px; color: #666; margin: 5px 0 0;">CV actuel</p>
                         </div>
                     <?php endif; ?>
@@ -523,7 +523,7 @@ $sites = $pdo->query('SELECT id_site, nom_site FROM sites ORDER BY nom_site')->f
             <button type="submit" class="btn-primary">
                 ✅ Enregistrer les modifications
             </button>
-            <a href="/nms-planning/admin/users.php" class="btn-secondary">
+            <a href="/admin/users.php" class="btn-secondary">
                 ⬅️ Annuler
             </a>
         </div>

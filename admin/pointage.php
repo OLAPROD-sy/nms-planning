@@ -9,7 +9,7 @@ require_once __DIR__ . '/../includes/csrf.php';
 // Vérifier que l'utilisateur n'est pas ADMIN
 if ($_SESSION['role'] === 'ADMIN') {
     $_SESSION['flash_error'] = 'Les administrateurs consultent les pointages via la gestion.';
-    header('Location: /nms-planning/admin/gestion_pointages.php');
+    header('Location: /admin/gestion_pointages.php');
     exit;
 }
 
@@ -24,7 +24,7 @@ if (isset($pdo)) {
 
 // Vérifier utilisateur
 if (!$id_user) {
-    header('Location: /nms-planning/auth/login.php');
+    header('Location: /auth/login.php');
     exit;
 }
 
@@ -142,7 +142,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
     }
-    header('Location: /nms-planning/admin/pointage.php'); exit;
+    header('Location: /admin/pointage.php'); exit;
 }
 
 // RECUPERATION DONNEES
