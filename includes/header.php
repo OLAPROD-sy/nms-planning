@@ -353,7 +353,7 @@ body.notif-open {
                         if(navMobile) navMobile.classList.remove('active');
 
                         // Appel AJAX pour marquer comme lu sur le serveur
-                        fetch('/admin/mark_notifications_read.php')
+                        fetch('/admin/mark_notification_read.php')
                             .then(response => response.json())
                             .then(data => {
                                 // On fait disparaître le badge rouge visuellement
