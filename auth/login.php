@@ -29,7 +29,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION['id_site'] = $user['id_site'];
             $_SESSION['contact'] = $user['contact'];
 
-            header('Location: /nms-planning/index.php');
+            header('Location: /index.php');
             exit;
         } else {
             $error = 'Identifiants invalides. Veuillez réessayer.';

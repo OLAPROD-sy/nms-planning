@@ -19,7 +19,7 @@ $prenom = $_SESSION['prenom'] ?? '';
 if (empty($nom) || empty($prenom)) {
     session_destroy();
     $_SESSION['flash_error'] = 'Données de session invalides.';
-    header('Location: /nms-planning/auth/login.php');
+    header('Location: /auth/login.php');
     exit;
 }
 ?>

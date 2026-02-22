@@ -23,7 +23,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['mark_read']) && is_nu
         error_log('notifications.php mark_read: ' . $e->getMessage());
         $_SESSION['flash_error'] = 'Impossible de marquer la notification.';
     }
-    header('Location: /nms-planning/admin/notifications.php');
+    header('Location: /admin/notifications.php');
     exit;
 }
 
