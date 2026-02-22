@@ -4,7 +4,7 @@ session_start();
 // Vérifier si l'utilisateur est connecté
 if (!isset($_SESSION['id_user'])) {
     $_SESSION['flash_error'] = 'Veuillez vous connecter.';
-    header('Location: /nms-planning/auth/login.php');
+    header('Location: /auth/login.php');
     exit;
 }
 

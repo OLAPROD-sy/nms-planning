@@ -4,7 +4,7 @@ require_once __DIR__ . '/../config/database.php';
 
 // Si déjà connecté, rediriger
 if (isset($_SESSION['id_user'])) {
-    header('Location: /nms-planning/index.php');
+    header('Location: /index.php');
     exit;
 }
 
