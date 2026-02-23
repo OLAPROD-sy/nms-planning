@@ -1,6 +1,7 @@
 {
     "require": {
-        "ext-pdo_mysql": "*",
-        "dompdf/dompdf": "^0.6.2"    
+        "dompdf/dompdf": "^0.6.2",
+        "ext-gd": "*",
+        "ext-mbstring": "*"    
     }
 }
