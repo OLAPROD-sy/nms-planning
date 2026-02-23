@@ -43,9 +43,7 @@ $users = $pdo->query('
     .users-grid { max-width: 1300px; margin: 0 auto; padding: 20px; }
 
     .page-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
+        
         margin-bottom: 30px;
         max-width: 1300px; margin: 0 auto; padding: 20px;
     }
