@@ -40,7 +40,7 @@ $users = $pdo->query('
         --inactive: #9E9E9E;
     }
 
-    .users-container { max-width: 1300px; margin: 0 auto; padding: 20px; }
+    .users-grid { max-width: 1300px; margin: 0 auto; padding: 20px; }
 
     /* Barre de recherche et Header */
     .controls-row {
@@ -233,125 +233,119 @@ $users = $pdo->query('
     }
     .btn-toggle-status:active { background: #DDD; }
 
+    /* Header & Bouton Ajouter */
+    .btn-add-modern {
+        background: var(--dark);
+        color: white;
+        text-decoration: none;
+        padding: 12px 18px;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 700;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        transition: 0.3s;
+    }
+    .btn-add-modern:active { transform: scale(0.95); }
+
+    .search-wrapper { position: relative; width: 100%; }
+    .search-icon { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); opacity: 0.4; }
+    #userSearch {
+        width: 100%; padding: 15px 15px 15px 45px;
+        border-radius: 16px; border: 1px solid #EEE;
+        background: #FFF; font-size: 15px; outline: none;
+    }
+
+    /* Meta data (Téléphone et Site) */
+    .user-details {
+        margin-top: 8px;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+    .detail-item {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 13px;
+        color: #666;
+    }
+
+
 
 </style>
 
-<div class="users-container">
-    <div class="controls-row">
-        <h1>👥 Collaborateurs</h1>
-        <div class="search-box">
-            <input type="text" id="userSearch" placeholder="Rechercher un nom, un email ou un rôle...">
+<div class="page-header" style="padding: 25px 20px 10px 20px;">
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px;">
+        <div>
+            <h1 style="font-size: 32px; font-weight: 800; color: var(--dark); letter-spacing: -1px; margin: 0;">Collaborateurs</h1>
+            <p style="color: #666; font-size: 14px; margin-top: 5px;">Gérez les accès et les profils de l'équipe</p>
         </div>
-        <a href="/admin/add_users.php" class="btn-add" style="background: var(--primary); color:white; padding: 12px 20px; border-radius: 10px; text-decoration:none; font-weight:700;">
-            + Nouveau
+        <a href="/admin/add_user.php" class="btn-add-modern">
+            <span class="icon">➕</span>
+            <span class="text">Ajouter</span>
         </a>
     </div>
 
-    <div class="table-card">
-        <table id="userTable">
-            <thead>
-                <tr>
-                    <th>Utilisateur</th>
-                    <th>Rôle & Site</th>
-                    <th>Statut</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php foreach ($users as $u): 
-                    $isActive = (int)($u['actif'] ?? 1);
-                    $initials = strtoupper(substr($u['prenom'], 0, 1) . substr($u['nom'], 0, 1));
-                ?>
-                <tr class="user-row">
-                    <td data-label="Utilisateur">
-                        <div class="user-avatar">
-                            <div class="avatar-circle"><?= $initials ?></div>
-                            <div>
-                                <div class="user-full-name" style="font-weight:700;"><?= htmlspecialchars($u['prenom'].' '.$u['nom']) ?></div>
-                                <div style="font-size:12px; color:#888;"><?= htmlspecialchars($u['email']) ?></div>
-                            </div>
-                        </div>
-                    </td>
-                    <td data-label="Rôle & Site">
-                        <span class="role-badge role-<?= strtolower($u['role']) ?>"><?= $u['role'] ?></span>
-                        <div style="font-size:11px; margin-top:4px; color:#666;">📍 <?= $u['nom_site'] ?: 'Non assigné' ?></div>
-                    </td>
-                    <td data-label="Statut">
-                        <form method="POST">
-                            <input type="hidden" name="id_user" value="<?= $u['id_user'] ?>">
-                            <input type="hidden" name="current_status" value="<?= $isActive ?>">
-                            <button type="submit" name="toggle_status" class="status-toggle <?= $isActive ? 'status-active' : 'status-inactive' ?>">
-                                <span class="dot"></span>
-                                <?= $isActive ? 'ACTIF' : 'INACTIF' ?>
-                            </button>
-                        </form>
-                    </td>
-                    <td data-label="Actions">
-                        <div class="action-buttons">
-                            <a href="/edit_users.php?id=<?= $u['id_user'] ?>" class="btn-action btn-edit btn-icon">✏️</a>
-                            <form method="POST" style="display:inline;" onsubmit="return confirm('Supprimer définitivement ?');">
-                                <input type="hidden" name="id_user" value="<?= $u['id_user'] ?>">
-                                <input type="hidden" name="csrf_token" value="<?= generate_csrf_token() ?>">
-                                <button type="submit" name="delete_user" class="btn-action btn-delete btn-icon">🗑️</button>
-                            </form>
-                        </div>
-                    </td>
-                </tr>
-                <?php endforeach; ?>
-            </tbody>
-        </table>
+    <div class="search-wrapper">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="userSearch" placeholder="Rechercher un nom, un site ou un rôle...">
     </div>
 </div>
-<div class="controls-row">
-        <h1>👥 Collaborateurs</h1>
-        <div class="search-container" style="padding: 15px 20px;">
-            <div style="position: relative;">
-                <span style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); opacity: 0.5;">🔍</span>
-                <input type="text" id="userSearch" placeholder="Rechercher un agent, un site ou un rôle..." 
-                    style="width: 100%; padding: 14px 15px 14px 45px; border-radius: 14px; border: 1.5px solid #EEE; font-size: 16px; outline: none; transition: 0.3s;">
-            </div>
-        </div>
-        <a href="/admin/add_users.php" class="btn-add" style="background: var(--primary); color:white; padding: 12px 20px; border-radius: 10px; text-decoration:none; font-weight:700;">
-            + Nouveau
-        </a>
-</div>
+
 <div class="users-grid">
     <?php foreach ($users as $u): ?>
         <div class="user-card">
-            <?php if (!empty($u['photo'])): ?>
-                <img src="/<?= htmlspecialchars($u['photo']) ?>" class="user-avatar">
-            <?php else: ?>
-                <div class="user-avatar" style="background: #CCC; display:flex; align-items:center; justify-content:center; color:white;">
-                    <?= strtoupper(substr($u['nom'], 0, 1)) ?>
-                </div>
-            <?php endif; ?>
+            <div class="avatar-container">
+                <?php if (!empty($u['photo'])): ?>
+                    <img src="/<?= htmlspecialchars($u['photo']) ?>" class="user-avatar">
+                <?php else: ?>
+                    <div class="user-avatar" style="background: #e9ecef; display:flex; align-items:center; justify-content:center; color:#adb5bd;">
+                        <?= strtoupper(substr($u['nom'], 0, 1)) ?>
+                    </div>
+                <?php endif; ?>
+            </div>
 
             <div class="user-info">
                 <div class="user-name"><?= htmlspecialchars($u['prenom'] . ' ' . $u['nom']) ?></div>
                 <div class="user-role role-<?= strtolower($u['role']) ?>"><?= $u['role'] ?></div>
                 
+                <div class="user-details">
+                    <div class="detail-item">
+                        <span>📍</span> <?= htmlspecialchars($u['nom_site'] ?? 'Non assigné') ?>
+                    </div>
+                    <div class="detail-item">
+                        <span>📞</span> <?= htmlspecialchars($u['contact'] ?? 'Non renseigné') ?>
+                    </div>
+                </div>
+
                 <?php 
-                    $isActive = ($u['actif'] === 1); // Adaptez selon votre colonne SQL
+                    $isActive = ((int)$u['actif'] === 1);
                     $statusClass = $isActive ? 'status-online' : 'status-offline';
-                    $statusText = $isActive ? 'En service' : 'Inactif';
+                    $statusText = $isActive ? 'Actif' : 'Inactif';
                 ?>
                 <div class="status-pill <?= $statusClass ?>">
                     <span class="status-dot"></span> <?= $statusText ?>
                 </div>
             </div>
 
-            <div class="user-actions-container" style="display:flex; flex-direction:column; gap:8px;">
+            <div class="user-actions-container">
                 <div class="user-actions">
                     <a href="edit_user.php?id=<?= $u['id_user'] ?>" class="btn-action btn-edit">✏️</a>
                     <a href="delete_user.php?id=<?= $u['id_user'] ?>" 
-                        class="btn-action btn-delete" 
-                        onclick="return confirm('❗ Attention : Cette action est irréversible. Supprimer définitivement <?= htmlspecialchars($u['prenom']) ?> ?')">
-                        🗑️
+                       class="btn-action btn-delete" 
+                       onclick="return confirm('Supprimer définitivement <?= htmlspecialchars($u['prenom']) ?> ?')">
+                       🗑️
                     </a>
                 </div>
-                <a href="toggle_status.php?id=<?= $u['id_user'] ?>" class="btn-toggle-status">
-                    <?= $isActive ? 'Désactiver' : 'Activer' ?>
-                </a>
+                <form method="POST" style="margin-top:5px;">
+                    <input type="hidden" name="id_user" value="<?= $u['id_user'] ?>">
+                    <input type="hidden" name="current_status" value="<?= $u['actif'] ?>">
+                    <button type="submit" name="toggle_status" class="btn-toggle-status">
+                        <?= $isActive ? 'Désactiver' : 'Activer' ?>
+                    </button>
+                </form>
             </div>
         </div>
     <?php endforeach; ?>
