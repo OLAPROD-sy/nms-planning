@@ -33,7 +33,7 @@ $users = $pdo->query('
 ?>
 
 <?php include_once __DIR__ . '/../includes/header.php'; ?>
-/*
+
 <style>
     :root {
         --active: #4CAF50;
@@ -42,6 +42,13 @@ $users = $pdo->query('
 
     .users-grid { max-width: 1300px; margin: 0 auto; padding: 20px; }
 
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+        max-width: 1300px; margin: 0 auto; padding: 20px;
+    }
     /* Barre de recherche et Header */
     .controls-row {
         display: flex;
@@ -236,7 +243,7 @@ $users = $pdo->query('
     /* Header & Bouton Ajouter */
     .btn-add-modern {
         background: var(--dark);
-        color: white;
+        color: darkgoldenrod;
         text-decoration: none;
         padding: 12px 18px;
         border-radius: 14px;
