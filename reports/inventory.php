@@ -265,7 +265,7 @@ include_once __DIR__ . '/../includes/header.php';
 <div class="inventory-container">
     <div class="dashboard-header">
 
-    <img src="/assets/imgages/logo_nms.png" class="logo-print" alt="Logo NMS">
+    <img src="assets/images/logo_nms.png" class="logo-print" alt="Logo NMS">
         <h1>📊 Inventaire & Analyse des Flux des Sites Affecté</h1>
         <p class="hide-mobile">
             Analyse détaillée des mouvements de stock pour les sites affectés, avec des indicateurs clés et un journal complet des opérations.
