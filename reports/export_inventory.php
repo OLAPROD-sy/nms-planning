@@ -1,9 +1,19 @@
 <?php
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
 require_once __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/../config/database.php';
 
 use Dompdf\Dompdf;
-use Dompdf\Options;
+use Dompdf\Dompdf\Options;
+
+try {
+    $opt = new Options();
+    echo "✅ La classe Options existe et est bien chargée !";
+} catch (\Exception $e) {
+    echo "❌ Erreur : " . $e->getMessage();
+}
 
 // 1. Récupération et sécurisation des périodes
 $date_start = $_GET['date_start'] ?? date('Y-m-d', strtotime('monday this week'));
@@ -160,10 +170,10 @@ $html .= '</tbody></table>
 </html>';
 
 // 4. Lancer Dompdf avec Options corrigées
-$options = new Options();
+$options = new Dompdf\Options();
 $options->set('isHtml5ParserEnabled', true);
 $options->set('isRemoteEnabled', true); // Pour autoriser le chargement d'images
-$dompdf = new Dompdf($options);
+$dompdf = new Dompdf\Dompdf($options);
 
 $dompdf->loadHtml($html);
 $dompdf->setPaper('A4', 'portrait');
