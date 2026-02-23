@@ -76,6 +76,24 @@ include_once __DIR__ . '/../includes/header.php';
     .inventory-container { padding: 30px; background: #f4f7f6; min-height: 100vh; font-family: 'Segoe UI', sans-serif; }
     
     @media print {
+
+    /* Affiche et positionne le logo uniquement sur le PDF */
+    .logo-print {
+        display: block !important;
+        width: 150px;
+        height: auto;
+        margin: 0 auto 20px auto; /* Centre le logo et ajoute un espace en bas */
+    }
+
+    /* Ajuste le header pour le PDF */
+    .dashboard-header {
+        text-align: center !important;
+        border-bottom: 2px solid #F57C00 !important;
+        margin-bottom: 30px !important;
+        background: none !important;
+        color: black !important;
+    }
+
     /* On cache tout sauf le contenu du rapport */
     nav, .sidebar, .btn-main, .filter-card, footer { display: none !important; }
 
@@ -168,6 +186,10 @@ include_once __DIR__ . '/../includes/header.php';
 
 /* Cacher la zone de signature sur l'écran web */
 .print-footer { display: none; }
+
+.logo-print {
+    display: none;
+}
     
 
     /* On force l'affichage des couleurs */
@@ -242,6 +264,8 @@ include_once __DIR__ . '/../includes/header.php';
 
 <div class="inventory-container">
     <div class="dashboard-header">
+
+    <img src="/assets/imgages/logo_nms.png" class="logo-print" alt="Logo NMS">
         <h1>📊 Inventaire & Analyse des Flux des Sites Affecté</h1>
         <p class="hide-mobile">
             Analyse détaillée des mouvements de stock pour les sites affectés, avec des indicateurs clés et un journal complet des opérations.
