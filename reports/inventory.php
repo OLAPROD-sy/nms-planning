@@ -20,6 +20,16 @@ if ($period === 'mois') {
     $date_end = date('Y-12-31');
 }
 
+// Récupération du site choisi
+$selected_site = $_GET['id_site'] ?? '';
+$params = [$date_start . ' 00:00:00', $date_end . ' 23:59:59'];
+$site_condition = "";
+
+if (!empty($selected_site)) {
+    $site_condition = " AND m.id_site = ? ";
+    $params[] = $selected_site;
+}
+
 // 2. Détection dynamique du nom du site
 $siteNameCol = null;
 try {
@@ -183,19 +193,17 @@ include_once __DIR__ . '/../includes/header.php';
         margin-top: 50px;
     }
 }
+  
 
+    /* On force l'affichage des couleurs */
+    * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+}
 /* Cacher la zone de signature sur l'écran web */
 .print-footer { display: none; }
 
 .logo-print {
     display: none;
 }
-    
-
-    /* On force l'affichage des couleurs */
-    * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-}
-
      /* Header Moderne */
     .dashboard-header {
         background: var(--accent-gradient);
@@ -264,13 +272,10 @@ include_once __DIR__ . '/../includes/header.php';
 
 <div class="inventory-container">
     <div class="dashboard-header">
-
-    <img src="assets/images/logo_nms.png" class="logo-print" alt="Logo NMS">
-        <h1>📊 Inventaire & Analyse des Flux des Sites Affecté</h1>
-        <p class="hide-mobile">
-            Analyse détaillée des mouvements de stock pour les sites affectés, avec des indicateurs clés et un journal complet des opérations.
-        </p>
-    </div>
+    <img src="/assets/img/logo.png" class="logo-print" alt="Logo">
+    <h1>📊 Rapport d'Inventaire <?= !empty($selected_site) ? "- Site : " . htmlspecialchars($sites_map[$selected_site]) : "(Global)" ?></h1>
+    <p>Période du <?= date('d/m/Y', strtotime($date_start)) ?> au <?= date('d/m/Y', strtotime($date_end)) ?></p>
+</div>
 
     <div class="filter-card">
         <form method="get" class="filter-grid">
@@ -290,6 +295,17 @@ include_once __DIR__ . '/../includes/header.php';
             <div class="filter-group">
                 <label>Date Fin</label>
                 <input type="date" name="date_end" class="form-control" value="<?= $date_end ?>">
+            </div>
+            <div class="filter-group">
+                <label>Filtrer par Site</label>
+                <select name="id_site" class="form-control" onchange="this.form.submit()">
+                    <option value="">Tous les sites</option>
+                    <?php foreach ($sites_map as $id => $name): ?>
+                        <option value="<?= $id ?>" <?= (isset($_GET['id_site']) && $_GET['id_site'] == $id) ? 'selected' : '' ?>>
+                            <?= htmlspecialchars($name) ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
             </div>
             <button type="submit" class="btn-main" style="background: var(--p-blue); color:white; padding: 10px 20px; border:none; border-radius:8px; cursor:pointer; height:41px;">Appliquer</button>
             <button onclick="window.print()" class="btn-main" style="background: #2ecc71; color:white; border:none; padding:10px 20px; border-radius:8px; cursor:pointer;">
