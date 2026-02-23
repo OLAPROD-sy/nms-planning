@@ -139,6 +139,7 @@ include_once __DIR__ . '/../includes/header.php';
     .badge-in { background: #e8f5e9; color: var(--p-green); }
     .badge-out { background: #ffebee; color: var(--p-red); }
     .bilan-box { display: inline-block; padding: 5px 12px; border-radius: 6px; font-weight: bold; }
+    .btn-main { display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
 </style>
 
 <div class="inventory-container">
@@ -169,6 +170,7 @@ include_once __DIR__ . '/../includes/header.php';
                 <input type="date" name="date_end" class="form-control" value="<?= $date_end ?>">
             </div>
             <button type="submit" class="btn-main" style="background: var(--p-blue); color:white; padding: 10px 20px; border:none; border-radius:8px; cursor:pointer; height:41px;">Appliquer</button>
+            <a href="export_inventory.php?period=<?= $period ?>&date_start=<?= $date_start ?>&date_end=<?= $date_end ?>" class="btn-main" style="background: #e67e22; color:white; text-decoration:none; display:inline-flex; align-items:center; justify-content:center; padding: 0 15px; border-radius:8px; height:41px; font-size: 14px; font-weight: bold;">📄 Exporter en PDF</a>
         </form>
     </div>
 

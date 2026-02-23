@@ -1,9 +1,9 @@
 <?php return array(
     'root' => array(
         'name' => '__root__',
-        'pretty_version' => '1.0.0+no-version-set',
-        'version' => '1.0.0.0',
-        'reference' => null,
+        'pretty_version' => 'dev-main',
+        'version' => 'dev-main',
+        'reference' => 'fb855bd30481001d11abd2853ba4d9456900abcf',
         'type' => 'library',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -11,23 +11,31 @@
     ),
     'versions' => array(
         '__root__' => array(
-            'pretty_version' => '1.0.0+no-version-set',
-            'version' => '1.0.0.0',
-            'reference' => null,
+            'pretty_version' => 'dev-main',
+            'version' => 'dev-main',
+            'reference' => 'fb855bd30481001d11abd2853ba4d9456900abcf',
             'type' => 'library',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
             'dev_requirement' => false,
         ),
-        'phpmailer/phpmailer' => array(
-            'pretty_version' => 'v7.0.2',
-            'version' => '7.0.2.0',
-            'reference' => 'ebf1655bd5b99b3f97e1a3ec0a69e5f4cd7ea088',
+        'dompdf/dompdf' => array(
+            'pretty_version' => 'v0.6.2',
+            'version' => '0.6.2.0',
+            'reference' => 'cc06008f75262510ee135b8cbb14e333a309f651',
             'type' => 'library',
-            'install_path' => __DIR__ . '/../phpmailer/phpmailer',
+            'install_path' => __DIR__ . '/../dompdf/dompdf',
+            'aliases' => array(),
+            'dev_requirement' => false,
+        ),
+        'phenx/php-font-lib' => array(
+            'pretty_version' => '0.2.2',
+            'version' => '0.2.2.0',
+            'reference' => 'c30c7fc00a6b0d863e9bb4c5d5dd015298b2dc82',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../phenx/php-font-lib',
             'aliases' => array(),
             'dev_requirement' => false,
         ),
     ),
 );
-?>

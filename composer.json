@@ -1,5 +1,6 @@
 {
     "require": {
-        "ext-pdo_mysql": "*"    
+        "ext-pdo_mysql": "*",
+        "dompdf/dompdf": "^0.6.2"    
     }
 }
