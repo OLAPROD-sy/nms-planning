@@ -33,7 +33,7 @@ $users = $pdo->query('
 ?>
 
 <?php include_once __DIR__ . '/../includes/header.php'; ?>
-
+/*
 <style>
     :root {
         --active: #4CAF50;
@@ -122,6 +122,77 @@ $users = $pdo->query('
     .btn-icon {
         padding: 8px; border-radius: 8px; border: none; cursor: pointer; transition: 0.2s;
     }
+
+
+    /* Conteneur de la liste */
+    .users-grid {
+        display: grid;
+        gap: 15px;
+        padding: 15px;
+    }
+
+    /* Style de la Carte */
+    .user-card {
+        background: white;
+        border-radius: 16px;
+        padding: 15px;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        border: 1px solid #f0f0f0;
+        transition: transform 0.2s;
+    }
+
+    .user-card:active { transform: scale(0.98); }
+
+    /* Avatar (Photo de profil) */
+    .user-avatar {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        object-fit: cover;
+        background: var(--primary);
+        border: 2px solid white;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    .user-info { flex: 1; }
+    .user-name { font-weight: 700; color: var(--dark); font-size: 16px; margin-bottom: 2px; }
+    .user-role { font-size: 12px; font-weight: 600; text-transform: uppercase; padding: 3px 8px; border-radius: 20px; display: inline-block; }
+
+    /* Couleurs des badges de rôle */
+    .role-admin { background: #ffebee; color: #f44336; }
+    .role-superviseur { background: #fff3e0; color: #fb8c00; }
+    .role-agent { background: #e8f5e9; color: #4caf50; }
+
+    .user-meta { color: #888; font-size: 13px; margin-top: 4px; }
+
+    /* Actions (Boutons Modifier/Supprimer) */
+    .user-actions { display: flex; gap: 8px; }
+    .btn-action {
+        width: 35px; height: 35px; border-radius: 10px;
+        display: flex; align-items: center; justify-content: center;
+        text-decoration: none; font-size: 16px;
+    }
+    .btn-edit { background: #e3f2fd; color: #2196f3; }
+    .btn-delete { background: #fff5f5; color: #ff5252; }
+
+    /* Sur ordinateur : on peut mettre 2 ou 3 colonnes */
+    @media (min-width: 768px) {
+        .users-grid { grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
+    }
+    #userSearch:focus {
+    border-color: var(--primary);
+    box-shadow: 0 4px 12px rgba(255, 152, 0, 0.1);
+    background-color: white;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
 </style>
 
 <div class="users-container">
@@ -191,6 +262,45 @@ $users = $pdo->query('
     </div>
 </div>
 
+<div class="search-container" style="padding: 15px 20px;">
+    <div style="position: relative;">
+        <span style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); opacity: 0.5;">🔍</span>
+        <input type="text" id="userSearch" placeholder="Rechercher un agent, un site ou un rôle..." 
+               style="width: 100%; padding: 14px 15px 14px 45px; border-radius: 14px; border: 1.5px solid #EEE; font-size: 16px; outline: none; transition: 0.3s;">
+    </div>
+</div>
+
+<div class="users-grid">
+    <?php foreach ($users as $u): ?>
+        <div class="user-card">
+            <?php if (!empty($u['photo'])): ?>
+                <img src="/<?= htmlspecialchars($u['photo']) ?>" class="user-avatar" alt="Photo">
+            <?php else: ?>
+                <div class="user-avatar" style="display:flex; align-items:center; justify-content:center; color:white; font-weight:800;">
+                    <?= strtoupper(substr($u['nom'], 0, 1)) ?>
+                </div>
+            <?php endif; ?>
+
+            <div class="user-info">
+                <div class="user-name"><?= htmlspecialchars($u['prenom'] . ' ' . $u['nom']) ?></div>
+                <div class="user-role role-<?= strtolower($u['role']) ?>">
+                    <?= htmlspecialchars($u['role']) ?>
+                </div>
+                <div class="user-meta">
+                    📍 <?= htmlspecialchars($u['nom_site'] ?? 'Aucun site') ?><br>
+                    📞 <?= htmlspecialchars($u['contact']) ?>
+                </div>
+            </div>
+
+            <div class="user-actions">
+                <a href="edit_user.php?id=<?= $u['id_user'] ?>" class="btn-action btn-edit" title="Modifier">✏️</a>
+                <a href="delete_user.php?id=<?= $u['id_user'] ?>" 
+                   class="btn-action btn-delete" 
+                   onclick="return confirm('Supprimer cet utilisateur ?')" title="Supprimer">🗑️</a>
+            </div>
+        </div>
+    <?php endforeach; ?>
+</div>
 <script>
     // Recherche en temps réel
     document.getElementById('userSearch').addEventListener('keyup', function() {
@@ -202,6 +312,28 @@ $users = $pdo->query('
             row.style.display = text.includes(filter) ? '' : 'none';
         });
     });
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const searchInput = document.getElementById('userSearch');
+    const userCards = document.querySelectorAll('.user-card');
+
+    searchInput.addEventListener('input', function() {
+        const searchTerm = this.value.toLowerCase().trim();
+
+        userCards.forEach(card => {
+            // On récupère tout le texte de la carte (nom, rôle, site)
+            const text = card.textContent.toLowerCase();
+            
+            if (text.includes(searchTerm)) {
+                card.style.display = 'flex'; // On affiche
+                card.style.animation = 'fadeIn 0.3s ease';
+            } else {
+                card.style.display = 'none'; // On cache
+            }
+        });
+    });
+});
 </script>
 
 <?php include_once __DIR__ . '/../includes/footer.php'; ?>
