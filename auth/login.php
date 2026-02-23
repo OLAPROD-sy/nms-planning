@@ -145,6 +145,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             75% { transform: translateX(5px); }
         }
 
+
+        #togglePassword:hover {
+            opacity: 1;
+            color: var(--secondary);
+        }
+
+        /* On ajuste un peu le padding droit de l'input pour que le texte ne passe pas sous l'œil */
+        #password {
+            padding-right: 45px !important;
+        }
+
         .footer { 
             text-align: center; color: #adb5bd; 
             font-size: 12px; margin-top: 30px;
@@ -186,10 +197,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             <div class="form-group">
                 <label for="password">Mot de passe</label>
-                <input 
-                    type="password" id="password" name="password" 
-                    placeholder="••••••••" required
-                >
+                <div style="position: relative;">
+                    <input 
+                        type="password" id="password" name="password" 
+                        placeholder="••••••••" required
+                    >
+                    <span id="togglePassword" style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); cursor: pointer; font-size: 18px; opacity: 0.6; transition: 0.3s;">
+                        👁️
+                    </span>
+                </div>
             </div>
 
             <button class="btn-login" type="submit">Se connecter maintenant</button>
@@ -211,6 +227,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 input.parentElement.querySelector('label').style.color = 'var(--dark)';
             });
         });
+
+        // Toggle visibilité du mot de passe
+
+        const togglePassword = document.querySelector('#togglePassword');
+        const password = document.querySelector('#password');
+
+        togglePassword.addEventListener('click', function (e) {
+            // On bascule le type entre password et text
+            const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
+            password.setAttribute('type', type);
+            
+            // On change l'icône (Œil ouvert / Œil barré ou différent)
+            this.textContent = type === 'password' ? '👁️' : '🔒'; 
+            
+            // Animation de retour visuel
+            this.style.transform = 'translateY(-50%) scale(1.2)';
+            setTimeout(() => {
+                this.style.transform = 'translateY(-50%) scale(1)';
+            }, 150);
+        });
+
     </script>
 </body>
 </html>
