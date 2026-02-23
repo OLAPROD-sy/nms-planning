@@ -75,6 +75,104 @@ include_once __DIR__ . '/../includes/header.php';
     :root {  --accent-gradient: linear-gradient(135deg, #FF9800 0%, #F57C00 100%); --p-green: #27ae60; --p-red: #e74c3c; --p-blue: #3498db; --p-dark: #2c3e50; }
     .inventory-container { padding: 30px; background: #f4f7f6; min-height: 100vh; font-family: 'Segoe UI', sans-serif; }
     
+    @media print {
+    /* On cache tout sauf le contenu du rapport */
+    nav, .sidebar, .btn-main, .filter-card, footer { display: none !important; }
+
+    body { background: white !important; font-family: "Helvetica", sans-serif; }
+    .inventory-container { padding: 0 !important; margin: 0 !important; }
+
+    .section-card { 
+        box-shadow: none !important; 
+        border: 1px solid #eee !important; 
+        page-break-inside: avoid; /* Évite de couper un tableau en deux */
+
+
+    /* 1. Masquer les éléments inutiles (Navigation, Filtres, Boutons) */
+    nav, .sidebar, .filter-card, .btn-main, .hide-mobile, footer {
+        display: none !important;
+    }
+
+    /* 2. Réinitialiser les marges pour le format A4 */
+    @page {
+        size: A4 portrait;
+        margin: 1.5cm;
+    }
+
+    body {
+        background: white !important;
+        color: black !important;
+        font-family: "Helvetica", "Arial", sans-serif;
+        font-size: 10pt;
+    }
+
+    .inventory-container {
+        padding: 0 !important;
+        background: white !important;
+    }
+
+    /* 3. Style du Header de Rapport */
+    .dashboard-header {
+        background: none !important;
+        color: black !important;
+        border-bottom: 3px solid #F57C00 !important;
+        padding: 0 0 15px 0 !important;
+        margin-bottom: 25px !important;
+        box-shadow: none !important;
+        display: block !important;
+    }
+
+    .dashboard-header h1 {
+        font-size: 18pt !important;
+        margin: 0 !important;
+    }
+
+    /* 4. Gestion des Tableaux */
+    .section-card {
+        box-shadow: none !important;
+        border: 1px solid #eee !important;
+        padding: 10px !important;
+        page-break-inside: avoid; /* Évite de couper un tableau en deux */
+    }
+
+    .custom-table {
+        width: 100% !important;
+        border-collapse: collapse !important;
+    }
+
+    .custom-table th {
+        background: #f2f2f2 !important;
+        color: black !important;
+        border: 1px solid #ddd !important;
+    }
+
+    .custom-table td {
+        border: 1px solid #ddd !important;
+    }
+
+    /* 5. Forcer l'affichage des couleurs (Badges) */
+    * {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+
+    .badge-in { background: #e8f5e9 !important; color: #27ae60 !important; border: 1px solid #27ae60; }
+    .badge-out { background: #ffebee !important; color: #e74c3c !important; border: 1px solid #e74c3c; }
+
+    /* 6. Ajouter une zone de signature à la fin (visible uniquement à l'impression) */
+    .print-footer {
+        display: block !important;
+        margin-top: 50px;
+    }
+}
+
+/* Cacher la zone de signature sur l'écran web */
+.print-footer { display: none; }
+    
+
+    /* On force l'affichage des couleurs */
+    * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+}
 
      /* Header Moderne */
     .dashboard-header {
@@ -170,7 +268,9 @@ include_once __DIR__ . '/../includes/header.php';
                 <input type="date" name="date_end" class="form-control" value="<?= $date_end ?>">
             </div>
             <button type="submit" class="btn-main" style="background: var(--p-blue); color:white; padding: 10px 20px; border:none; border-radius:8px; cursor:pointer; height:41px;">Appliquer</button>
-            <a href="export_inventory.php?period=<?= $period ?>&date_start=<?= $date_start ?>&date_end=<?= $date_end ?>" class="btn-main" style="background: #e67e22; color:white; text-decoration:none; display:inline-flex; align-items:center; justify-content:center; padding: 0 15px; border-radius:8px; height:41px; font-size: 14px; font-weight: bold;">📄 Exporter en PDF</a>
+            <button onclick="window.print()" class="btn-main" style="background: #2ecc71; color:white; border:none; padding:10px 20px; border-radius:8px; cursor:pointer;">
+                📄 Télécharger en PDF (Imprimer)
+            </button>     
         </form>
     </div>
 
@@ -274,6 +374,23 @@ include_once __DIR__ . '/../includes/header.php';
                 </tbody>
             </table>
         </div>
+    </div>
+    <div class="print-footer">
+        <table style="width: 100%; border: none;">
+            <tr>
+                <td style="border:none; text-align: center; width: 50%;">
+                    <strong>Responsable de Stock</strong><br><br><br>
+                    __________________________
+                </td>
+                <td style="border:none; text-align: center; width: 50%;">
+                    <strong>Direction</strong><br><br><br>
+                    __________________________
+                </td>
+            </tr>
+        </table>
+        <p style="text-align: center; font-size: 0.8em; margin-top: 30px; color: #666;">
+            Document généré le <?= date('d/m/Y H:i') ?> - NMS Planning
+        </p>
     </div>
 </div>
 
