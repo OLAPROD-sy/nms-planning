@@ -302,15 +302,19 @@ $users = $pdo->query('
         </table>
     </div>
 </div>
-
-<div class="search-container" style="padding: 15px 20px;">
-    <div style="position: relative;">
-        <span style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); opacity: 0.5;">🔍</span>
-        <input type="text" id="userSearch" placeholder="Rechercher un agent, un site ou un rôle..." 
-               style="width: 100%; padding: 14px 15px 14px 45px; border-radius: 14px; border: 1.5px solid #EEE; font-size: 16px; outline: none; transition: 0.3s;">
-    </div>
+<div class="controls-row">
+        <h1>👥 Collaborateurs</h1>
+        <div class="search-container" style="padding: 15px 20px;">
+            <div style="position: relative;">
+                <span style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); opacity: 0.5;">🔍</span>
+                <input type="text" id="userSearch" placeholder="Rechercher un agent, un site ou un rôle..." 
+                    style="width: 100%; padding: 14px 15px 14px 45px; border-radius: 14px; border: 1.5px solid #EEE; font-size: 16px; outline: none; transition: 0.3s;">
+            </div>
+        </div>
+        <a href="/admin/add_users.php" class="btn-add" style="background: var(--primary); color:white; padding: 12px 20px; border-radius: 10px; text-decoration:none; font-weight:700;">
+            + Nouveau
+        </a>
 </div>
-
 <div class="users-grid">
     <?php foreach ($users as $u): ?>
         <div class="user-card">
@@ -327,7 +331,7 @@ $users = $pdo->query('
                 <div class="user-role role-<?= strtolower($u['role']) ?>"><?= $u['role'] ?></div>
                 
                 <?php 
-                    $isActive = ($u['actif'] === 'actif'); // Adaptez selon votre colonne SQL
+                    $isActive = ($u['actif'] === 1); // Adaptez selon votre colonne SQL
                     $statusClass = $isActive ? 'status-online' : 'status-offline';
                     $statusText = $isActive ? 'En service' : 'Inactif';
                 ?>

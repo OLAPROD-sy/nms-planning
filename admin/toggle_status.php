@@ -12,14 +12,14 @@ $id = $_GET['id'] ?? null;
 
 if ($id) {
     // On récupère le statut actuel pour l'inverser
-    $stmt = $pdo->prepare("SELECT status FROM users WHERE id_user = ?");
+    $stmt = $pdo->prepare("SELECT actif FROM users WHERE id_user = ?");
     $stmt->execute([$id]);
     $user = $stmt->fetch();
 
     if ($user) {
-        $newStatus = ($user['status'] === 'actif') ? 'inactif' : 'actif';
+        $newStatus = ($user['actif'] === 0) ? 1 : 0;
         
-        $update = $pdo->prepare("UPDATE users SET status = ? WHERE id_user = ?");
+        $update = $pdo->prepare("UPDATE users SET actif = ? WHERE id_user = ?");
         $update->execute([$newStatus, $id]);
         
         $_SESSION['flash_success'] = "Statut mis à jour avec succès.";
