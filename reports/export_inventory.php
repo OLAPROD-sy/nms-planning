@@ -6,7 +6,7 @@ require_once __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/../config/database.php';
 
 use Dompdf\Dompdf;
-use Dompdf\Dompdf\Options;
+use Dompdf\Options;
 
 try {
     $opt = new Options();
@@ -170,10 +170,10 @@ $html .= '</tbody></table>
 </html>';
 
 // 4. Lancer Dompdf avec Options corrigées
-$options = new Dompdf\Options();
+$options = new Options();
 $options->set('isHtml5ParserEnabled', true);
 $options->set('isRemoteEnabled', true); // Pour autoriser le chargement d'images
-$dompdf = new Dompdf\Dompdf($options);
+$dompdf = new Dompdf($options);
 
 $dompdf->loadHtml($html);
 $dompdf->setPaper('A4', 'portrait');
