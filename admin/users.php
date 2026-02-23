@@ -183,15 +183,56 @@ $users = $pdo->query('
         .users-grid { grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
     }
     #userSearch:focus {
-    border-color: var(--primary);
-    box-shadow: 0 4px 12px rgba(255, 152, 0, 0.1);
-    background-color: white;
-}
+        border-color: var(--primary);
+        box-shadow: 0 4px 12px rgba(255, 152, 0, 0.1);
+        background-color: white;
+    }
 
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(5px); }
-    to { opacity: 1; transform: translateY(0); }
-}
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(5px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* La pilule de statut */
+    .status-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 11px;
+        font-weight: 700;
+        padding: 4px 10px;
+        border-radius: 20px;
+        margin-top: 8px;
+    }
+
+    .status-dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+    }
+
+    /* Couleurs État Actif */
+    .status-online { background: #E8F5E9; color: #2E7D32; }
+    .status-online .status-dot { background: #4CAF50; box-shadow: 0 0 5px #4CAF50; }
+
+    /* Couleurs État Inactif */
+    .status-offline { background: #F5F5F5; color: #757575; }
+    .status-offline .status-dot { background: #9E9E9E; }
+
+    /* Petit bouton discret sous Modifier/Supprimer */
+    .btn-toggle-status {
+        font-size: 10px;
+        text-align: center;
+        text-decoration: none;
+        color: #666;
+        background: #EEE;
+        padding: 5px;
+        border-radius: 6px;
+        font-weight: 600;
+        transition: 0.2s;
+    }
+    .btn-toggle-status:active { background: #DDD; }
+
 
 </style>
 
@@ -274,45 +315,43 @@ $users = $pdo->query('
     <?php foreach ($users as $u): ?>
         <div class="user-card">
             <?php if (!empty($u['photo'])): ?>
-                <img src="/<?= htmlspecialchars($u['photo']) ?>" class="user-avatar" alt="Photo">
+                <img src="/<?= htmlspecialchars($u['photo']) ?>" class="user-avatar">
             <?php else: ?>
-                <div class="user-avatar" style="display:flex; align-items:center; justify-content:center; color:white; font-weight:800;">
+                <div class="user-avatar" style="background: #CCC; display:flex; align-items:center; justify-content:center; color:white;">
                     <?= strtoupper(substr($u['nom'], 0, 1)) ?>
                 </div>
             <?php endif; ?>
 
             <div class="user-info">
                 <div class="user-name"><?= htmlspecialchars($u['prenom'] . ' ' . $u['nom']) ?></div>
-                <div class="user-role role-<?= strtolower($u['role']) ?>">
-                    <?= htmlspecialchars($u['role']) ?>
-                </div>
-                <div class="user-meta">
-                    📍 <?= htmlspecialchars($u['nom_site'] ?? 'Aucun site') ?><br>
-                    📞 <?= htmlspecialchars($u['contact']) ?>
+                <div class="user-role role-<?= strtolower($u['role']) ?>"><?= $u['role'] ?></div>
+                
+                <?php 
+                    $isActive = ($u['actif'] === 'actif'); // Adaptez selon votre colonne SQL
+                    $statusClass = $isActive ? 'status-online' : 'status-offline';
+                    $statusText = $isActive ? 'En service' : 'Inactif';
+                ?>
+                <div class="status-pill <?= $statusClass ?>">
+                    <span class="status-dot"></span> <?= $statusText ?>
                 </div>
             </div>
 
-            <div class="user-actions">
-                <a href="edit_user.php?id=<?= $u['id_user'] ?>" class="btn-action btn-edit" title="Modifier">✏️</a>
-                <a href="delete_user.php?id=<?= $u['id_user'] ?>" 
-                   class="btn-action btn-delete" 
-                   onclick="return confirm('Supprimer cet utilisateur ?')" title="Supprimer">🗑️</a>
+            <div class="user-actions-container" style="display:flex; flex-direction:column; gap:8px;">
+                <div class="user-actions">
+                    <a href="edit_user.php?id=<?= $u['id_user'] ?>" class="btn-action btn-edit">✏️</a>
+                    <a href="delete_user.php?id=<?= $u['id_user'] ?>" 
+                        class="btn-action btn-delete" 
+                        onclick="return confirm('❗ Attention : Cette action est irréversible. Supprimer définitivement <?= htmlspecialchars($u['prenom']) ?> ?')">
+                        🗑️
+                    </a>
+                </div>
+                <a href="toggle_status.php?id=<?= $u['id_user'] ?>" class="btn-toggle-status">
+                    <?= $isActive ? 'Désactiver' : 'Activer' ?>
+                </a>
             </div>
         </div>
     <?php endforeach; ?>
 </div>
-<script>
-    // Recherche en temps réel
-    document.getElementById('userSearch').addEventListener('keyup', function() {
-        let filter = this.value.toLowerCase();
-        let rows = document.querySelectorAll('.user-row');
-        
-        rows.forEach(row => {
-            let text = row.innerText.toLowerCase();
-            row.style.display = text.includes(filter) ? '' : 'none';
-        });
-    });
-</script>
 <script>
 document.addEventListener('DOMContentLoaded', () => {
     const searchInput = document.getElementById('userSearch');
