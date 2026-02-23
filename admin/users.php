@@ -5,7 +5,7 @@ require_once __DIR__ . '/../config/database.php';
 
 if ($_SESSION['role'] !== 'ADMIN') {
     $_SESSION['flash_error'] = 'Accès refusé.';
-    header('Location: /nms-planning/index.php');
+    header('Location: /index.php');
     exit;
 }
 
@@ -126,7 +126,7 @@ $users = $pdo->query('
         <div class="search-box">
             <input type="text" id="userSearch" placeholder="Rechercher un nom, un email ou un rôle...">
         </div>
-        <a href="/nms-planning/admin/add_users.php" class="btn-add" style="background: var(--primary); color:white; padding: 12px 20px; border-radius: 10px; text-decoration:none; font-weight:700;">
+        <a href="/admin/add_users.php" class="btn-add" style="background: var(--primary); color:white; padding: 12px 20px; border-radius: 10px; text-decoration:none; font-weight:700;">
             + Nouveau
         </a>
     </div>

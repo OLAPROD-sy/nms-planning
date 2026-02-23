@@ -418,6 +418,64 @@ $sites = $pdo->query('SELECT id_site, nom_site FROM sites ORDER BY nom_site')->f
     .btn-secondary:hover {
         background: #D0D0D0;
     }
+
+    /* Masquer les étapes par défaut */
+.step-section {
+    display: none;
+    animation: fadeIn 0.4s ease;
+}
+
+.step-section.active {
+    display: block;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Barre de progression */
+.progress-container {
+    margin-bottom: 30px;
+    background: #f0f0f0;
+    height: 8px;
+    border-radius: 10px;
+    position: relative;
+}
+
+.progress-bar {
+    background: var(--primary);
+    height: 100%;
+    width: 33%; /* Ajusté par JS */
+    border-radius: 10px;
+    transition: width 0.4s ease;
+}
+
+.steps-indicators {
+    display: flex;
+    justify-content: space-between;
+    position: absolute;
+    width: 100%;
+    top: -12px;
+}
+
+.step-dot {
+    width: 30px;
+    height: 30px;
+    background: white;
+    border: 2px solid #ddd;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.step-dot.active {
+    border-color: var(--primary);
+    color: var(--primary);
+}
 </style>
 
 <div class="form-container">
@@ -431,104 +489,175 @@ $sites = $pdo->query('SELECT id_site, nom_site FROM sites ORDER BY nom_site')->f
             <div class="alert-error"><?= htmlspecialchars($error) ?></div>
         <?php endif; ?>
 
-        <form method="post" enctype="multipart/form-data">
+        <form method="post" enctype="multipart/form-data" id="multiStepForm">
             <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(generate_csrf_token()) ?>">
 
-            <!-- Section Informations Personnelles -->
-            <div class="form-row">
-                <div class="form-group">
-                    <label>Nom <span class="required">*</span></label>
-                    <input type="text" name="nom" placeholder="Ex: ALAO" required value="<?= htmlspecialchars($_POST['nom'] ?? '') ?>">
-                </div>
-                <div class="form-group">
-                    <label>Prénom <span class="required">*</span></label>
-                    <input type="text" name="prenom" placeholder="Ex: Ayouba" required value="<?= htmlspecialchars($_POST['prenom'] ?? '') ?>">
-                </div>
-                <div class="form-group">
-                    <label>Identifiant (username) <span class="required">*</span></label>
-                    <input type="text" name="username" placeholder="Ex: ayouba_alao" required value="<?= htmlspecialchars($_POST['username'] ?? '') ?>">
-                </div>
-                <div class="form-group">
-                    <label>Contact<span class="required">*</span></label>
-                    <input type="text" name="contact" placeholder="0197000000" required value="<?= htmlspecialchars($_POST['contact'] ?? '') ?>">
+            <div class="progress-container">
+                <div class="progress-bar" id="progressBar"></div>
+                <div class="steps-indicators">
+                    <span class="step-dot active">1</span>
+                    <span class="step-dot">2</span>
+                    <span class="step-dot">3</span>
+                    <span class="step-dot">4</span>
                 </div>
             </div>
-
-            <div class="form-group">
-                <label>Email <span class="required">*</span></label>
-                <input type="email" name="email" placeholder="exemple@mail.com" required value="<?= htmlspecialchars($_POST['email'] ?? '') ?>">
-                <small>L'email doit être unique dans le système</small>
-            </div>
-
-            <div class="form-row">
-                <div class="form-group">
-                    <label>Rôle <span class="required">*</span></label>
-                    <select name="role" required>
-                        <option value="">-- Sélectionner un rôle --</option>
-                        <option value="ADMIN" <?= ($_POST['role'] ?? '') === 'ADMIN' ? 'selected' : '' ?>>🔴 Admin</option>
-                        <option value="SUPERVISEUR" <?= ($_POST['role'] ?? '') === 'SUPERVISEUR' ? 'selected' : '' ?>>🟠 Superviseur</option>
-                        <option value="AGENT" <?= ($_POST['role'] ?? '') === 'AGENT' ? 'selected' : '' ?>>🟢 Agent</option>
-                    </select>
+                    <!-- Section Informations Personnelles -->
+            <div class="step-section active" data-step="1"> 
+                <div class="form-divider">👤 Informations Personnelles</div>        
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Nom <span class="required">*</span></label>
+                        <input type="text" name="nom" placeholder="Ex: ALAO" required value="<?= htmlspecialchars($_POST['nom'] ?? '') ?>">
+                    </div>
+                    <div class="form-group">
+                        <label>Prénom <span class="required">*</span></label>
+                        <input type="text" name="prenom" placeholder="Ex: Ayouba" required value="<?= htmlspecialchars($_POST['prenom'] ?? '') ?>">
+                    </div>
+                    <div class="form-group">
+                        <label>Identifiant (username) <span class="required">*</span></label>
+                        <input type="text" name="username" placeholder="Ex: ayouba_alao" required value="<?= htmlspecialchars($_POST['username'] ?? '') ?>">
+                    </div>
+                    <div class="form-group">
+                        <label>Contact<span class="required">*</span></label>
+                        <input type="text" name="contact" placeholder="0197000000" required value="<?= htmlspecialchars($_POST['contact'] ?? '') ?>">
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label>Site</label>
-                    <select name="id_site">
-                        <option value="">-- Aucun site --</option>
-                        <?php foreach ($sites as $site): ?>
-                            <option value="<?= (int)$site['id_site'] ?>" <?= ($_POST['id_site'] ?? '') === (string)$site['id_site'] ? 'selected' : '' ?>>
-                                📍 <?= htmlspecialchars($site['nom_site']) ?>
-                            </option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
-            </div>
 
-            <div class="form-group">
-                <label>Date d'embauche</label>
-                <input type="date" name="date_embauche" value="<?= htmlspecialchars($_POST['date_embauche'] ?? '') ?>">
+                <div class="form-group">
+                    <label>Email <span class="required">*</span></label>
+                    <input type="email" name="email" placeholder="exemple@mail.com" required value="<?= htmlspecialchars($_POST['email'] ?? '') ?>">
+                    <small>L'email doit être unique dans le système</small>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn-primary next-step">Suivant ➡️</button>
+                </div>
+            </div>    
+
+            <div class="step-section" data-step="2">
+                <div class="form-divider">👤 Fonction dans l'entreprise</div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Rôle <span class="required">*</span></label>
+                        <select name="role" required>
+                            <option value="">-- Sélectionner un rôle --</option>
+                            <option value="ADMIN" <?= ($_POST['role'] ?? '') === 'ADMIN' ? 'selected' : '' ?>>🔴 Admin</option>
+                            <option value="SUPERVISEUR" <?= ($_POST['role'] ?? '') === 'SUPERVISEUR' ? 'selected' : '' ?>>🟠 Superviseur</option>
+                            <option value="AGENT" <?= ($_POST['role'] ?? '') === 'AGENT' ? 'selected' : '' ?>>🟢 Agent</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Site</label>
+                        <select name="id_site">
+                            <option value="">-- Aucun site --</option>
+                            <?php foreach ($sites as $site): ?>
+                                <option value="<?= (int)$site['id_site'] ?>" <?= ($_POST['id_site'] ?? '') === (string)$site['id_site'] ? 'selected' : '' ?>>
+                                    📍 <?= htmlspecialchars($site['nom_site']) ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Date d'embauche</label>
+                    <input type="date" name="date_embauche" value="<?= htmlspecialchars($_POST['date_embauche'] ?? '') ?>">
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary prev-step">⬅️ Précédent</button>
+                    <button type="button" class="btn-primary next-step">Suivant ➡️</button>
+                </div>
             </div>
 
             <!-- Section Documents -->
-            <div class="form-divider">📸 Documents</div>
+            <div class="step-section" data-step="3">
+                <div class="form-divider">📸 Pièces Jointes</div>
 
-            <div class="form-row">
-                <div class="form-group">
-                    <label>Photo de profil</label>
-                    <input type="file" name="photo" accept="image/jpeg,image/png,image/gif">
-                    <small>JPG, PNG, GIF • Max 5 MB</small>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Photo de profil</label>
+                        <input type="file" name="photo" accept="image/jpeg,image/png,image/gif">
+                        <small>JPG, PNG, GIF • Max 5 MB</small>
+                    </div>
+                    <div class="form-group">
+                        <label>CV</label>
+                        <input type="file" name="cv" accept="application/pdf">
+                        <small>PDF • Max 10 MB</small>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label>CV</label>
-                    <input type="file" name="cv" accept="application/pdf">
-                    <small>PDF • Max 10 MB</small>
-                </div>
-            </div>
 
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary prev-step">⬅️ Précédent</button>
+                    <button type="button" class="btn-primary next-step">Suivant ➡️</button>
+                </div>
+            </div>    
             <!-- Section Mot de Passe -->
-            <div class="form-divider"></div>
+            <div class="step-section" data-step="4">
+                <div class="form-divider">🔐 Sécurité</div>
 
-            <div class="form-row">
-                <div class="form-group">
-                    <label>Mot de passe <span class="required">*</span></label>
-                    <input type="password" name="password" required placeholder="Minimum 8 caractères">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Mot de passe <span class="required">*</span></label>
+                        <input type="password" name="password" required placeholder="Minimum 8 caractères">
+                    </div>
+                    <div class="form-group">
+                        <label>Confirmer le mot de passe <span class="required">*</span></label>
+                        <input type="password" name="password_confirm" required placeholder="Retapez le mot de passe">
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label>Confirmer le mot de passe <span class="required">*</span></label>
-                    <input type="password" name="password_confirm" required placeholder="Retapez le mot de passe">
+
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary prev-step">⬅️ Précédent</button>
+                    <button type="submit" class="btn-primary">✅ Créer l'utilisateur</button>
                 </div>
+
             </div>
 
-            <!-- Actions -->
-            <div class="form-actions">
-                <button type="submit" class="btn-primary">
-                    ✅ Créer l'utilisateur
-                </button>
-                <a href="/admin/users.php" class="btn-secondary">
-                    ⬅️ Annuler
-                </a>
-            </div>
         </form>
     </div>
 </div>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const steps = document.querySelectorAll('.step-section');
+    const dots = document.querySelectorAll('.step-dot');
+    const progressBar = document.getElementById('progressBar');
+    let currentStep = 1;
+
+    // Fonction pour changer d'étape
+    function updateStep(stepNumber) {
+        steps.forEach(step => step.classList.remove('active'));
+        dots.forEach((dot, index) => {
+            dot.classList.toggle('active', index < stepNumber);
+        });
+        
+        document.querySelector(`.step-section[data-step="${stepNumber}"]`).classList.add('active');
+        
+        // Update progress bar
+        const progress = (stepNumber / steps.length) * 100;
+        progressBar.style.width = `${progress}%`;
+    }
+
+    // Boutons "Suivant"
+    document.querySelectorAll('.next-step').forEach(btn => {
+        btn.addEventListener('click', () => {
+            // Optionnel: Ajoutez ici une validation JS pour vérifier si les champs requis sont remplis
+            if (currentStep < steps.length) {
+                currentStep++;
+                updateStep(currentStep);
+            }
+        });
+    });
+
+    // Boutons "Précédent"
+    document.querySelectorAll('.prev-step').forEach(btn => {
+        btn.addEventListener('click', () => {
+            if (currentStep > 1) {
+                currentStep--;
+                updateStep(currentStep);
+            }
+        });
+    });
+});
+</script>
 
 <?php include_once __DIR__ . '/../includes/footer.php'; ?>
