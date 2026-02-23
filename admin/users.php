@@ -176,7 +176,7 @@ $users = $pdo->query('
                     </td>
                     <td data-label="Actions">
                         <div class="action-buttons">
-                            <a href="/nms-planning/admin/edit_users.php?id=<?= $u['id_user'] ?>" class="btn-action btn-edit btn-icon">✏️</a>
+                            <a href="/edit_users.php?id=<?= $u['id_user'] ?>" class="btn-action btn-edit btn-icon">✏️</a>
                             <form method="POST" style="display:inline;" onsubmit="return confirm('Supprimer définitivement ?');">
                                 <input type="hidden" name="id_user" value="<?= $u['id_user'] ?>">
                                 <input type="hidden" name="csrf_token" value="<?= generate_csrf_token() ?>">
