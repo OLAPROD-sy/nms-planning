@@ -4,7 +4,7 @@ session_start();
 // Si on vient de cliquer sur le bouton de test
 if (isset($_GET['test'])) {
     $_SESSION['test_value'] = "La session fonctionne !";
-    header('Location: gest_user.php');
+    header('Location: add_users.php');
     exit;
 }
 ?>
