@@ -122,10 +122,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
 
             // Vérification Retard
+            //$est_en_retard = 0;
+            //if ($userInfo['heure_debut_service'] && $heure_actuelle > $userInfo['heure_debut_service']) {
+            //    $est_en_retard = 1;
+           // }
+            // --- DANS LE BLOC action === 'arrivee' ---
+
+            // On s'assure que les deux heures sont au même format pour la comparaison
+            $heure_actuelle_comp = date('H:i:s'); 
+            $heure_debut_site = $userInfo['heure_debut_service']; // Format stocké en base : '08:00:00'
+
             $est_en_retard = 0;
-            if ($userInfo['heure_debut_service'] && $heure_actuelle > $userInfo['heure_debut_service']) {
-                $est_en_retard = 1;
+
+            // On compare uniquement si l'heure du site est renseignée
+            if (!empty($heure_debut_site)) {
+                // strtotime transforme l'heure en secondes, ce qui rend la comparaison mathématique parfaite
+                if (strtotime($heure_actuelle_comp) > strtotime($heure_debut_site)) {
+                    $est_en_retard = 1;
+                }
             }
+
+            // Puis on insère en base
+            $sql = "INSERT INTO pointages (id_user, date_pointage, heure_arrivee, type, id_site, est_en_retard) VALUES (?, ?, ?, ?, ?, ?)";
+            $pdo->prepare($sql)->execute([$id_user, $today, $heure_actuelle_comp, 'NORMAL', $userInfo['id_site'], $est_en_retard]);
 
             $stmt = $pdo->prepare('SELECT * FROM pointages WHERE id_user = ? AND date_pointage = ? AND type = "NORMAL" AND heure_arrivee IS NOT NULL');
             $stmt->execute([$id_user, $today]);
