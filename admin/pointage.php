@@ -98,6 +98,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $heure_actuelle = date('H:i:s');
 
         if ($action === 'arrivee') {
+            // ... à l'intérieur de if ($action === 'arrivee') ...
+            $current_site_id = $userInfo['id_site'] ?? $_SESSION['id_site'] ?? null;
+
+            if (!$current_site_id) {
+                $_SESSION['flash_error'] = "❌ Erreur : Aucun site n'est assigné à votre profil.";
+                header('Location: pointage.php'); exit;
+            }
+
+            $sql = "INSERT INTO pointages (id_user, date_pointage, heure_arrivee, type, id_site, est_en_retard) VALUES (?, ?, ?, ?, ?, ?)";
+            $pdo->prepare($sql)->execute([$id_user, $today, $heure_actuelle, 'NORMAL', $current_site_id, $est_en_retard]);
+            // ... suite du code ...
             // Sécurité Géolocalisation
             $u_lat = $_POST['user_lat'] ?? 0;
             $u_lng = $_POST['user_lng'] ?? 0;
