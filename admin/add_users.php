@@ -1,6 +1,6 @@
 <?php
 require_once __DIR__ . '/../includes/csrf.php';
-require_once __DIR__ . '/../includes/auth_check.php';
+//require_once __DIR__ . '/../includes/auth_check.php';
 require_once __DIR__ . '/../config/database.php';
 
 // Vérifier que seul l'admin peut accéder
