@@ -6,7 +6,7 @@ require_once __DIR__ . '/../config/database.php';
 // Vérifier que seul l'admin peut accéder
 if (!isset($_SESSION['role']) || strtoupper(trim($_SESSION['role'])) !== 'ADMIN') {
     $_SESSION['flash_error'] = "Accès refusé. Votre rôle est : " . ($_SESSION['role'] ?? 'non défini');
-    header('Location: ../index.php'); // Note le ../ pour bien remonter d'un dossier
+    //header('Location: ../index.php'); // Note le ../ pour bien remonter d'un dossier
     exit;
 }
 //if ($_SESSION['role'] !== 'ADMIN') {
