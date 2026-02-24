@@ -4,7 +4,7 @@ session_start();
 // Si on vient de cliquer sur le bouton de test
 if (isset($_GET['test'])) {
     $_SESSION['test_value'] = "La session fonctionne !";
-    header('Location: test_session.php');
+    header('Location: gest_user.php');
     exit;
 }
 ?>
@@ -30,7 +30,8 @@ if (isset($_GET['test'])) {
     <?php
     if (isset($_GET['clear'])) {
         session_destroy();
-        header('Location: test_session.php');
+        header('Location: gest_user.php'); 
+        exit;
     }
     ?>
 </body>
