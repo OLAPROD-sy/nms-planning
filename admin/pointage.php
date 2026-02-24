@@ -127,7 +127,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $msg = "✓ Arrivée enregistrée à " . substr($heure_actuelle, 0, 5) . ($est_en_retard ? " (⚠️ RETARD)" : "");
                 $_SESSION['flash_success'] = $msg;
                 
-                $notif = "$nom $prenom est arrivé sur $site à " . date('H:i') . ($est_en_retard ? " avec un RETARD." : ".");
+                $notif = "$nom $prenom est arrivé sur le site de $site à " . date('H:i') . ($est_en_retard ? " avec un RETARD." : ".");
                 notify_supervisors_if_possible($pdo, $id_user, $notif, $est_en_retard ? 'urgence' : 'arrivee');
             }
         } elseif ($action === 'depart') {
@@ -142,10 +142,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $_SESSION['flash_success'] = '✓ Départ enregistré.';
                 notify_supervisors_if_possible($pdo, $id_user, "$nom $prenom a quitté $site à " . date('H:i'), 'depart');
             }
-        }
-        // ... Logique URGENCE identique ...
+        } elseif ($action === 'urgence') {
+            $raison = trim($_POST['raison'] ?? '');
+            if (!empty($raison)) {
+                $motif = $raison . (!empty($_POST['commentaire']) ? " - " . trim($_POST['commentaire']) : "");
+                
+                // On enregistre l'urgence avec les coordonnées si dispo
+                $sql = "INSERT INTO pointages (id_user, date_pointage, type, motif_urgence, heure_arrivee, heure_depart, id_site) 
+                        VALUES (?, ?, ?, ?, ?, ?, ?)";
+                $pdo->prepare($sql)->execute([
+                    $id_user, 
+                    $today, 
+                    'URGENCE', 
+                    $motif, 
+                    $_POST['heure_arrivee'] ?: null, 
+                    $_POST['heure_depart'] ?: null, 
+                    $userInfo['id_site']
+                ]);
+                
+                $_SESSION['flash_success'] = '🚨 Urgence signalée avec succès.';
+                notify_supervisors_if_possible($pdo, $id_user, "🚨 URGENCE : $nom $prenom ($motif)", 'urgence');
+            } else {
+                $_SESSION['flash_error'] = '❌ Veuillez fournir une raison pour l\'urgence.';
+            }
     }
     header('Location: pointage.php'); exit;
+}
 }
 
 // RECUPERATION DONNEES POUR AFFICHAGE
@@ -234,6 +256,38 @@ $urgence_types = ['Absence justifiée', 'Congé maladie', 'Congé personnel', 'T
         </form>
     </div>
 
+    <div class="urgency-section">
+        <div class="urgency-title">🚨 Signaler une Urgence / Absence</div>
+        <form method="post">
+            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(generate_csrf_token()) ?>">
+            <input type="hidden" name="action" value="urgence">
+            <input type="hidden" name="user_lat" class="lat_input">
+            <input type="hidden" name="user_lng" class="lng_input">
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 15px;">
+                <div class="form-group">
+                    <label style="font-size: 11px; font-weight: 700; color: #991b1b;">RAISON *</label>
+                    <select name="raison" required style="width:100%; padding:10px; border-radius:10px; border:1px solid #fecaca;">
+                        <option value="">Sélectionner...</option>
+                        <?php foreach ($urgence_types as $type): ?>
+                            <option value="<?= $type ?>"><?= $type ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label style="font-size: 11px; font-weight: 700; color: #991b1b;">HEURE DÉPART</label>
+                    <input type="time" name="heure_depart" style="width:100%; padding:10px; border-radius:10px; border:1px solid #fecaca;">
+                </div>
+                <div class="form-group">
+                    <label style="font-size: 11px; font-weight: 700; color: #991b1b;">HEURE ARRIVÉE</label>
+                    <input type="time" name="heure_arrivee" style="width:100%; padding:10px; border-radius:10px; border:1px solid #fecaca;">
+                </div>
+            </div>
+            <textarea name="commentaire" placeholder="Expliquez brièvement la situation..." style="width:100%; border-radius:10px; border:1px solid #fecaca; padding:10px; font-size:14px; margin-bottom:15px;"></textarea>
+            <button type="submit" style="width:100%; background: #ef4444; color:white; border:none; padding:12px; border-radius:10px; font-weight:800; cursor:pointer;">Envoyer l'alerte</button>
+        </form>
+    </div>
+
     <div class="history-card">
         <h3 style="margin-bottom: 15px; font-size: 16px;">📊 Activité récente (7 jours)</h3>
         <div style="overflow-x: auto;">
@@ -272,7 +326,7 @@ $urgence_types = ['Absence justifiée', 'Congé maladie', 'Congé personnel', 'T
 </div>
 
 <script>
-    const RADIUS_ALLOWED = 150; // 150 mètres
+    const RADIUS_ALLOWED = 150000; // 150 mètres
     const siteLat = <?= $userInfo['latitude'] ?? 0 ?>;
     const siteLng = <?= $userInfo['longitude'] ?? 0 ?>;
     const alreadyChecked = <?= $heure_arrivee ? 'true' : 'false' ?>;
@@ -331,4 +385,5 @@ $urgence_types = ['Absence justifiée', 'Congé maladie', 'Congé personnel', 'T
     updateClock();
     initGeo();
 </script>
+
 <?php include_once __DIR__ . '/../includes/footer.php'; ?>
