@@ -287,7 +287,7 @@ $users = $pdo->query('
             <h1 style="font-size: 32px; font-weight: 800; color: var(--dark); letter-spacing: -1px; margin: 0;">Collaborateurs</h1>
             <p style="color: #666; font-size: 14px; margin-top: 5px;">Gérez les accès et les profils de l'équipe</p>
         </div>
-        <a href="/admin/add_user.php" class="btn-add-modern">
+        <a href="/admin/add_users.php" class="btn-add-modern">
             <span class="icon">➕</span>
             <span class="text">Ajouter</span>
         </a>
@@ -337,7 +337,7 @@ $users = $pdo->query('
 
             <div class="user-actions-container">
                 <div class="user-actions">
-                    <a href="edit_user.php?id=<?= $u['id_user'] ?>" class="btn-action btn-edit">✏️</a>
+                    <a href="edit_users.php?id=<?= $u['id_user'] ?>" class="btn-action btn-edit">✏️</a>
                     <a href="delete_user.php?id=<?= $u['id_user'] ?>" 
                        class="btn-action btn-delete" 
                        onclick="return confirm('Supprimer définitivement <?= htmlspecialchars($u['prenom']) ?> ?')">

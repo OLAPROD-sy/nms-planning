@@ -6,7 +6,7 @@ require_once __DIR__ . '/../config/database.php';
 // Vérifier que seul l'admin peut accéder
 if ($_SESSION['role'] !== 'ADMIN') {
     $_SESSION['flash_error'] = 'Accès refusé.';
-    header('Location: /');
+    header('Location: /index.php');
     exit;
 }
 
