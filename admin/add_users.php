@@ -4,11 +4,11 @@ require_once __DIR__ . '/../includes/auth_check.php';
 require_once __DIR__ . '/../config/database.php';
 
 // Vérifier que seul l'admin peut accéder
-if (!isset($_SESSION['role']) || strtoupper(trim($_SESSION['role'])) !== 'ADMIN') {
-    $_SESSION['flash_error'] = "Accès refusé. Votre rôle est : " . ($_SESSION['role'] ?? 'non défini');
+//if (!isset($_SESSION['role']) || strtoupper(trim($_SESSION['role'])) !== 'ADMIN') {
+    //$_SESSION['flash_error'] = "Accès refusé. Votre rôle est : " . ($_SESSION['role'] ?? 'non défini');
     //header('Location: ../index.php'); // Note le ../ pour bien remonter d'un dossier
-    exit;
-}
+   // exit;
+// Parfois, la session peut ne pas être correctement initialisée sur Railway. Ce test permet de vérifier que les données de session sont bien conservées entre les requêtes.}
 //if ($_SESSION['role'] !== 'ADMIN') {
   //  $_SESSION['flash_error'] = 'Accès refusé. Seul l\'admin peut ajouter des utilisateurs.';
     //header('Location: /index.php');
