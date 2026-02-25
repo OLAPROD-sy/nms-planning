@@ -36,7 +36,6 @@ try {
 
     $count = 0;
     foreach ($agents as $agent) {
-        // Génération d'un username simple : prenom.n (ex: marcel.k)
         $username = strtolower($agent['prenom'] . '.' . substr($agent['nom'], 0, 1));
         
         $stmt->execute([
