@@ -19,7 +19,8 @@ function formatDateLongue($date) {
 // 1. Logique de récupération avec Période et Retards
 $date_debut = $_GET['date_debut'] ?? date('Y-m-01'); // Par défaut : 1er du mois en cours
 $date_fin = $_GET['date_fin'] ?? date('Y-m-d');
-$filtre_site = $_GET['site'] ?? '';
+// Remplace ta ligne $filtre_site = ... par :
+$filtre_site = isset($_GET['site']) && $_GET['site'] !== '' ? $_GET['site'] : null;
 $filtre_type = $_GET['type'] ?? '';
 $filtre_user = $_GET['user'] ?? '';
 $filtre_retard = isset($_GET['only_retard']) ? 1 : ''; // Nouveau filtre spécifique
@@ -33,11 +34,16 @@ $sql = "SELECT p.*, u.prenom, u.nom, u.role, s.nom_site as site_nom
 $params = [$date_debut, $date_fin];
 
 if ($filtre_type) { $sql .= " AND p.type = ?"; $params[] = $filtre_type; }
-if ($filtre_site) { $sql .= " AND p.id_site = ?"; $params[] = intval($filtre_site); }
 if ($filtre_user) { 
     $sql .= " AND (u.prenom LIKE ? OR u.nom LIKE ?)"; 
     $params[] = '%' . $filtre_user . '%'; 
     $params[] = '%' . $filtre_user . '%'; 
+}
+
+// Dans ton bloc de construction SQL :
+if ($filtre_site !== null) { 
+    $sql .= " AND p.id_site = ?"; 
+    $params[] = (int)$filtre_site; // On force l'entier pour la sécurité
 }
 // Filtre spécifique pour voir uniquement les retards
 if ($filtre_retard) { $sql .= " AND p.est_en_retard = 1"; }
@@ -204,9 +210,9 @@ $stats_normal = array_filter($pointages, fn($p) => $p['type'] === 'NORMAL');
             <label>Site</label>
             <select name="site" class="custom-input">
                 <option value="">Tous les sites</option>
-                <?php foreach ($sites as $site): ?>
-                    <option value="<?= $site['id_site'] ?>" <?= $filtre_site == $site['id_site'] ? 'selected' : '' ?>>
-                        <?= htmlspecialchars($site['nom_site']) ?>
+                <?php foreach ($sites as $s): ?>
+                    <option value="<?= $s['id_site'] ?>" <?= (isset($_GET['site']) && $_GET['site'] !== '' && (string)$_GET['site'] === (string)$s['id_site']) ? 'selected' : '' ?>>
+                        <?= htmlspecialchars($s['nom_site']) ?>
                     </option>
                 <?php endforeach; ?>
             </select>
@@ -221,6 +227,11 @@ $stats_normal = array_filter($pointages, fn($p) => $p['type'] === 'NORMAL');
 </div>
 
     <div class="table-responsive-wrapper">
+        <?php if ($filtre_site): ?>
+            <div style="margin-bottom: 10px; font-size: 0.9rem; color: #3498db;">
+                📍 Filtrage activé pour le site : <strong><?= htmlspecialchars($pointages[0]['site_nom'] ?? 'Sélectionné') ?></strong>
+            </div>
+        <?php endif; ?>
         <table class="modern-table">
             <thead>
                 <tr>
