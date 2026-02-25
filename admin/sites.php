@@ -16,17 +16,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_site'])) {
     }
     
     $nom = trim($_POST['nom_site'] ?? '');
-    $localisation = trim($_POST['localisation'] ?? ''); // Nouveau
-    $description = trim($_POST['description'] ?? '');   // Nouveau
+    $localisation = trim($_POST['localisation'] ?? '');
+    $description = trim($_POST['description'] ?? '');
+    $lat = $_POST['latitude'] ?: 0;
+    $lng = $_POST['longitude'] ?: 0;
+    $heure = $_POST['heure_debut_service'] ?: '08:00:00';
 
     if ($nom !== '') {
-        // On ajoute les deux colonnes supplémentaires dans la requête
-        $stmt = $pdo->prepare('INSERT INTO sites (nom_site, localisation, description) VALUES (?, ?, ?)');
-        $stmt->execute([$nom, $localisation, $description]);
+        $stmt = $pdo->prepare('INSERT INTO sites (nom_site, localisation, description, latitude, longitude, heure_debut_service) VALUES (?, ?, ?, ?, ?, ?)');
+        $stmt->execute([$nom, $localisation, $description, $lat, $lng, $heure]);
         
         $_SESSION['flash_success'] = 'Site ajouté avec succès.';
-        header('Location: sites.php');
-        exit;
+        header('Location: sites.php'); exit;
     }
 }
 
@@ -39,19 +40,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_site'])) {
 
     $id = (int)($_POST['id_site'] ?? 0);
     $nom = trim($_POST['nom_site'] ?? '');
-    $localisation = trim($_POST['localisation'] ?? ''); // Nouveau
-    $description = trim($_POST['description'] ?? '');   // Nouveau
+    $localisation = trim($_POST['localisation'] ?? '');
+    $description = trim($_POST['description'] ?? '');
+    $lat = $_POST['latitude'] ?: 0;
+    $lng = $_POST['longitude'] ?: 0;
+    $heure = $_POST['heure_debut_service'] ?: '08:00:00';
 
     if ($id > 0 && $nom !== '') {
-        // Mise à jour incluant localisation et description
-        $stmt = $pdo->prepare('UPDATE sites SET nom_site = ?, localisation = ?, description = ? WHERE id_site = ?');
-        $stmt->execute([$nom, $localisation, $description, $id]);
+        $stmt = $pdo->prepare('UPDATE sites SET nom_site = ?, localisation = ?, description = ?, latitude = ?, longitude = ?, heure_debut_service = ? WHERE id_site = ?');
+        $stmt->execute([$nom, $localisation, $description, $lat, $lng, $heure, $id]);
         
         $_SESSION['flash_success'] = 'Site mis à jour avec succès.';
-        header('Location: sites.php');
-        exit;
+        header('Location: sites.php'); exit;
     }
 }
+
+// ... (Garder le reste de la logique de suppression et d'édition inchangé) ...
 // Suppression
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_site'])) {
 	if (!verify_csrf_token($_POST['csrf_token'] ?? '')) {
@@ -84,21 +88,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_site'])) {
 	}
 }
 
+
 if (isset($_SESSION['edit_site_id'])) {
-	$id = (int)$_SESSION['edit_site_id'];
-	unset($_SESSION['edit_site_id']);
-	$stmt = $pdo->prepare('SELECT * FROM sites WHERE id_site = ?');
-	$stmt->execute([$id]);
-	$edit_site = $stmt->fetch(PDO::FETCH_ASSOC);
-	if ($edit_site) $editing = true;
+    $id = (int)$_SESSION['edit_site_id'];
+    unset($_SESSION['edit_site_id']);
+    $stmt = $pdo->prepare('SELECT * FROM sites WHERE id_site = ?');
+    $stmt->execute([$id]);
+    $edit_site = $stmt->fetch(PDO::FETCH_ASSOC);
+    if ($edit_site) $editing = true;
 }
 
 $stmt = $pdo->query('SELECT * FROM sites ORDER BY nom_site');
 $sites = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
+
 <?php include_once __DIR__ . '/../includes/header.php'; ?>
 
 <style>
+    /* Tes styles existants ici... */
     :root {
         --primary: #6366f1;
         --primary-dark: #4f46e5;
@@ -244,6 +251,7 @@ $sites = $stmt->fetchAll(PDO::FETCH_ASSOC);
         .hero-section { padding: 40px 20px; text-align: center; }
         .search-container { margin: 20px auto 0; }
     }
+    .geo-badge { font-size: 11px; background: #f1f5f9; padding: 2px 8px; border-radius: 6px; color: #475569; font-family: monospace; }
 </style>
 
 <div class="page-wrapper">
@@ -253,7 +261,7 @@ $sites = $stmt->fetchAll(PDO::FETCH_ASSOC);
         
         <div class="search-container">
             <span class="search-icon">🔍</span>
-            <input type="text" id="siteSearch" class="search-input" placeholder="Rechercher un site, une ville, une description...">
+            <input type="text" id="siteSearch" class="search-input" placeholder="Rechercher un site, une ville...">
         </div>
     </div>
 
@@ -272,11 +280,26 @@ $sites = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     <label>Localisation</label>
                     <input type="text" name="localisation" class="modern-input" placeholder="Ex: Paris, FR" value="<?= $editing ? htmlspecialchars($edit_site['localisation'] ?? '') : '' ?>">
                 </div>
+                <div class="form-group">
+                    <label>Début de Service</label>
+                    <input type="time" name="heure_debut_service" class="modern-input" value="<?= $editing ? htmlspecialchars($edit_site['heure_debut_service'] ?? '08:00') : '08:00' ?>">
+                </div>
+            </div>
+
+            <div class="form-grid" style="margin-top: 20px;">
+                <div class="form-group">
+                    <label>Latitude</label>
+                    <input type="number" step="any" name="latitude" class="modern-input" placeholder="Ex: 6.3702" value="<?= $editing ? htmlspecialchars($edit_site['latitude'] ?? '') : '' ?>">
+                </div>
+                <div class="form-group">
+                    <label>Longitude</label>
+                    <input type="number" step="any" name="longitude" class="modern-input" placeholder="Ex: 2.4407" value="<?= $editing ? htmlspecialchars($edit_site['longitude'] ?? '') : '' ?>">
+                </div>
             </div>
             
             <div class="form-group" style="margin-top: 20px;">
                 <label>Description</label>
-                <textarea name="description" class="modern-input" style="height: 80px; resize: none;" placeholder="Bref descriptif du site..."><?= $editing ? htmlspecialchars($edit_site['description'] ?? '') : '' ?></textarea>
+                <textarea name="description" class="modern-input" style="height: 80px; resize: none;" placeholder="Bref descriptif..."><?= $editing ? htmlspecialchars($edit_site['description'] ?? '') : '' ?></textarea>
             </div>
 
             <div style="margin-top: 25px; display: flex; gap: 12px;">
@@ -298,31 +321,27 @@ $sites = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 <div>
                     <div class="site-header">
                         <div class="site-icon"><?= strtoupper(substr($s['nom_site'], 0, 1)) ?></div>
-                        <div>
-                            <div style="font-weight: 800; color: #0f172a; font-size: 18px;"><?= htmlspecialchars($s['nom_site']) ?></div>
+                        <div style="flex:1">
+                            <div style="font-weight: 800; color: #0f172a; font-size: 18px; display: flex; justify-content: space-between; align-items: center;">
+                                <?= htmlspecialchars($s['nom_site']) ?>
+                                <span style="font-size: 12px; color: var(--primary); background: #eef2ff; padding: 2px 8px; border-radius: 5px;">🕒 <?= substr($s['heure_debut_service'], 0, 5) ?></span>
+                            </div>
                             <div class="site-loc">📍 <?= htmlspecialchars($s['localisation'] ?? 'Non définie') ?></div>
+                            <div style="margin-top: 5px; display: flex; gap: 5px;">
+                                <span class="geo-badge">Lat: <?= $s['latitude'] ?></span>
+                                <span class="geo-badge">Lng: <?= $s['longitude'] ?></span>
+                            </div>
                         </div>
                     </div>
                     <p class="site-desc"><?= nl2br(htmlspecialchars($s['description'] ?? 'Aucune description disponible.')) ?></p>
                 </div>
 
                 <div class="btn-group">
-                    <form method="post" style="flex:1">
-                        <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(generate_csrf_token()) ?>">
-                        <input type="hidden" name="edit_site" value="<?= $id ?>">
-                        <button class="btn-icon" style="background: #eef2ff; color: var(--primary);" title="Modifier">✏️ Modifier</button>
-                    </form>
-                    <form method="post" style="flex:1" onsubmit="return confirm('Supprimer ce site ?');">
-                        <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(generate_csrf_token()) ?>">
-                        <input type="hidden" name="delete_site" value="<?= $id ?>">
-                        <button class="btn-icon" style="background: #fff1f2; color: #e11d48;" title="Supprimer">🗑️</button>
-                    </form>
-                </div>
+                    </div>
             </div>
         <?php endforeach; ?>
     </div>
 </div>
-
 <script>
     // --- RECHERCHE TEMPS RÉEL ---
     document.getElementById('siteSearch').addEventListener('input', function(e) {
