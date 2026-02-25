@@ -2,30 +2,19 @@
 require_once 'config/database.php';
 
 try {
-    // 1. Liste des noms et prénoms fournis
+    // 1. Liste des nouveaux agents pour le site 2
     $agents = [
-        ['nom' => 'KODJO', 'prenom' => 'Marcel'],
-        ['nom' => 'HOTEKPO', 'prenom' => 'Athanase'],
-        ['nom' => 'TOISSI', 'prenom' => 'Ulrich'],
-        ['nom' => 'GANKPIN', 'prenom' => 'Ezéchiel'],
-        ['nom' => 'MACAULEY', 'prenom' => 'Gloria'],
-        ['nom' => 'ALAVO', 'prenom' => 'Carlos'],
-        ['nom' => 'SODJI', 'prenom' => 'Plastide'],
-        ['nom' => 'TOHOUBI', 'prenom' => 'Adrien'],
-        ['nom' => 'ZINHOUDJO', 'prenom' => 'Edmond'],
-        ['nom' => 'TOUGAN', 'prenom' => 'Prudence'],
-        ['nom' => 'ADONON', 'prenom' => 'Brigitte'],
-        ['nom' => 'LOKOSSOU', 'prenom' => 'Louise'],
-        ['nom' => 'GBENOU', 'prenom' => 'Robert'],
-        ['nom' => 'DEYO', 'prenom' => 'Amélie'],
-        ['nom' => 'HONVOU', 'prenom' => 'François'],
-        ['nom' => 'AHOUANDJINOU', 'prenom' => 'Félix'],
-        ['nom' => 'HOUNNA', 'prenom' => 'Delcripia']
+        ['nom' => 'GNIDA', 'prenom' => 'Francis'],
+        ['nom' => 'IDRISSOU', 'prenom' => 'Lidy'],
+        ['nom' => 'ASSIGNAMEY', 'prenom' => 'Marie'],
+        ['nom' => 'CHERIF', 'prenom' => 'Chamssiyath'],
+        ['nom' => 'SESSINOU', 'prenom' => 'Sandie'],
+        ['nom' => 'AGBOGBA', 'prenom' => 'Mariette']
     ];
 
-    $id_site_fixe = 1;
+    $id_site_cible = 2; // Changement pour le site ID 2
     $role_defaut = 'AGENT';
-    // Mot de passe par défaut : Agent@2024 (hashé pour la sécurité)
+    // Mot de passe par défaut : Agent@2024
     $password_hashed = password_hash('Agent@2024', PASSWORD_BCRYPT);
 
     $pdo->beginTransaction();
@@ -36,6 +25,7 @@ try {
 
     $count = 0;
     foreach ($agents as $agent) {
+        // Génération du username (ex: francis.g)
         $username = strtolower($agent['prenom'] . '.' . substr($agent['nom'], 0, 1));
         
         $stmt->execute([
@@ -44,20 +34,20 @@ try {
             ':username' => $username,
             ':password' => $password_hashed,
             ':role'     => $role_defaut,
-            ':id_site'  => $id_site_fixe
+            ':id_site'  => $id_site_cible
         ]);
         $count++;
     }
 
     $pdo->commit();
-    echo "<h1>✅ Succès !</h1>";
-    echo "<p><strong>$count</strong> agents ont été enregistrés avec succès pour le site ID 1.</p>";
-    echo "<p>Identifiant par défaut : <code>prenom.initialenom</code><br>Mot de passe par défaut : <code>Agent@2024</code></p>";
+    echo "<h1>✅ Insertion réussie pour le Site 2 !</h1>";
+    echo "<p><strong>$count</strong> agents ont été enregistrés sur le site ID 2.</p>";
+    echo "<p>Identifiant : <code>prenom.initialenom</code> | MDP : <code>Agent@2024</code></p>";
 
 } catch (Exception $e) {
     if (isset($pdo) && $pdo->inTransaction()) {
         $pdo->rollBack();
     }
-    echo "<h1>❌ Erreur lors de l'insertion</h1>";
+    echo "<h1>❌ Erreur</h1>";
     echo "<pre>" . $e->getMessage() . "</pre>";
 }
