@@ -2,48 +2,63 @@
 require_once 'config/database.php';
 
 try {
-    // 1. On récupère la liste RÉELLE des IDs de sites existants
-    $stmtSites = $pdo->query("SELECT id_site FROM sites");
-    $sites_ids = $stmtSites->fetchAll(PDO::FETCH_COLUMN);
-
-    if (empty($sites_ids)) {
-        die("❌ Erreur : Aucun site n'a été trouvé dans la table 'sites'.");
-    }
-
-    $produits_noms = [
-        'BALAI INTERIEUR', 'BALAI CANTONNIER', 'RACLETTE SOL', 'BALAI INDIGENE',
-        'BROSSE A MANCHE', 'FRANGE A ACCESSOIRE', 'GANT', 'CHIFFON',
-        'EPONGE GRATTE', 'SAVON LIQUIDE', 'JAVEL', 'PELLE A TIGE',
-        'MASQUE', 'LAIT PEAK', 'DETERGENT', 'DESINFECTANT',
-        'CAMPHRE SENTEUR', 'SACHET POUBELLE GRAND', 'SACHET POUBELLE PETIT',
-        'DESODORISANT', 'LAVE VITRE', 'SERPILLERE', 'PAPIER H', 'NETTOYANT MEUBLE'
+    // 1. Liste des noms et prénoms fournis
+    $agents = [
+        ['nom' => 'KODJO', 'prenom' => 'Marcel'],
+        ['nom' => 'HOTEKPO', 'prenom' => 'Athanase'],
+        ['nom' => 'TOISSI', 'prenom' => 'Ulrich'],
+        ['nom' => 'GANKPIN', 'prenom' => 'Ezéchiel'],
+        ['nom' => 'MACAULEY', 'prenom' => 'Gloria'],
+        ['nom' => 'ALAVO', 'prenom' => 'Carlos'],
+        ['nom' => 'SODJI', 'prenom' => 'Plastide'],
+        ['nom' => 'TOHOUBI', 'prenom' => 'Adrien'],
+        ['nom' => 'ZINHOUDJO', 'prenom' => 'Edmond'],
+        ['nom' => 'TOUGAN', 'prenom' => 'Prudence'],
+        ['nom' => 'ADONON', 'prenom' => 'Brigitte'],
+        ['nom' => 'LOKOSSOU', 'prenom' => 'Louise'],
+        ['nom' => 'GBENOU', 'prenom' => 'Robert'],
+        ['nom' => 'DEYO', 'prenom' => 'Amélie'],
+        ['nom' => 'HONVOU', 'prenom' => 'François'],
+        ['nom' => 'AHOUANDJINOU', 'prenom' => 'Félix'],
+        ['nom' => 'HOUNNA', 'prenom' => 'Delcripia']
     ];
+
+    $id_site_fixe = 1;
+    $role_defaut = 'AGENT';
+    // Mot de passe par défaut : Agent@2024 (hashé pour la sécurité)
+    $password_hashed = password_hash('Agent@2024', PASSWORD_BCRYPT);
 
     $pdo->beginTransaction();
 
-    // 2. Nettoyage de la table produits pour éviter les doublons
-    $pdo->exec("DELETE FROM produits");
-
-    // 3. Préparation de l'insertion
-    $sql = "INSERT INTO produits (nom_produit, id_site, quantite_actuelle, quantite_alerte) VALUES (?, ?, 0, 5)";
+    $sql = "INSERT INTO users (nom, prenom, username, password, role, id_site, actif) 
+            VALUES (:nom, :prenom, :username, :password, :role, :id_site, 1)";
     $stmt = $pdo->prepare($sql);
 
-    $total_insertions = 0;
-    foreach ($sites_ids as $id_site) {
-        foreach ($produits_noms as $nom) {
-            $stmt->execute([$nom, (int)$id_site]);
-            $total_insertions++;
-        }
+    $count = 0;
+    foreach ($agents as $agent) {
+        // Génération d'un username simple : prenom.n (ex: marcel.k)
+        $username = strtolower($agent['prenom'] . '.' . substr($agent['nom'], 0, 1));
+        
+        $stmt->execute([
+            ':nom'      => $agent['nom'],
+            ':prenom'   => $agent['prenom'],
+            ':username' => $username,
+            ':password' => $password_hashed,
+            ':role'     => $role_defaut,
+            ':id_site'  => $id_site_fixe
+        ]);
+        $count++;
     }
 
     $pdo->commit();
     echo "<h1>✅ Succès !</h1>";
-    echo "<p>Insertion de <b>$total_insertions</b> produits terminée pour les <b>" . count($sites_ids) . "</b> sites détectés.</p>";
+    echo "<p><strong>$count</strong> agents ont été enregistrés avec succès pour le site ID 1.</p>";
+    echo "<p>Identifiant par défaut : <code>prenom.initialenom</code><br>Mot de passe par défaut : <code>Agent@2024</code></p>";
 
 } catch (Exception $e) {
     if (isset($pdo) && $pdo->inTransaction()) {
         $pdo->rollBack();
     }
-    echo "<h1>❌ Erreur Critique</h1>";
+    echo "<h1>❌ Erreur lors de l'insertion</h1>";
     echo "<pre>" . $e->getMessage() . "</pre>";
 }
