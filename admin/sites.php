@@ -282,7 +282,7 @@ $sites = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 </div>
                 <div class="form-group">
                     <label>Début de Service</label>
-                    <input type="time" name="heure_debut_service" class="modern-input" value="<?= $editing ? htmlspecialchars($edit_site['heure_debut_service'] ?? '08:00') : '08:00' ?>">
+                    <input type="time" name="heure_debut_service" class="modern-input" placeholder="08:00" value="<?= $editing ? htmlspecialchars($edit_site['heure_debut_service'] ?? '') : '' ?>">
                 </div>
             </div>
 
@@ -313,7 +313,7 @@ $sites = $stmt->fetchAll(PDO::FETCH_ASSOC);
         </form>
     </div>
 
-    <div class="sites-grid" id="sitesList">
+   <div class="sites-grid" id="sitesList">
         <?php foreach ($sites as $s): 
             $id = (int)($s['id_site'] ?? $s['id']);
         ?>
@@ -321,23 +321,44 @@ $sites = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 <div>
                     <div class="site-header">
                         <div class="site-icon"><?= strtoupper(substr($s['nom_site'], 0, 1)) ?></div>
+                        
                         <div style="flex:1">
                             <div style="font-weight: 800; color: #0f172a; font-size: 18px; display: flex; justify-content: space-between; align-items: center;">
                                 <?= htmlspecialchars($s['nom_site']) ?>
-                                <span style="font-size: 12px; color: var(--primary); background: #eef2ff; padding: 2px 8px; border-radius: 5px;">🕒 <?= substr($s['heure_debut_service'], 0, 5) ?></span>
+                                <span style="font-size: 12px; color: var(--primary); background: #eef2ff; padding: 2px 8px; border-radius: 5px; font-weight: 700;">
+                                    🕒 <?= substr($s['heure_debut_service'], 0, 5) ?>
+                                </span>
                             </div>
+                            
                             <div class="site-loc">📍 <?= htmlspecialchars($s['localisation'] ?? 'Non définie') ?></div>
-                            <div style="margin-top: 5px; display: flex; gap: 5px;">
-                                <span class="geo-badge">Lat: <?= $s['latitude'] ?></span>
-                                <span class="geo-badge">Lng: <?= $s['longitude'] ?></span>
+                            
+                            <div style="margin-top: 8px; display: flex; gap: 5px; flex-wrap: wrap;">
+                                <span class="geo-badge">Lat: <?= htmlspecialchars($s['latitude'] ?? '0') ?></span>
+                                <span class="geo-badge">Lng: <?= htmlspecialchars($s['longitude'] ?? '0') ?></span>
                             </div>
                         </div>
                     </div>
+                    
                     <p class="site-desc"><?= nl2br(htmlspecialchars($s['description'] ?? 'Aucune description disponible.')) ?></p>
                 </div>
 
                 <div class="btn-group">
-                    </div>
+                    <form method="post" style="flex:1">
+                        <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(generate_csrf_token()) ?>">
+                        <input type="hidden" name="edit_site" value="<?= $id ?>">
+                        <button type="submit" class="btn-icon" style="background: #eef2ff; color: var(--primary); border:none; width:100%; font-weight:600;" title="Modifier">
+                            ✏️ Modifier
+                        </button>
+                    </form>
+
+                    <form method="post" style="flex:1" onsubmit="return confirm('Attention : supprimer ce site peut impacter les pointages liés. Confirmer ?');">
+                        <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(generate_csrf_token()) ?>">
+                        <input type="hidden" name="delete_site" value="<?= $id ?>">
+                        <button type="submit" class="btn-icon" style="background: #fff1f2; color: #e11d48; border:none; width:100%;" title="Supprimer">
+                            🗑️ Effacer
+                        </button>
+                    </form>
+                </div>
             </div>
         <?php endforeach; ?>
     </div>
