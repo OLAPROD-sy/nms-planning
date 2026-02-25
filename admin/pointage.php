@@ -340,6 +340,19 @@ $urgence_types = ['Absence justifiée', 'Congé maladie', 'Congé personnel', 'T
         </div>
     </div>
 </div>
+<div class="pointage-container" style="padding-bottom: 0;">
+    <?php if (isset($_SESSION['flash_success'])): ?>
+        <div style="background: #dcfce7; color: #16a34a; padding: 15px; border-radius: 12px; border: 1px solid #bbf7d0; margin-bottom: 20px; font-weight: 600;">
+            <?= $_SESSION['flash_success']; unset($_SESSION['flash_success']); ?>
+        </div>
+    <?php endif; ?>
+
+    <?php if (isset($_SESSION['flash_error'])): ?>
+        <div style="background: #fee2e2; color: #ef4444; padding: 15px; border-radius: 12px; border: 1px solid #fecaca; margin-bottom: 20px; font-weight: 600;">
+            <?= $_SESSION['flash_error']; unset($_SESSION['flash_error']); ?>
+        </div>
+    <?php endif; ?>
+</div>
 
 <script>
     const RADIUS_ALLOWED = 150000; // 150 mètres
