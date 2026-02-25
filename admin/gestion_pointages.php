@@ -16,14 +16,25 @@ function formatDateLongue($date) {
 }
 
 
-// 1. Logique de récupération avec Période et Retards
-$date_debut = $_GET['date_debut'] ?? date('Y-m-01'); // Par défaut : 1er du mois en cours
+/// 1. Logique de récupération avec Période et Retards
+$date_debut = $_GET['date_debut'] ?? date('Y-m-01');
 $date_fin = $_GET['date_fin'] ?? date('Y-m-d');
-// Remplace ta ligne $filtre_site = ... par :
-$filtre_site = isset($_GET['site']) && $_GET['site'] !== '' ? $_GET['site'] : null;
+// Correction ici : On s'assure que le site est traité comme une chaîne pour le comparatif
+$filtre_site = isset($_GET['site']) && $_GET['site'] !== '' ? $_GET['site'] : ''; 
 $filtre_type = $_GET['type'] ?? '';
 $filtre_user = $_GET['user'] ?? '';
-$filtre_retard = isset($_GET['only_retard']) ? 1 : ''; // Nouveau filtre spécifique
+$filtre_retard = isset($_GET['only_retard']) && $_GET['only_retard'] == '1' ? 1 : 0;
+
+// LOGIQUE D'EXPORTATION (À placer avant tout HTML)
+if (isset($_GET['export']) && $_GET['export'] === 'csv') {
+    ob_end_clean(); // Vide le tampon pour éviter du HTML dans le CSV
+    header('Content-Type: text/csv; charset=utf-8');
+    header('Content-Disposition: attachment; filename=export_pointages_'.date('Y-m-d').'.csv');
+    $output = fopen('php://output', 'w');
+    fputcsv($output, ['Collaborateur', 'Site', 'Date', 'Type', 'Entrée', 'Sortie', 'Retard']);
+    // On peut parcourir $pointages après la requête SQL pour remplir le CSV ici
+    // exit(); 
+}
 
 $sql = "SELECT p.*, u.prenom, u.nom, u.role, s.nom_site as site_nom 
         FROM pointages p
@@ -34,24 +45,22 @@ $sql = "SELECT p.*, u.prenom, u.nom, u.role, s.nom_site as site_nom
 $params = [$date_debut, $date_fin];
 
 if ($filtre_type) { $sql .= " AND p.type = ?"; $params[] = $filtre_type; }
+// Correction du filtre site ici
+if ($filtre_site !== '') { $sql .= " AND p.id_site = ?"; $params[] = intval($filtre_site); }
 if ($filtre_user) { 
     $sql .= " AND (u.prenom LIKE ? OR u.nom LIKE ?)"; 
     $params[] = '%' . $filtre_user . '%'; 
     $params[] = '%' . $filtre_user . '%'; 
 }
-
-// Dans ton bloc de construction SQL :
-if ($filtre_site !== null) { 
-    $sql .= " AND p.id_site = ?"; 
-    $params[] = (int)$filtre_site; // On force l'entier pour la sécurité
-}
-// Filtre spécifique pour voir uniquement les retards
 if ($filtre_retard) { $sql .= " AND p.est_en_retard = 1"; }
 
 $sql .= " ORDER BY p.date_pointage DESC, p.created_at DESC";
 $stmt = $pdo->prepare($sql);
 $stmt->execute($params);
 $pointages = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+// Récupérer la liste des sites pour le select
+$sites = $pdo->query("SELECT id_site, nom_site FROM sites ORDER BY nom_site")->fetchAll(PDO::FETCH_ASSOC);
 
 // --- CALCUL DES STATS MISES À JOUR ---
 $nb_retards = 0;
@@ -167,11 +176,15 @@ $stats_normal = array_filter($pointages, fn($p) => $p['type'] === 'NORMAL');
 
 <div class="page-wrapper">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:25px;">
-        <h1 style="font-weight:800; color:#2c3e50; margin:0;">📊 Suivi Présence</h1>
-        <span style="color:#95a5a6; font-size:0.9rem;"><?= date('d F Y') ?></span>
-    </div>
+    <h1 style="font-weight:800; color:#2c3e50; margin:0;">📊 Suivi Présence</h1>
+    <a href="?<?= http_build_query(array_merge($_GET, ['export' => 'csv'])) ?>" style="background:#27ae60; color:white; padding:10px 15px; border-radius:8px; text-decoration:none; font-weight:bold; font-size:0.9rem;">📥 Exporter CSV</a>
+</div>
 
-    <div class="stats-row">
+<div class="stats-row">
+    <div class="stat-card orange" style="border-bottom-color: #f31219;">
+        <div class="stat-label">Total Retards</div>
+        <div class="stat-value" style="color:#f39c12;"><?= $nb_retards ?></div>
+    </div>
         <div class="stat-card green">
             <div class="stat-label">Pointages Normaux</div>
             <div class="stat-value"><?= count($stats_normal) ?></div>
@@ -211,7 +224,7 @@ $stats_normal = array_filter($pointages, fn($p) => $p['type'] === 'NORMAL');
             <select name="site" class="custom-input">
                 <option value="">Tous les sites</option>
                 <?php foreach ($sites as $s): ?>
-                    <option value="<?= $s['id_site'] ?>" <?= (isset($_GET['site']) && $_GET['site'] !== '' && (string)$_GET['site'] === (string)$s['id_site']) ? 'selected' : '' ?>>
+                    <option value="<?= $s['id_site'] ?>" <?= (string)$filtre_site === (string)$s['id_site'] ? 'selected' : '' ?>>
                         <?= htmlspecialchars($s['nom_site']) ?>
                     </option>
                 <?php endforeach; ?>
