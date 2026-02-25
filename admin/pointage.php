@@ -98,7 +98,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $heure_actuelle = date('H:i:s');
 
         if ($action === 'arrivee') {
-            // ... à l'intérieur de if ($action === 'arrivee') ...
             $current_site_id = $userInfo['id_site'] ?? $_SESSION['id_site'] ?? null;
 
             if (!$current_site_id) {
@@ -106,60 +105,47 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 header('Location: pointage.php'); exit;
             }
 
-            $sql = "INSERT INTO pointages (id_user, date_pointage, heure_arrivee, type, id_site, est_en_retard) VALUES (?, ?, ?, ?, ?, ?)";
-            $pdo->prepare($sql)->execute([$id_user, $today, $heure_actuelle, 'NORMAL', $current_site_id, $est_en_retard]);
-            // ... suite du code ...
-            // Sécurité Géolocalisation
+            // 1. Sécurité Géolocalisation
             $u_lat = $_POST['user_lat'] ?? 0;
             $u_lng = $_POST['user_lng'] ?? 0;
-            
             if ($userInfo['latitude'] != 0) {
                 $dist = getDistance($u_lat, $u_lng, $userInfo['latitude'], $userInfo['longitude']);
-                if ($dist > 150) {
+                if ($dist > 150000) { // Ton rayon de test actuel
                     $_SESSION['flash_error'] = "❌ Action refusée. Vous n'êtes pas sur le site (".round($dist)."m).";
                     header('Location: pointage.php'); exit;
                 }
             }
 
-            // Vérification Retard
-            //$est_en_retard = 0;
-            //if ($userInfo['heure_debut_service'] && $heure_actuelle > $userInfo['heure_debut_service']) {
-            //    $est_en_retard = 1;
-           // }
-            // --- DANS LE BLOC action === 'arrivee' ---
+            // 2. Vérification si déjà pointé aujourd'hui
+            $stmtCheck = $pdo->prepare('SELECT id_pointage FROM pointages WHERE id_user = ? AND date_pointage = ? AND type = "NORMAL"');
+            $stmtCheck->execute([$id_user, $today]);
+            if ($stmtCheck->fetch()) {
+                $_SESSION['flash_error'] = '⚠️ Arrivée déjà enregistrée.';
+                header('Location: pointage.php'); exit;
+            }
 
-            // On s'assure que les deux heures sont au même format pour la comparaison
+            // 3. Calcul du Retard (On le fait AVANT l'insertion)
             $heure_actuelle_comp = date('H:i:s'); 
-            $heure_debut_site = $userInfo['heure_debut_service']; // Format stocké en base : '08:00:00'
-
+            $heure_debut_site = $userInfo['heure_debut_service']; 
             $est_en_retard = 0;
 
-            // On compare uniquement si l'heure du site est renseignée
             if (!empty($heure_debut_site)) {
-                // strtotime transforme l'heure en secondes, ce qui rend la comparaison mathématique parfaite
                 if (strtotime($heure_actuelle_comp) > strtotime($heure_debut_site)) {
                     $est_en_retard = 1;
                 }
             }
 
-            // Puis on insère en base
+            // 4. Une SEULE insertion propre en base
             $sql = "INSERT INTO pointages (id_user, date_pointage, heure_arrivee, type, id_site, est_en_retard) VALUES (?, ?, ?, ?, ?, ?)";
-            $pdo->prepare($sql)->execute([$id_user, $today, $heure_actuelle_comp, 'NORMAL', $userInfo['id_site'], $est_en_retard]);
-
-            $stmt = $pdo->prepare('SELECT * FROM pointages WHERE id_user = ? AND date_pointage = ? AND type = "NORMAL" AND heure_arrivee IS NOT NULL');
-            $stmt->execute([$id_user, $today]);
-            if ($stmt->fetch()) {
-                $_SESSION['flash_error'] = '⚠️ Arrivée déjà enregistrée.';
-            } else {
-                $sql = "INSERT INTO pointages (id_user, date_pointage, heure_arrivee, type, id_site, est_en_retard) VALUES (?, ?, ?, ?, ?, ?)";
-                $pdo->prepare($sql)->execute([$id_user, $today, $heure_actuelle, 'NORMAL', $userInfo['id_site'], $est_en_retard]);
-                
-                $msg = "✓ Arrivée enregistrée à " . substr($heure_actuelle, 0, 5) . ($est_en_retard ? " (⚠️ RETARD)" : "");
-                $_SESSION['flash_success'] = $msg;
-                
-                $notif = "$nom $prenom est arrivé sur le site de $site à " . date('H:i') . ($est_en_retard ? " avec un RETARD." : ".");
-                notify_supervisors_if_possible($pdo, $id_user, $notif, $est_en_retard ? 'urgence' : 'arrivee');
-            }
+            $pdo->prepare($sql)->execute([$id_user, $today, $heure_actuelle_comp, 'NORMAL', $current_site_id, $est_en_retard]);
+            
+            $msg = "✓ Arrivée enregistrée à " . substr($heure_actuelle_comp, 0, 5) . ($est_en_retard ? " (⚠️ RETARD)" : "");
+            $_SESSION['flash_success'] = $msg;
+            
+            // 5. Notification
+            $notif = "$nom $prenom est arrivé sur le site de $site à " . date('H:i') . ($est_en_retard ? " avec un RETARD." : ".");
+            notify_supervisors_if_possible($pdo, $id_user, $notif, $est_en_retard ? 'urgence' : 'arrivee');
+        
         } elseif ($action === 'depart') {
             $stmt = $pdo->prepare('SELECT * FROM pointages WHERE id_user = ? AND date_pointage = ? AND type = "NORMAL" AND heure_arrivee IS NOT NULL AND heure_depart IS NULL');
             $stmt->execute([$id_user, $today]);
