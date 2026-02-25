@@ -18,7 +18,7 @@ try {
     $pdo->beginTransaction();
 
     // 2. Nettoyage de la table
-    $pdo->exec("TRUNCATE TABLE produits");
+    $pdo->exec("DELETE FROM produits");
 
     // 3. Correction de l'index UNIQUE
     // On supprime l'ancien index sur le nom seul et on en crée un combiné (nom + site)
