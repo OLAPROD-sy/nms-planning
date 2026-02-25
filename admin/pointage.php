@@ -334,7 +334,7 @@ $urgence_types = ['Absence justifiée', 'Congé maladie', 'Congé personnel', 'T
                                 <span style="background: #fff5f5; color: #ef4444; padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 700;">🚨 <?= htmlspecialchars($h['motif_urgence']) ?></span>
                             <?php else: ?>
                                 <span style="background: #f0fdf4; color: #16a34a; padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 700;">✅ NORMAL</span>
-                                <?php if (isset($h['est_en_retard']) && $h['est_en_retard'] == 1): ?>
+                                <?php if ($h['est_en_retard'] == 1): ?>
                                     <span style="background: #fff7ed; color: #ea580c; padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; border: 1px solid #ffedd5; margin-left: 5px;">⚠️ RETARD</span>
                                 <?php endif; ?>
                             <?php endif; ?>
