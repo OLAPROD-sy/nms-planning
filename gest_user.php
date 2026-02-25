@@ -17,18 +17,6 @@ try {
     // Début de la transaction pour garantir que tout est fait ou rien du tout
     $pdo->beginTransaction();
 
-    // 2. Nettoyage de la table
-    $pdo->exec("DELETE FROM produits");
-
-    // 3. Correction de l'index UNIQUE
-    // On supprime l'ancien index sur le nom seul et on en crée un combiné (nom + site)
-    try {
-        $pdo->exec("ALTER TABLE produits DROP INDEX nom_produit");
-    } catch (Exception $e) {
-        // L'index n'existe peut-être déjà plus, on continue
-    }
-    $pdo->exec("ALTER TABLE produits ADD UNIQUE KEY unique_produit_par_site (nom_produit, id_site)");
-
     // 4. Préparation de l'insertion massive
     $sql = "INSERT INTO produits (nom_produit, id_site, quantite_actuelle, quantite_alerte) VALUES (?, ?, 0, 5)";
     $stmt = $pdo->prepare($sql);
