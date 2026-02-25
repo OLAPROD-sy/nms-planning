@@ -167,7 +167,7 @@ include_once __DIR__ . '/../includes/header.php';
                         <input type="text" name="prenom" required value="<?= htmlspecialchars($user['prenom']) ?>">
                     </div>
                     <div class="form-group">
-                        <label>Identifiant (username)</label>
+                        <label>Identifiant</label>
                         <input type="text" name="username" required value="<?= htmlspecialchars($user['username']) ?>">
                     </div>
                     <div class="form-group">
