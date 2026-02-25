@@ -272,7 +272,7 @@ body.notif-open {
                 <a href="/">🏠 Accueil</a>
                 <?php if ($role === 'ADMIN'): ?>
                     <a href="/admin/gestion_pointages.php">📍 Pointages</a>
-                    <a href="/admin/gest_stock.php">📦 Stock</a>
+                    <a href="/stock/gest_stock.php">📦 Stock</a>
                 <?php else: ?>
                     <a href="/admin/pointage.php">📍 Présence</a>
                 <?php endif; ?>

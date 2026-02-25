@@ -16,41 +16,51 @@ function formatDateLongue($date) {
 }
 
 
-// 1. Logique de récupération identique pour préserver les fonctionnalités
+// 1. Logique de récupération avec Période et Retards
+$date_debut = $_GET['date_debut'] ?? date('Y-m-01'); // Par défaut : 1er du mois en cours
+$date_fin = $_GET['date_fin'] ?? date('Y-m-d');
 $filtre_site = $_GET['site'] ?? '';
 $filtre_type = $_GET['type'] ?? '';
-$filtre_date = $_GET['date'] ?? date('Y-m-d');
 $filtre_user = $_GET['user'] ?? '';
+$filtre_retard = isset($_GET['only_retard']) ? 1 : ''; // Nouveau filtre spécifique
 
 $sql = "SELECT p.*, u.prenom, u.nom, u.role, s.nom_site as site_nom 
         FROM pointages p
         LEFT JOIN users u ON p.id_user = u.id_user
         LEFT JOIN sites s ON p.id_site = s.id_site
-        WHERE 1=1";
-$params = [];
+        WHERE p.date_pointage BETWEEN ? AND ?";
 
-if ($filtre_date) { $sql .= " AND DATE(p.date_pointage) = ?"; $params[] = $filtre_date; }
+$params = [$date_debut, $date_fin];
+
 if ($filtre_type) { $sql .= " AND p.type = ?"; $params[] = $filtre_type; }
 if ($filtre_site) { $sql .= " AND p.id_site = ?"; $params[] = intval($filtre_site); }
-if ($filtre_user) { $sql .= " AND (u.prenom LIKE ? OR u.nom LIKE ?)"; $params[] = '%' . $filtre_user . '%'; $params[] = '%' . $filtre_user . '%'; }
+if ($filtre_user) { 
+    $sql .= " AND (u.prenom LIKE ? OR u.nom LIKE ?)"; 
+    $params[] = '%' . $filtre_user . '%'; 
+    $params[] = '%' . $filtre_user . '%'; 
+}
+// Filtre spécifique pour voir uniquement les retards
+if ($filtre_retard) { $sql .= " AND p.est_en_retard = 1"; }
 
 $sql .= " ORDER BY p.date_pointage DESC, p.created_at DESC";
 $stmt = $pdo->prepare($sql);
 $stmt->execute($params);
 $pointages = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-$sites = $pdo->query("SELECT id_site, nom_site FROM sites ORDER BY nom_site")->fetchAll(PDO::FETCH_ASSOC);
-
-// Calcul des statistiques pour les KPIs
-$stats_normal = array_filter($pointages, fn($p) => $p['type'] === 'NORMAL');
-$stats_urgence = array_filter($pointages, fn($p) => $p['type'] === 'URGENCE');
+// --- CALCUL DES STATS MISES À JOUR ---
+$nb_retards = 0;
 $total_minutes = 0;
 foreach ($pointages as $p) {
+    if ($p['est_en_retard'] == 1) $nb_retards++;
+    
     if ($p['heure_arrivee'] && $p['heure_depart']) {
-        $d = new DateTime($p['heure_arrivee']); $f = new DateTime($p['heure_depart']);
+        $d = new DateTime($p['heure_arrivee']); 
+        $f = new DateTime($p['heure_depart']);
         $total_minutes += ($f->diff($d)->h * 60) + $f->diff($d)->i;
     }
 }
+$stats_urgence = array_filter($pointages, fn($p) => $p['type'] === 'URGENCE');
+$stats_normal = array_filter($pointages, fn($p) => $p['type'] === 'NORMAL');
 ?>
 
 <?php include_once __DIR__ . '/../includes/header.php'; ?>
@@ -170,19 +180,23 @@ foreach ($pointages as $p) {
         </div>
     </div>
 
-    <div class="filter-box">
+   <div class="filter-box">
     <form method="get" class="filter-grid">
         <div class="input-group">
-            <label>Date du jour</label>
-            <input type="date" name="date" value="<?= htmlspecialchars($filtre_date) ?>" class="custom-input">
+            <label>Du (Date début)</label>
+            <input type="date" name="date_debut" value="<?= htmlspecialchars($date_debut) ?>" class="custom-input">
         </div>
 
         <div class="input-group">
-            <label>Type de Pointage</label>
-            <select name="type" class="custom-input">
-                <option value="">Tous les types</option>
-                <option value="NORMAL" <?= $filtre_type === 'NORMAL' ? 'selected' : '' ?>>Normal</option>
-                <option value="URGENCE" <?= $filtre_type === 'URGENCE' ? 'selected' : '' ?>>Urgence</option>
+            <label>Au (Date fin)</label>
+            <input type="date" name="date_fin" value="<?= htmlspecialchars($date_fin) ?>" class="custom-input">
+        </div>
+
+        <div class="input-group">
+            <label>Type / Retard</label>
+            <select name="only_retard" class="custom-input" style="border: 1px solid #f39c12;">
+                <option value="">Tout (Ponctuels & Retards)</option>
+                <option value="1" <?= $filtre_retard ? 'selected' : '' ?>>⚠️ Uniquement les Retards</option>
             </select>
         </div>
 
@@ -198,16 +212,12 @@ foreach ($pointages as $p) {
             </select>
         </div>
 
-        <div class="input-group">
-            <label>Utilisateur</label>
-            <input type="text" name="user" placeholder="Rechercher..." value="<?= htmlspecialchars($filtre_user) ?>" class="custom-input">
-        </div>
-
         <div style="display:flex; gap:10px;">
-            <button type="submit" style="flex:2; background:var(--p-blue); color:white; border:none; padding:10px; border-radius:8px; cursor:pointer; font-weight:bold;">Filtrer</button>
+            <button type="submit" style="flex:2; background:var(--p-blue); color:white; border:none; padding:10px; border-radius:8px; cursor:pointer; font-weight:bold;">Filtrer la période</button>
             <a href="/admin/gestion_pointages.php" style="flex:1; background:#eee; color:#666; text-align:center; padding:10px; border-radius:8px; text-decoration:none;">🔄</a>
         </div>
     </form>
+</div>
 </div>
 
     <div class="table-responsive-wrapper">
@@ -239,6 +249,9 @@ foreach ($pointages as $p) {
                             <td>
                                 <?php if ($p['type'] === 'NORMAL'): ?>
                                     <span class="badge badge-normal">● Normal</span>
+                                    <?php if ($p['est_en_retard'] == 1): ?>
+                                        <span class="badge" style="background:#fff7ed; color:#ea580c; border:1px solid #ffedd5;">⚠️ RETARD</span>
+                                    <?php endif; ?>
                                 <?php else: ?>
                                     <span class="badge badge-urgence">🚨 Urgence</span>
                                 <?php endif; ?>
