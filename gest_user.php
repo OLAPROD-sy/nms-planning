@@ -4,15 +4,11 @@ require_once 'config/database.php';
 try {
     // 1. Liste des nouveaux agents pour le site 2
     $agents = [
-        ['nom' => 'GNIDA', 'prenom' => 'Francis'],
-        ['nom' => 'IDRISSOU', 'prenom' => 'Lidy'],
-        ['nom' => 'ASSIGNAMEY', 'prenom' => 'Marie'],
-        ['nom' => 'CHERIF', 'prenom' => 'Chamssiyath'],
-        ['nom' => 'SESSINOU', 'prenom' => 'Sandie'],
-        ['nom' => 'AGBOGBA', 'prenom' => 'Mariette']
+        ['nom' => 'BALOGOUN', 'prenom' => 'Pélagie'],
+        ['nom' => 'HOUNSO', 'prenom' => 'Ézéchiel'],
     ];
 
-    $id_site_cible = 2; // Changement pour le site ID 2
+    $id_site_cible = 8; // Changement pour le site ID 2
     $role_defaut = 'AGENT';
     // Mot de passe par défaut : Agent@2024
     $password_hashed = password_hash('Agent@2024', PASSWORD_BCRYPT);

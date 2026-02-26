@@ -172,7 +172,7 @@ include_once __DIR__ . '/../includes/header.php';
                     </div>
                     <div class="form-group">
                         <label>Contact</label>
-                        <input type="text" name="contact" value="<?= htmlspecialchars($user['contact'] ?? '') ?>">
+                        <input type="text" name="contact" placeholder="0197000000" value="<?= htmlspecialchars($user['contact'] ?? '') ?>">
                     </div>
                 </div>
                 <div class="form-group">
