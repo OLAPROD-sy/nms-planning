@@ -190,7 +190,7 @@ $inventaire = $pdo->query("SELECT * FROM produits_admin ORDER BY nom_produit ASC
     }
 
     .filter-group { 
-        flex: 1 1 200px; /* Grandit et rétrécit, mini 200px */
+        flex: 1 1 100px; /* Grandit et rétrécit, mini 200px */
     }
 
     .filter-group label { 
@@ -255,6 +255,9 @@ $inventaire = $pdo->query("SELECT * FROM produits_admin ORDER BY nom_produit ASC
         .header-section { padding: 15px; }
         .stock-card { padding: 15px; }
         .hide-mobile { display: none; }
+        .grid-admin{ grid-template-columns: 1fr; }
+        .stock-card:nth-child(2) { order: -1; } /* Affiche l'état du stock avant les actions sur mobile */
+        .stock-card{ margin-bottom: 20px; padding: 15px; }
     }
 </style>
 
