@@ -1,4 +1,5 @@
 <?php
+// ... Gardez toute votre logique PHP identique au début ...
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../includes/auth_check.php';
 
@@ -6,7 +7,7 @@ if ($_SESSION['role'] !== 'ADMIN') {
     header('Location: /');
     exit;
 }
-
+// ... (Toute la logique de traitement et de filtrage reste la même) ...
 $message = "";
 
 // --- LOGIQUE DE TRAITEMENT ---
@@ -43,8 +44,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-
-// --- LOGIQUE DE FILTRAGE (CORRIGÉE) ---
+// --- LOGIQUE DE FILTRAGE (MISE À JOUR POUR PÉRIODE) ---
 $where_clauses = [];
 $params = [];
 
@@ -54,16 +54,26 @@ if (isset($_GET['f_produit']) && $_GET['f_produit'] !== '') {
     $params[] = (int)$_GET['f_produit'];
 }
 
-// Filtre Action (ENTREE / SORTIE)
+// Filtre Action
 if (isset($_GET['f_action']) && $_GET['f_action'] !== '') {
     $where_clauses[] = "m.type_mouvement = ?";
     $params[] = $_GET['f_action'];
 }
 
-// Filtre Date
-if (isset($_GET['f_date']) && $_GET['f_date'] !== '') {
-    $where_clauses[] = "DATE(m.date_mouvement) = ?";
-    $params[] = $_GET['f_date'];
+// FILTRE PÉRIODE (Date début et Date fin)
+if (!empty($_GET['f_date_debut']) && !empty($_GET['f_date_fin'])) {
+    // Si les deux dates sont remplies
+    $where_clauses[] = "DATE(m.date_mouvement) BETWEEN ? AND ?";
+    $params[] = $_GET['f_date_debut'];
+    $params[] = $_GET['f_date_fin'];
+} elseif (!empty($_GET['f_date_debut'])) {
+    // Si seule la date de début est remplie
+    $where_clauses[] = "DATE(m.date_mouvement) >= ?";
+    $params[] = $_GET['f_date_debut'];
+} elseif (!empty($_GET['f_date_fin'])) {
+    // Si seule la date de fin est remplie
+    $where_clauses[] = "DATE(m.date_mouvement) <= ?";
+    $params[] = $_GET['f_date_fin'];
 }
 
 // Construction de la requête de base
@@ -96,346 +106,277 @@ $inventaire = $pdo->query("SELECT * FROM produits_admin ORDER BY nom_produit ASC
 <script>setTimeout(() => { document.getElementById('temp-alert').style.display = 'none'; }, 3000);</script>
 <style>@keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }</style>
 <?php endif; ?>
+?>
+
+<?php include_once __DIR__ . '/../includes/header.php'; ?>
 
 <style>
     :root {
         --glass-bg: rgba(255, 255, 255, 0.95);
         --accent-gradient: linear-gradient(135deg, #FF9800 0%, #F57C00 100%);
         --shadow: 0 8px 30px rgba(0,0,0,0.08);
+        --primary: #FF9800;
     }
 
-    .admin-container { max-width: 1000px; margin: 20px auto; padding: 0 15px; }
-
-
-    
-    
-
-    .grid-admin { display: grid; grid-template-columns: 1fr; gap: 20px; }
-
-    @media (min-width: 1024px) { 
-        .grid-admin { grid-template-columns: 350px 1fr; gap: 20px; }
+    /* Conteneur Principal Responsif */
+    .admin-container { 
+        max-width: 1400px; 
+        margin: 20px auto; 
+        padding: 0 15px; 
     }
-
-    .stock-card { background: white; border-radius: 18px; padding: 25px; box-shadow: var(--shadow); border: 1px solid #edf2f7; }
-
-    /* --- CORRECTION DES BOUTONS --- */
-    .user_profile_btn, .logout_desktop_btn {
-        display: block !important;
-        width: 100% !important;
-        padding: 12px 20px !important;
-        border-radius: 10px !important; /* Force un arrondi propre, pas ovale */
-        font-weight: 700 !important;
-        text-align: center !important;
-        text-decoration: none !important;
-        transition: all 0.3s ease;
-        border: none !important;
-        cursor: pointer;
-    }
-
-    /* --- AMÉLIORATION DES STATUTS --- */
-    .status-pill {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        padding: 6px 12px;
-        border-radius: 50px;
-        font-size: 11px;
-        font-weight: 800;
-        text-transform: uppercase;
-    }
-    .status-pill.ok { background: #dcfce7; color: #16a34a; border: 1px solid #bbf7d0; }
-    .status-pill.low { 
-        background: #fff1f2; color: #e11d48; border: 1px solid #fecaca; 
-        animation: pulse-border 2s infinite; 
-    }
-
-    @keyframes pulse-border {
-        0% { box-shadow: 0 0 0 0 rgba(225, 29, 72, 0.4); }
-        70% { box-shadow: 0 0 0 10px rgba(225, 29, 72, 0); }
-        100% { box-shadow: 0 0 0 0 rgba(225, 29, 72, 0); }
-    }
-
-    
-        .table-nms tr:hover { background-color: #fcfcfd; }
-    
-        /* Boutons d'action */
-        .user_profile_btn { background: var(--accent-gradient); color: white; }
-        .user_profile_btn:hover { background: #f57c00; }
-        .logout_desktop_btn { background: #e53e3e; color: white; }
-        .logout_desktop_btn:hover { background: #c53030; }
-    
-        /* Amélioration de la barre de filtres */
-        .filter-bar {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            background: #f8fafc;
-            padding: 15px;
-            border-radius: 12px;
-            margin-bottom: 20px;
-            align-items: flex-end;
-        }
 
     /* Header adaptable */
     .header-section {
         background: var(--accent-gradient);
-        padding: 30px 20px;
-        border-radius: 20px;
+        padding: 20px;
+        border-radius: 15px;
         color: white;
         margin-bottom: 25px;
-        text-align: center; /* Centré par défaut pour mobile */
+        text-align: center;
         box-shadow: 0 10px 20px rgba(255, 152, 0, 0.2);
     }
 
+    /* GRID PRINCIPAL : 1 colonne sur mobile, 2 sur desktop */
+    .grid-admin { 
+        display: grid; 
+        grid-template-columns: 1fr; 
+        gap: 20px; 
+    }
 
+    @media (min-width: 1024px) { 
+        .grid-admin { 
+            grid-template-columns: 350px 1fr; 
+        }
+    }
 
-    /* Utilitaires de visibilité */
-    .hide-mobile { display: none; }
-    @media (min-width: 768px) { .hide-mobile { display: inline; } }
+    .stock-card { 
+        background: white; 
+        border-radius: 18px; 
+        padding: 20px; 
+        box-shadow: var(--shadow); 
+        border: 1px solid #edf2f7;
+        height: fit-content;
+    }
 
-    /* Animation de l'alerte */
-    .status-alert { background: #fee2e2; color: #b91c1c; padding: 6px 12px; border-radius: 50px; font-size: 11px; font-weight: 700; }
-    .admin-container { max-width: 1400px; margin: 30px auto; padding: 0 20px; }
-    .stock-card { background: white; border-radius: 18px; padding: 25px; box-shadow: var(--shadow); border: 1px solid #edf2f7; }
-    .grid-admin { display: grid; grid-template-columns: 350px 1fr; gap: 25px; }
-    
-    .alert-low { background: #fff1f2; border: 1px solid #fda4af; color: #e11d48; padding: 2px 8px; border-radius: 6px; font-weight: 800; animation: pulse-alert 2s infinite; }
-    @keyframes pulse-alert { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+    /* Tableaux Responsifs */
+    .table-responsive {
+        width: 100%;
+        overflow-x: auto; /* Permet le défilement horizontal sur petit écran */
+        -webkit-overflow-scrolling: touch;
+        margin-top: 10px;
+    }
 
-    .table-nms { width: 100%; border-collapse: collapse; margin-top: 15px; }
-    .table-nms th { text-align: left; padding: 12px; color: #94a3b8; font-size: 11px; text-transform: uppercase; border-bottom: 1px solid #eee; }
-    .table-nms td { padding: 15px 12px; border-bottom: 1px solid #f8fafc; }
+    .table-nms { 
+        width: 100%; 
+        border-collapse: collapse; 
+        min-width: 500px; /* Force une largeur min pour garder la lisibilité */
+    }
 
-    /* Style pour les cercles d'icônes de flux */
-    .flow-icon {
-        width: 32px;
-        height: 32px;
-        border-radius: 8px;
+    .table-nms th { 
+        text-align: left; padding: 12px; color: #94a3b8; font-size: 11px; 
+        text-transform: uppercase; border-bottom: 1px solid #eee; 
+    }
+    .table-nms td { padding: 12px; border-bottom: 1px solid #f8fafc; font-size: 14px; }
+
+    /* Barre de Filtres Responsives */
+    .filter-bar {
+        display: flex;
+        flex-wrap: wrap; /* Les filtres passent à la ligne si besoin */
+        gap: 15px;
+        background: #f8fafc;
+        padding: 15px;
+        border-radius: 12px;
+        margin-bottom: 20px;
+    }
+
+    .filter-group { 
+        flex: 1 1 200px; /* Grandit et rétrécit, mini 200px */
+    }
+
+    .filter-group label { 
+        display: block; font-size: 11px; font-weight: 800; color: #94a3b8; 
+        margin-bottom: 5px; text-transform: uppercase; 
+    }
+
+    .filter-input {
+        width: 100%; padding: 10px; border-radius: 8px; 
+        border: 1px solid #e2e8f0; font-size: 13px;
+    }
+
+    /* Boutons */
+    .btn-group-actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        width: 100%;
+        margin-top: 15px;
+    }
+
+    .user_profile_btn, .logout_desktop_btn, .btn-filter, .btn-reset {
+        width: 100%;
+        padding: 12px;
+        border-radius: 10px;
+        font-weight: 700;
+        text-align: center;
+        border: none;
+        cursor: pointer;
+        font-size: 13px;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 16px;
+        text-decoration: none;
+    }
+
+    .user_profile_btn { background: var(--accent-gradient); color: white; }
+    .logout_desktop_btn { background: #3b82f6; color: white; }
+    .btn-filter { background: #1e293b; color: white; grid-column: span 2; }
+    .btn-reset { background: #e2e8f0; color: #64748b; }
+
+    /* Statuts */
+    .status-pill {
+        padding: 4px 10px;
+        border-radius: 50px;
+        font-size: 10px;
+        font-weight: 800;
+        white-space: nowrap;
+    }
+    .status-pill.ok { background: #dcfce7; color: #16a34a; }
+    .status-pill.low { background: #fff1f2; color: #e11d48; border: 1px solid #fecaca; }
+
+    /* Icônes de flux */
+    .flow-icon {
+        width: 28px; height: 28px; border-radius: 6px;
+        display: flex; align-items: center; justify-content: center;
     }
     .icon-entree { background: #dcfce7; color: #16a34a; }
     .icon-sortie { background: #fee2e2; color: #ef4444; }
 
-    /* Badge de type épuré */
-    .type-badge {
-        font-size: 10px;
-        font-weight: 800;
-        padding: 3px 8px;
-        border-radius: 4px;
-        letter-spacing: 0.5px;
-    }
-    .type-entree { border: 1px solid #16a34a; color: #16a34a; }
-    .type-sortie { border: 1px solid #ef4444; color: #ef4444; }
-
-    /* Amélioration de la ligne au survol */
-    .table-nms tr:hover { background-color: #fcfcfd; }
-
-    @media (max-width: 1024px) { .grid-admin { grid-template-columns: 1fr; } }
-
-    .filter-bar {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    background: #f8fafc;
-    padding: 15px;
-    border-radius: 12px;
-    margin-bottom: 20px;
-    align-items: flex-end;
-    }
-    .filter-group { flex: 1; min-width: 150px; }
-    .filter-group label { 
-        display: block; font-size: 10px; font-weight: 800; color: #94a3b8; 
-        margin-bottom: 5px; text-transform: uppercase; 
-    }
-    .filter-input {
-        width: 100%; padding: 8px 12px; border-radius: 8px; 
-        border: 1px solid #e2e8f0; font-size: 13px; font-weight: 600;
-    }
-    .btn-filter {
-        background: var(--primary); color: white; border: none; 
-        padding: 9px 15px; border-radius: 8px; cursor: pointer; font-weight: 700;
-    }
-    .btn-reset {
-        background: #e2e8f0; color: #64748b; text-decoration: none;
-        padding: 9px 15px; border-radius: 8px; font-size: 13px; font-weight: 700;
-    }
-
-    /* Conteneur de titre flexible */
-    .card-header-flex {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 10px;
-        margin-bottom: 20px;
-    }
-
-    /* Adaptation mobile de la barre de filtres */
     @media (max-width: 768px) {
-        .filter-bar {
-            flex-direction: column; /* On empile les filtres */
-            align-items: stretch;
-        }
-        
-        .filter-group {
-            width: 100%;
-        }
-
-        /* Groupe de boutons d'action sur mobile */
-        .button-group-responsive {
-            display: grid;
-            grid-template-columns: 1fr 1fr; /* Deux colonnes pour les boutons */
-            gap: 8px;
-            width: 100%;
-            margin-top: 10px;
-        }
-
-        .card-header-flex {
-            flex-direction: column;
-            align-items: flex-start;
-        }
-
-        .btn-export-mobile {
-            width: 100%;
-            justify-content: center;
-        }
-
-        
+        .header-section { padding: 15px; }
+        .stock-card { padding: 15px; }
+        .hide-mobile { display: none; }
     }
 </style>
 
+
+
 <div class="admin-container">
     <div class="header-section">
-        <h1 style="font-size: clamp(20px, 5vw, 32px); font-weight: 800; margin-bottom: 8px;">
-            🛡️ Réserve Admin
-        </h1>
-        <p class="hide-mobile" style="opacity: 0.9; font-weight: 600;">
-            Gestion confidentielle des fournitures.
-        </p>
+        <h1 style="margin:0; font-size: 24px;">🛡️ Réserve Admin</h1>
+        <p style="margin:5px 0 0; font-size: 14px; opacity: 0.9;">Gestion du stock central</p>
     </div>
 
     <div class="grid-admin">
         <div style="display: flex; flex-direction: column; gap: 20px;">
             <div class="stock-card">
-                <h3 style="margin-bottom:15px; font-size:16px;">✨ Nouveau au Catalogue</h3>
+                <h3 style="font-size:15px; margin-top:0;">✨ Nouveau Produit</h3>
                 <form method="post">
                     <input type="hidden" name="action" value="creer_produit">
-                    <input type="text" name="nom_produit" placeholder="Nom du produit" required style="width:100%; padding:10px; margin-bottom:10px; border-radius:8px; border:1px solid #ddd;">
-                    <input type="number" name="seuil" placeholder="Seuil d'alerte (ex: 5)" style="width:100%; padding:10px; margin-bottom:10px; border-radius:8px; border:1px solid #ddd;">
-                    <button type="submit" class="user_profile_btn" style="width:100%; border:none; cursor:pointer;">Ajouter au catalogue</button>
+                    <div class="form-group" style="margin-bottom:10px;">
+                        <input type="text" name="nom_produit" class="filter-input" placeholder="Nom du produit" required>
+                    </div>
+                    <div class="form-group" style="margin-bottom:15px;">
+                        <input type="number" name="seuil" class="filter-input" placeholder="Seuil d'alerte (ex: 5)">
+                    </div>
+                    <button type="submit" class="user_profile_btn">Ajouter au catalogue</button>
                 </form>
             </div>
 
             <div class="stock-card">
-                <h3 style="margin-bottom:15px; font-size:16px;">🔄 Entrée / Sortie</h3>
+                <h3 style="font-size:15px; margin-top:0;">🔄 Mouvement Stock</h3>
                 <form method="post">
                     <input type="hidden" name="action" value="mouvement">
-                    <select name="id_produit" required style="width:100%; padding:10px; margin-bottom:10px; border-radius:8px; border:1px solid #ddd;">
+                    <select name="id_produit" class="filter-input" style="margin-bottom:10px;" required>
                         <?php foreach($inventaire as $i): ?>
                             <option value="<?= $i['id_produit_admin'] ?>"><?= htmlspecialchars($i['nom_produit']) ?></option>
                         <?php endforeach; ?>
                     </select>
-                    <select name="type" style="width:100%; padding:10px; margin-bottom:10px; border-radius:8px; border:1px solid #ddd;">
+                    <select name="type" class="filter-input" style="margin-bottom:10px;">
                         <option value="ENTREE">Encaisser Stock (+)</option>
                         <option value="SORTIE">Décaisser Stock (-)</option>
                     </select>
-                    <input type="number" name="quantite" placeholder="Quantité" required style="width:100%; padding:10px; margin-bottom:10px; border-radius:8px; border:1px solid #ddd;">
-                    <button type="submit" class="logout_desktop_btn" style="width:100%; border:none; cursor:pointer; background:var(--info); color:white;">Valider l'opération</button>
+                    <input type="number" name="quantite" class="filter-input" style="margin-bottom:15px;" placeholder="Quantité" required>
+                    <button type="submit" class="logout_desktop_btn">Valider l'opération</button>
                 </form>
             </div>
         </div>
 
         <div style="display: flex; flex-direction: column; gap: 20px;">
             <div class="stock-card">
-                <div class="card-header-flex">
-                    <h3 style="font-size: 16px; font-weight: 800; color: #1e293b;">📊 État actuel du stock</h3>
-                    <a href="export_inventaire.php" class="btn-reset btn-export-mobile" style="background: #6366f1; color: white; padding: 8px 15px; font-size: 12px; border-radius: 8px; display: flex; align-items: center; gap: 8px; white-space: nowrap;">
-                        <span>📥</span> <span class="hide-mobile">Exporter l'état</span><span class="show-mobile-only">Inventaire</span>
-                    </a>
+                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:15px;">
+                    <h3 style="margin:0; font-size:16px;">📊 État du Stock</h3>
+                    <a href="export_inventaire.php" class="btn-reset" style="padding: 5px 12px; font-size: 11px; background:#6366f1; color:white;">📥 Export</a>
                 </div>
-                <div class="table-container">
-                </div> 
-
-                <table class="table-nms">
-                    <thead>
-                        <tr>
-                            <th>Produit</th>
-                            <th>Quantité</th>
-                            <th>Statut</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php foreach($inventaire as $i): 
-                            $is_low = ($i['quantite_globale'] <= $i['seuil_alerte']);
-                        ?>
-                        <tr>
-                            <td style="font-weight:700; color: #1e293b;"><?= htmlspecialchars($i['nom_produit']) ?></td>
-                            <td>
-                                <span style="font-size:18px; font-weight:800; background: #f1f5f9; padding: 4px 10px; border-radius: 8px;">
-                                    <?= $i['quantite_globale'] ?>
-                                </span>
-                            </td>
-                            <td>
-                                <?php if($is_low): ?>
-                                    <span class="status-pill low">⚠️ Stock Faible</span>
-                                <?php else: ?>
-                                    <span class="status-pill ok">✅ En Stock</span>
-                                <?php endif; ?>
-                            </td>
-                        </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
-            </div>
-
-            <div class="stock-card">
-                <h3 style="margin-bottom:15px;">
-                    📜 Historique des flux
-                    <span style="font-size:11px; font-weight:400; color:#94a3b8; background:#f1f5f9; padding:2px 8px; border-radius:10px;">Top 15</span>
-                </h3>
-    
-                <form method="GET" action="" class="filter-bar">
-                    <div class="filter-group">
-                        <label>Produit</label>
-                        <select name="f_produit" class="filter-input">
-                            <option value="">Tous les produits</option>
-                            <?php foreach($inventaire as $i): ?>
-                                <option value="<?= $i['id_produit_admin'] ?>" <?= (isset($_GET['f_produit']) && $_GET['f_produit'] == $i['id_produit_admin']) ? 'selected' : '' ?>>
-                                    <?= htmlspecialchars($i['nom_produit']) ?>
-                                </option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
-
-                    <div class="filter-group">
-                        <label>Action</label>
-                        <select name="f_action" class="filter-input">
-                            <option value="">Toutes</option>
-                            <option value="ENTREE" <?= (isset($_GET['f_action']) && $_GET['f_action'] == 'ENTREE') ? 'selected' : '' ?>>📥 Entrées</option>
-                            <option value="SORTIE" <?= (isset($_GET['f_action']) && $_GET['f_action'] == 'SORTIE') ? 'selected' : '' ?>>📤 Sorties</option>
-                        </select>
-                    </div>
-
-                    <div class="filter-group">
-                        <label>Date</label>
-                        <input type="date" name="f_date" class="filter-input" value="<?= htmlspecialchars($_GET['f_date'] ?? '') ?>">
-                    </div>
-
-                    <div class="button-group-responsive">
-                        <button type="submit" class="btn-filter" style="grid-column: span 2;">🔍 Filtrer</button>
-                        <a href="admin_stock.php" class="btn-reset" style="text-align: center;">🧹 Vider</a>
-                        <a href="export_stock.php?<?= $_SERVER['QUERY_STRING'] ?>" class="btn-reset" style="background: #10b981; color: white; text-align: center;">
-                            📥 Excel
-                        </a>
-                    </div>
-                </form>
-                <div style="overflow-x: auto;">
+                
+                <div class="table-responsive">
                     <table class="table-nms">
                         <thead>
                             <tr>
-                                <th>Date & Heure</th>
+                                <th>Produit</th>
+                                <th>Quantité</th>
+                                <th>Statut</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach($inventaire as $i): 
+                                $is_low = ($i['quantite_globale'] <= $i['seuil_alerte']);
+                            ?>
+                            <tr>
+                                <td style="font-weight:700;"><?= htmlspecialchars($i['nom_produit']) ?></td>
+                                <td><span style="background:#f1f5f9; padding:4px 8px; border-radius:5px; font-weight:800;"><?= $i['quantite_globale'] ?></span></td>
+                                <td>
+                                    <span class="status-pill <?= $is_low ? 'low' : 'ok' ?>">
+                                        <?= $is_low ? '⚠️ FAIBLE' : '✅ OK' ?>
+                                    </span>
+                                </td>
+                            </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="stock-card">
+                <h3 style="margin-top:0; font-size:16px;">📜 Historique des Flux</h3>
+                
+                <form method="GET" class="filter-bar">
+                    <div class="filter-group">
+                        <label>Produit</label>
+                        <select name="f_produit" class="filter-input">
+                            <option value="">Tous</option>
+                            <?php foreach($inventaire as $i): ?>
+                                <option value="<?= $i['id_produit_admin'] ?>" <?= (isset($_GET['f_produit']) && $_GET['f_produit'] == $i['id_produit_admin']) ? 'selected' : '' ?>><?= htmlspecialchars($i['nom_produit']) ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Type</label>
+                        <select name="f_action" class="filter-input">
+                            <option value="">Tous</option>
+                            <option value="ENTREE">Entrées</option>
+                            <option value="SORTIE">Sorties</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Du (Début)</label>
+                        <input type="date" name="f_date_debut" class="filter-input" value="<?= htmlspecialchars($_GET['f_date_debut'] ?? '') ?>">
+                    </div>
+
+                    <div class="filter-group">
+                        <label>Au (Fin)</label>
+                        <input type="date" name="f_date_fin" class="filter-input" value="<?= htmlspecialchars($_GET['f_date_fin'] ?? '') ?>">
+                    </div>
+                    <div class="btn-group-actions">
+                        <button type="submit" class="btn-filter">🔍 Filtrer</button>
+                        <a href="admin_stock.php" class="btn-reset">🧹 Reset</a>
+                    </div>
+                </form>
+
+                <div class="table-responsive">
+                    <table class="table-nms">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
                                 <th>Produit</th>
                                 <th>Action</th>
                                 <th style="text-align:right;">Quantité</th>
@@ -446,28 +387,20 @@ $inventaire = $pdo->query("SELECT * FROM produits_admin ORDER BY nom_produit ASC
                                 $is_entree = ($f['type_mouvement'] == 'ENTREE');
                             ?>
                             <tr>
-                                <td>
-                                    <div style="font-weight:600; color:#1e293b; font-size:13px;"><?= date('d M Y', strtotime($f['date_mouvement'])) ?></div>
-                                    <div style="font-size:11px; color:#94a3b8;"><?= date('H:i', strtotime($f['date_mouvement'])) ?></div>
+                                <td style="font-size:12px;">
+                                    <b><?= date('d/m/y', strtotime($f['date_mouvement'])) ?></b><br>
+                                    <span style="color:#94a3b8;"><?= date('H:i', strtotime($f['date_mouvement'])) ?></span>
                                 </td>
                                 <td>
-                                    <div style="display:flex; align-items:center; gap:10px;">
+                                    <div style="display:flex; align-items:center; gap:8px;">
                                         <div class="flow-icon <?= $is_entree ? 'icon-entree' : 'icon-sortie' ?>">
                                             <?= $is_entree ? '↓' : '↑' ?>
                                         </div>
-                                        <span style="font-weight:700; color:#334155;"><?= htmlspecialchars($f['nom_produit']) ?></span>
+                                        <b><?= htmlspecialchars($f['nom_produit']) ?></b>
                                     </div>
                                 </td>
-                                <td>
-                                    <span class="type-badge <?= $is_entree ? 'type-entree' : 'type-sortie' ?>">
-                                        <?= $is_entree ? 'ENTRÉEE' : 'SORTIE' ?>
-                                    </span>
-                                </td>
-                                <td style="text-align:right;">
-                                    <span style="font-size:16px; font-weight:800; color: <?= $is_entree ? '#16a34a' : '#ef4444' ?>;">
-                                        <?= $is_entree ? '+' : '-' ?><?= $f['quantite'] ?>
-                                    </span>
-                                </td>
+                                <td><span style="font-size:10px; font-weight:800; color:<?= $is_entree ? '#16a34a' : '#ef4444' ?>;"><?= $f['type_mouvement'] ?></span></td>
+                                <td style="text-align:right; font-weight:800;"><?= $is_entree ? '+' : '-' ?><?= $f['quantite'] ?></td>
                             </tr>
                             <?php endforeach; ?>
                         </tbody>
