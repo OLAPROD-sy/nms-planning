@@ -49,6 +49,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
+// Filtre par Action (Nouveau)
+if (isset($_GET['f_action']) && $_GET['f_action'] !== '') {
+    $where_clauses[] = "m.type_mouvement = ?";
+    $params[] = $_GET['f_action'];
+}
+
 // --- LOGIQUE DE FILTRAGE (INCHANGÉE) ---
 $where_clauses = [];
 $params = [];
@@ -215,11 +221,15 @@ foreach($inventaire as $inv) { if($inv['quantite_globale'] <= $inv['seuil_alerte
                 <form method="GET" class="responsive-form" style="background: #f8fafc; padding: 15px; border-radius: 12px; margin-bottom: 15px;">
                     <input type="date" name="f_date_debut" class="filter-input" value="<?= $_GET['f_date_debut'] ?? '' ?>">
                     <input type="date" name="f_date_fin" class="filter-input" value="<?= $_GET['f_date_fin'] ?? '' ?>">
+
+                    <select name="f_action" class="filter-input">
+                        <option value="">-- Toutes les actions --</option>
+                        <option value="ENTREE" <?= (isset($_GET['f_action']) && $_GET['f_action'] === 'ENTREE') ? 'selected' : '' ?>>Entrées uniquement</option>
+                        <option value="SORTIE" <?= (isset($_GET['f_action']) && $_GET['f_action'] === 'SORTIE') ? 'selected' : '' ?>>Sorties uniquement</option>
+                    </select>
                     <button type="submit" style="background:#FF9800; color:white; border:none; padding:10px 20px; border-radius:8px; cursor:pointer;">Filtrer</button>
+                    <a href="gest_stock.php" style="text-decoration:none; font-size:12px; color:#666; align-self:center;">Réinitialiser</a>
                 </form>
-                <div class="search-bar-container">
-                        <input type="text" id="searchInput" onkeyup="searchTable()" placeholder="🔍 Rechercher un produit...">
-                    </div>
 
                 <div class="table-responsive">
                     <table class="table-nms">
