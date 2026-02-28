@@ -76,6 +76,17 @@ $flux = $stmt_flux->fetchAll(PDO::FETCH_ASSOC);
 $inventaire = $pdo->query("SELECT * FROM produits_admin ORDER BY nom_produit ASC")->fetchAll(PDO::FETCH_ASSOC);
 $nb_critique = 0;
 foreach($inventaire as $inv) { if($inv['quantite_globale'] <= $inv['seuil_alerte']) $nb_critique++; }
+
+// Initialisation du total général
+$total_general_periode = 0;
+
+// Dans votre boucle d'affichage ou avant l'export
+foreach ($flux as &$f) {
+    // Calcul du montant par ligne
+    $f['montant_ligne'] = $f['quantite'] * $f['prix_mouvement'];
+    // Accumulation pour le total en bas de tableau
+    $total_general_periode += $f['montant_ligne'];
+}
 ?>
 
 <?php include_once __DIR__ . '/../includes/header.php'; ?>
@@ -251,6 +262,14 @@ foreach($inventaire as $inv) { if($inv['quantite_globale'] <= $inv['seuil_alerte
                             </tr>
                             <?php endforeach; ?>
                         </tbody>
+                        <tfoot>
+                            <tr style="background: #f1f5f9; font-weight: bold;">
+                                <td colspan="3" style="text-align: right;">TOTAL GÉNÉRAL DE LA PÉRIODE :</td>
+                                <td colspan="2" style="color: #16a34a; font-size: 1.1em;">
+                                    <?= number_format($total_general_periode, 0, '.', ' ') ?> FCFA
+                                </td>
+                            </tr>
+                        </tfoot>
                     </table>
                 </div>
             </div>
