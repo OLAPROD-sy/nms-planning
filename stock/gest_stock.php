@@ -303,7 +303,7 @@ function exportExcel() {
     const action = document.querySelector('select[name="f_action"]').value;
     
     // On redirige vers la page d'export avec les paramètres
-    window.location.href = `export_inventaire.php?f_date_debut=${debut}&f_date_fin=${fin}&f_action=${action}`;
+    window.location.href = `export_inventaire2.php?f_date_debut=${debut}&f_date_fin=${fin}&f_action=${action}`;
 }
 </script>
 
