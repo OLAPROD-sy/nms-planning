@@ -90,21 +90,102 @@ foreach($inventaire as $inv) { if($inv['quantite_globale'] <= $inv['seuil_alerte
 <?php include_once __DIR__ . '/../includes/header.php'; ?>
 
 <style>
-    :root { --accent-gradient: linear-gradient(135deg, #FF9800 0%, #F57C00 100%); --shadow: 0 8px 30px rgba(0,0,0,0.08); }
-    .admin-container { max-width: 1400px; margin: 20px auto; padding: 0 15px; }
-    .header-section { background: var(--accent-gradient); padding: 30px 20px; border-radius: 20px; color: white; margin-bottom: 25px; text-align: center; box-shadow: 0 10px 20px rgba(255, 152, 0, 0.2); }
-    .grid-admin { display: grid; grid-template-columns: 1fr; gap: 20px; }
-    @media (min-width: 1024px) { .grid-admin { grid-template-columns: 350px 1fr; } }
-    .stock-card { background: white; border-radius: 18px; padding: 20px; box-shadow: var(--shadow); border: 1px solid #edf2f7; }
-    .filter-input { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ddd; margin-bottom: 10px; font-size: 14px; }
-    .table-responsive { width: 100%; overflow-x: auto; }
-    .table-nms { width: 100%; border-collapse: collapse; min-width: 600px; }
-    .table-nms th { text-align: left; padding: 12px; color: #94a3b8; font-size: 11px; text-transform: uppercase; border-bottom: 1px solid #eee; }
-    .table-nms td { padding: 12px; border-bottom: 1px solid #f8fafc; }
-    .status-pill { padding: 4px 10px; border-radius: 50px; font-size: 10px; font-weight: 800; }
-    .status-pill.ok { background: #dcfce7; color: #16a34a; }
-    .status-pill.low { background: #fff1f2; color: #e11d48; }
-    .user_profile_btn { background: var(--accent-gradient); color: white; border: none; padding: 12px; border-radius: 10px; font-weight: 700; cursor: pointer; width: 100%; }
+    :root { 
+        --accent-gradient: linear-gradient(135deg, #FF9800 0%, #F57C00 100%); 
+        --shadow: 0 8px 30px rgba(0,0,0,0.08); 
+    }
+
+    /* Container adaptable */
+    .admin-container { 
+        max-width: 1400px; 
+        margin: 10px auto; 
+        padding: 0 10px; 
+    }
+
+    /* Header plus petit sur mobile */
+    .header-section { 
+        background: var(--accent-gradient); 
+        padding: 20px 15px; 
+        border-radius: 15px; 
+        color: white; 
+        margin-bottom: 20px; 
+        text-align: center; 
+        box-shadow: 0 10px 20px rgba(255, 152, 0, 0.2); 
+    }
+
+    /* GRILLE PRINCIPALE : 1 colonne sur mobile, 2 sur PC */
+    .grid-admin { 
+        display: grid; 
+        grid-template-columns: 1fr; 
+        gap: 15px; 
+    }
+
+    @media (min-width: 1024px) { 
+        .grid-admin { grid-template-columns: 350px 1fr; gap: 25px; } 
+    }
+
+    /* STOCK CARD RESPONSIVE */
+    .stock-card { 
+        background: white; 
+        border-radius: 15px; 
+        padding: 15px; /* Réduit sur mobile */
+        box-shadow: var(--shadow); 
+        border: 1px solid #edf2f7; 
+        width: 100%; /* S'assure qu'elle ne dépasse pas */
+        box-sizing: border-box;
+    }
+
+    @media (min-width: 768px) {
+        .stock-card { padding: 25px; } /* Plus d'espace sur PC */
+    }
+
+    /* Inputs adaptables */
+    .filter-input { 
+        width: 100%; 
+        padding: 12px; 
+        border-radius: 10px; 
+        border: 1px solid #e2e8f0; 
+        margin-bottom: 12px; 
+        font-size: 16px; /* Évite le zoom auto sur iPhone */
+        box-sizing: border-box;
+    }
+
+    /* Tableaux : Scroll horizontal propre */
+    .table-responsive { 
+        width: 100%; 
+        overflow-x: auto; 
+        -webkit-overflow-scrolling: touch; 
+        margin-top: 10px;
+    }
+
+    .table-nms { width: 100%; border-collapse: collapse; min-width: 500px; }
+    .table-nms th { text-align: left; padding: 10px; color: #94a3b8; font-size: 10px; text-transform: uppercase; }
+    .table-nms td { padding: 12px 10px; border-bottom: 1px solid #f8fafc; font-size: 14px; }
+
+    /* Bouton Propre */
+    .user_profile_btn { 
+        background: var(--accent-gradient); 
+        color: white; 
+        border: none; 
+        padding: 14px; 
+        border-radius: 12px; 
+        font-weight: 700; 
+        cursor: pointer; 
+        width: 100%; 
+        display: block;
+    }
+
+    /* Widgets du haut (Alerte et Valeur) */
+    .stats-container {
+        display: grid; 
+        grid-template-columns: 1fr; /* 1 par ligne sur mobile */
+        gap: 15px; 
+        margin-bottom: 20px;
+    }
+
+    @media (min-width: 600px) {
+        .stats-container { grid-template-columns: 1fr 1fr; } /* 2 par ligne sur tablette/PC */
+    }
 </style>
 
 <div class="admin-container">
@@ -113,10 +194,10 @@ foreach($inventaire as $inv) { if($inv['quantite_globale'] <= $inv['seuil_alerte
         <p style="margin:5px 0 0; opacity: 0.9;">Gestion financière et matérielle</p>
     </div>
 
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 25px;">
+    <div class="stats-container">
         <div class="stock-card" style="border-left: 5px solid #ef4444;">
             <small style="color: #94a3b8; font-weight: 800;">ALERTE RÉAPPRO</small>
-            <div style="font-size: 24px; font-weight: 900;"><?= $nb_critique ?> Produits</div>
+            <div style="font-size: 22px; font-weight: 900;"><?= $nb_critique ?> Produits</div>
         </div>
         <div class="stock-card" style="border-left: 5px solid #10b981;">
             <small style="color: #94a3b8; font-weight: 800;">VALEUR DU STOCK</small>
@@ -124,7 +205,7 @@ foreach($inventaire as $inv) { if($inv['quantite_globale'] <= $inv['seuil_alerte
                 $total_v = 0; 
                 foreach($inventaire as $v) { $total_v += ($v['quantite_globale'] * $v['prix_unitaire']); } 
             ?>
-            <div style="font-size: 24px; font-weight: 900; color: #10b981;"><?= number_format($total_v, 0, '.', ' ') ?> FCFA</div>
+            <div style="font-size: 22px; font-weight: 900; color: #10b981;"><?= number_format($total_v, 0, '.', ' ') ?> <small style="font-size:12px">FCFA</small></div>
         </div>
     </div>
 
