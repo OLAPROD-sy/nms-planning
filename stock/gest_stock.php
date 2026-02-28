@@ -228,7 +228,7 @@ foreach($inventaire as $inv) { if($inv['quantite_globale'] <= $inv['seuil_alerte
                         <option value="SORTIE" <?= (isset($_GET['f_action']) && $_GET['f_action'] === 'SORTIE') ? 'selected' : '' ?>>Sorties uniquement</option>
                     </select>
                     <button type="submit" style="background:#FF9800; color:white; border:none; padding:10px 20px; border-radius:8px; cursor:pointer;">Filtrer</button>
-                    <a href="gest_stock.php" style="text-decoration:none; font-size:12px; color:#666; align-self:center;">Réinitialiser</a>
+                    <button type="button" onclick="window.location.href='gest_stock.php'" style="background:#64748b; color:white; border:none; padding:10px 20px; border-radius:8px; cursor:pointer;">Réinitialiser</button> 
                 </form>
 
                 <div class="table-responsive">
