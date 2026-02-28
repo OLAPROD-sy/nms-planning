@@ -92,7 +92,7 @@ foreach($inventaire as $inv) { if($inv['quantite_globale'] <= $inv['seuil_alerte
     /* Cartes */
     .stock-card { background: white; border-radius: 18px; padding: 20px; box-shadow: var(--shadow); border: 1px solid #edf2f7; box-sizing: border-box; }
     
-    /* Formulaires Responsifs (Flex-Wrap) */
+    
     .responsive-form { display: flex; flex-wrap: wrap; gap: 10px; width: 100%; }
     .filter-input { flex: 1; min-width: 140px; padding: 12px; border-radius: 8px; border: 1px solid #ddd; font-size: 16px; box-sizing: border-box; }
     
