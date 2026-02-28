@@ -9,7 +9,7 @@ if ($_SESSION['role'] !== 'ADMIN') {
 
 $message = "";
 
-// --- LOGIQUE DE TRAITEMENT ---
+// --- LOGIQUE DE TRAITEMENT (INCHANGÉE) ---
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = $_POST['action'] ?? '';
 
@@ -21,7 +21,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         
         $stmt = $pdo->prepare("INSERT INTO produits_admin (nom_produit, seuil_alerte, prix_unitaire, unite_mesure) VALUES (?, ?, ?, ?)");
         $stmt->execute([$nom, $seuil, $prix, $unite]);
-        $message = "Produit ajouté au catalogue personnel.";
+        $message = "Produit ajouté au catalogue.";
     }
 
     if ($action === 'mouvement') {
@@ -32,7 +32,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         
         $operateur = ($type === 'ENTREE') ? "+" : "-";
         
-        // Mise à jour du stock et du prix actuel (si Entrée)
         $sql_up = "UPDATE produits_admin SET quantite_globale = quantite_globale $operateur ?";
         $params_up = [$qte];
         if($type === 'ENTREE' && $prix_saisi > 0) {
@@ -41,10 +40,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         $sql_up .= " WHERE id_produit_admin = ?";
         $params_up[] = $id_p;
-        
         $pdo->prepare($sql_up)->execute($params_up);
 
-        // Enregistrement du mouvement
         $pdo->prepare("INSERT INTO mouvements_stock_admin (id_produit_admin, type_mouvement, quantite, prix_mouvement, commentaire) VALUES (?, ?, ?, ?, ?)")
             ->execute([$id_p, $type, $qte, $prix_saisi, $_POST['commentaire'] ?? '']);
             
@@ -52,37 +49,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-// --- LOGIQUE DE FILTRAGE ---
+// --- LOGIQUE DE FILTRAGE (INCHANGÉE) ---
 $where_clauses = [];
 $params = [];
-
-if (isset($_GET['f_produit']) && $_GET['f_produit'] !== '') {
-    $where_clauses[] = "m.id_produit_admin = ?";
-    $params[] = (int)$_GET['f_produit'];
-}
-if (isset($_GET['f_action']) && $_GET['f_action'] !== '') {
-    $where_clauses[] = "m.type_mouvement = ?";
-    $params[] = $_GET['f_action'];
-}
+if (isset($_GET['f_produit']) && $_GET['f_produit'] !== '') { $where_clauses[] = "m.id_produit_admin = ?"; $params[] = (int)$_GET['f_produit']; }
+if (isset($_GET['f_action']) && $_GET['f_action'] !== '') { $where_clauses[] = "m.type_mouvement = ?"; $params[] = $_GET['f_action']; }
 if (!empty($_GET['f_date_debut']) && !empty($_GET['f_date_fin'])) {
     $where_clauses[] = "DATE(m.date_mouvement) BETWEEN ? AND ?";
-    $params[] = $_GET['f_date_debut'];
-    $params[] = $_GET['f_date_fin'];
+    $params[] = $_GET['f_date_debut']; $params[] = $_GET['f_date_fin'];
 }
 
 $sql_flux = "SELECT m.*, p.nom_produit, p.unite_mesure FROM mouvements_stock_admin m 
              JOIN produits_admin p ON m.id_produit_admin = p.id_produit_admin";
-
 if (!empty($where_clauses)) { $sql_flux .= " WHERE " . implode(" AND ", $where_clauses); }
 $sql_flux .= " ORDER BY m.date_mouvement DESC LIMIT 30";
-
 $stmt_flux = $pdo->prepare($sql_flux);
 $stmt_flux->execute($params);
 $flux = $stmt_flux->fetchAll(PDO::FETCH_ASSOC);
 
 $inventaire = $pdo->query("SELECT * FROM produits_admin ORDER BY nom_produit ASC")->fetchAll(PDO::FETCH_ASSOC);
-
-// --- CALCULS INTELLIGENTS ---
 $nb_critique = 0;
 foreach($inventaire as $inv) { if($inv['quantite_globale'] <= $inv['seuil_alerte']) $nb_critique++; }
 ?>
@@ -91,20 +76,39 @@ foreach($inventaire as $inv) { if($inv['quantite_globale'] <= $inv['seuil_alerte
 
 <style>
     :root { --accent-gradient: linear-gradient(135deg, #FF9800 0%, #F57C00 100%); --shadow: 0 8px 30px rgba(0,0,0,0.08); }
-    .admin-container { max-width: 1400px; margin: 20px auto; padding: 0 15px; }
+    
+    /* Adaptabilité Globale */
+    .admin-container { max-width: 1400px; margin: 20px auto; padding: 0 15px; box-sizing: border-box; }
     .header-section { background: var(--accent-gradient); padding: 30px 20px; border-radius: 20px; color: white; margin-bottom: 25px; text-align: center; box-shadow: 0 10px 20px rgba(255, 152, 0, 0.2); }
+    
+    /* Grille Responsive */
     .grid-admin { display: grid; grid-template-columns: 1fr; gap: 20px; }
     @media (min-width: 1024px) { .grid-admin { grid-template-columns: 350px 1fr; } }
-    .stock-card { background: white; border-radius: 18px; padding: 20px; box-shadow: var(--shadow); border: 1px solid #edf2f7; }
-    .filter-input { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ddd; margin-bottom: 10px; font-size: 14px; }
-    .table-responsive { width: 100%; overflow-x: auto; }
+
+    /* Cartes */
+    .stock-card { background: white; border-radius: 18px; padding: 20px; box-shadow: var(--shadow); border: 1px solid #edf2f7; box-sizing: border-box; }
+    
+    /* Formulaires Responsifs (Flex-Wrap) */
+    .responsive-form { display: flex; flex-wrap: wrap; gap: 10px; width: 100%; }
+    .filter-input { flex: 1; min-width: 140px; padding: 12px; border-radius: 8px; border: 1px solid #ddd; font-size: 16px; box-sizing: border-box; }
+    
+    /* Tableaux Responsifs (Scroll) */
+    .table-responsive { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; margin-top: 10px; }
     .table-nms { width: 100%; border-collapse: collapse; min-width: 600px; }
     .table-nms th { text-align: left; padding: 12px; color: #94a3b8; font-size: 11px; text-transform: uppercase; border-bottom: 1px solid #eee; }
     .table-nms td { padding: 12px; border-bottom: 1px solid #f8fafc; }
+
+    /* Widgets */
+    .stats-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; margin-bottom: 25px; }
     .status-pill { padding: 4px 10px; border-radius: 50px; font-size: 10px; font-weight: 800; }
     .status-pill.ok { background: #dcfce7; color: #16a34a; }
     .status-pill.low { background: #fff1f2; color: #e11d48; }
-    .user_profile_btn { background: var(--accent-gradient); color: white; border: none; padding: 12px; border-radius: 10px; font-weight: 700; cursor: pointer; width: 100%; }
+    .user_profile_btn { background: var(--accent-gradient); color: white; border: none; padding: 14px; border-radius: 10px; font-weight: 700; cursor: pointer; width: 100%; }
+
+    /* Barre de recherche */
+    .search-bar-container { position: relative; margin-bottom: 15px; }
+    .search-bar-container input { width: 100%; padding: 10px 40px 10px 15px; border-radius: 10px; border: 1px solid #e2e8f0; outline: none; transition: 0.3s; }
+    .search-bar-container input:focus { border-color: #F57C00; box-shadow: 0 0 0 3px rgba(245, 124, 0, 0.1); }
 </style>
 
 <div class="admin-container">
@@ -113,17 +117,14 @@ foreach($inventaire as $inv) { if($inv['quantite_globale'] <= $inv['seuil_alerte
         <p style="margin:5px 0 0; opacity: 0.9;">Gestion financière et matérielle</p>
     </div>
 
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 25px;">
+    <div class="stats-container">
         <div class="stock-card" style="border-left: 5px solid #ef4444;">
             <small style="color: #94a3b8; font-weight: 800;">ALERTE RÉAPPRO</small>
             <div style="font-size: 24px; font-weight: 900;"><?= $nb_critique ?> Produits</div>
         </div>
         <div class="stock-card" style="border-left: 5px solid #10b981;">
             <small style="color: #94a3b8; font-weight: 800;">VALEUR DU STOCK</small>
-            <?php 
-                $total_v = 0; 
-                foreach($inventaire as $v) { $total_v += ($v['quantite_globale'] * $v['prix_unitaire']); } 
-            ?>
+            <?php $total_v = 0; foreach($inventaire as $v) { $total_v += ($v['quantite_globale'] * $v['prix_unitaire']); } ?>
             <div style="font-size: 24px; font-weight: 900; color: #10b981;"><?= number_format($total_v, 0, '.', ' ') ?> FCFA</div>
         </div>
     </div>
@@ -132,46 +133,52 @@ foreach($inventaire as $inv) { if($inv['quantite_globale'] <= $inv['seuil_alerte
         <div style="display: flex; flex-direction: column; gap: 20px;">
             <div class="stock-card">
                 <h3>✨ Nouveau Produit</h3>
-                <form method="post">
+                <form method="post" class="responsive-form">
                     <input type="hidden" name="action" value="creer_produit">
-                    <input type="text" name="nom_produit" placeholder="Nom du produit" required class="filter-input">
+                    <input type="text" name="nom_produit" placeholder="Nom du produit" required class="filter-input" style="flex: 2;">
                     <select name="unite_mesure" class="filter-input">
                         <option value="U">Unité (U)</option>
                         <option value="Carton">Carton</option>
                         <option value="Paquet">Paquet</option>
                         <option value="Litre">Litre</option>
                     </select>
-                    <input type="number" step="0.01" name="prix_unitaire" placeholder="Prix d'achat initial" class="filter-input">
-                    <input type="number" name="seuil" placeholder="Seuil d'alerte" class="filter-input">
-                    <button type="submit" class="user_profile_btn">Enregistrer au Catalogue</button>
+                    <input type="number" step="0.01" name="prix_unitaire" placeholder="Prix d'achat" class="filter-input">
+                    <input type="number" name="seuil" placeholder="Seuil" class="filter-input">
+                    <button type="submit" class="user_profile_btn">Enregistrer</button>
                 </form>
             </div>
 
             <div class="stock-card">
                 <h3>🔄 Mouvement Stock</h3>
-                <form method="post">
+                <form method="post" class="responsive-form">
                     <input type="hidden" name="action" value="mouvement">
-                    <select name="id_produit" required class="filter-input">
+                    <select name="id_produit" required class="filter-input" style="flex: 2;">
                         <?php foreach($inventaire as $i): ?>
                             <option value="<?= $i['id_produit_admin'] ?>"><?= htmlspecialchars($i['nom_produit']) ?> (<?= $i['unite_mesure'] ?>)</option>
                         <?php endforeach; ?>
                     </select>
                     <select name="type" class="filter-input">
-                        <option value="ENTREE">Entrée Stock (+)</option>
-                        <option value="SORTIE">Sortie Stock (-)</option>
+                        <option value="ENTREE">Entrée (+)</option>
+                        <option value="SORTIE">Sortie (-)</option>
                     </select>
-                    <input type="number" name="quantite" placeholder="Quantité" required class="filter-input">
-                    <input type="number" step="0.01" name="prix_saisi" placeholder="Prix Unitaire (facultatif)" class="filter-input">
-                    <button type="submit" class="user_profile_btn" style="background:#1e293b;">Valider l'opération</button>
+                    <input type="number" name="quantite" placeholder="Qté" required class="filter-input">
+                    <input type="number" step="0.01" name="prix_saisi" placeholder="Prix Unit." class="filter-input">
+                    <button type="submit" class="user_profile_btn" style="background:#1e293b;">Valider</button>
                 </form>
             </div>
         </div>
 
         <div style="display: flex; flex-direction: column; gap: 20px;">
             <div class="stock-card">
-                <h3>📊 État du Stock</h3>
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 15px;">
+                    <h3 style="margin:0;">📊 État du Stock</h3>
+                    <div class="search-bar-container">
+                        <input type="text" id="searchInput" onkeyup="searchTable()" placeholder="🔍 Rechercher un produit...">
+                    </div>
+                </div>
+                
                 <div class="table-responsive">
-                    <table class="table-nms">
+                    <table class="table-nms" id="stockTable">
                         <thead>
                             <tr>
                                 <th>Produit</th>
@@ -190,7 +197,7 @@ foreach($inventaire as $inv) { if($inv['quantite_globale'] <= $inv['seuil_alerte
                                 <td style="font-weight:700;"><?= htmlspecialchars($i['nom_produit']) ?><br><small style="color:#94a3b8"><?= $i['unite_mesure'] ?></small></td>
                                 <td><?= number_format($i['prix_unitaire'], 0, '.', ' ') ?></td>
                                 <td><span style="font-weight:800; background:#f1f5f9; padding:4px 8px; border-radius:5px;"><?= $i['quantite_globale'] ?></span></td>
-                                <td style="font-weight:800;"><?= number_format($val, 0, '.', ' ') ?> FCFA</td>
+                                <td style="font-weight:800;"><?= number_format($val, 0, '.', ' ') ?></td>
                                 <td><span class="status-pill <?= $is_low ? 'low' : 'ok' ?>"><?= $is_low ? '⚠️ BAS' : '✅ OK' ?></span></td>
                             </tr>
                             <?php endforeach; ?>
@@ -201,10 +208,10 @@ foreach($inventaire as $inv) { if($inv['quantite_globale'] <= $inv['seuil_alerte
 
             <div class="stock-card">
                 <h3>📜 Historique des flux</h3>
-                <form method="GET" class="filter-bar" style="display: flex; flex-wrap: wrap; gap: 10px; background: #f8fafc; padding: 15px; border-radius: 12px; margin-bottom: 15px;">
-                    <input type="date" name="f_date_debut" class="filter-input" style="flex:1; margin:0;" value="<?= $_GET['f_date_debut'] ?? '' ?>">
-                    <input type="date" name="f_date_fin" class="filter-input" style="flex:1; margin:0;" value="<?= $_GET['f_date_fin'] ?? '' ?>">
-                    <button type="submit" style="background:#FF9800; color:white; border:none; padding:10px 20px; border-radius:8px; cursor:pointer;">🔍 Filtrer la période</button>
+                <form method="GET" class="responsive-form" style="background: #f8fafc; padding: 15px; border-radius: 12px; margin-bottom: 15px;">
+                    <input type="date" name="f_date_debut" class="filter-input" value="<?= $_GET['f_date_debut'] ?? '' ?>">
+                    <input type="date" name="f_date_fin" class="filter-input" value="<?= $_GET['f_date_fin'] ?? '' ?>">
+                    <button type="submit" style="background:#FF9800; color:white; border:none; padding:10px 20px; border-radius:8px; cursor:pointer;">Filtrer</button>
                 </form>
 
                 <div class="table-responsive">
@@ -233,5 +240,23 @@ foreach($inventaire as $inv) { if($inv['quantite_globale'] <= $inv['seuil_alerte
         </div>
     </div>
 </div>
+
+<script>
+// Fonction de recherche instantanée
+function searchTable() {
+    let input = document.getElementById("searchInput");
+    let filter = input.value.toUpperCase();
+    let table = document.getElementById("stockTable");
+    let tr = table.getElementsByTagName("tr");
+
+    for (let i = 1; i < tr.length; i++) {
+        let td = tr[i].getElementsByTagName("td")[0];
+        if (td) {
+            let textValue = td.textContent || td.innerText;
+            tr[i].style.display = textValue.toUpperCase().indexOf(filter) > -1 ? "" : "none";
+        }
+    }
+}
+</script>
 
 <?php include_once __DIR__ . '/../includes/footer.php'; ?>
