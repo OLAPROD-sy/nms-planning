@@ -240,6 +240,9 @@ foreach ($flux as &$f) {
                     </select>
                     <button type="submit" style="background:#FF9800; color:white; border:none; padding:10px 20px; border-radius:8px; cursor:pointer;">Filtrer</button>
                     <button type="button" onclick="window.location.href='gest_stock.php'" style="background:#64748b; color:white; border:none; padding:10px 20px; border-radius:8px; cursor:pointer;">Réinitialiser</button> 
+                    <button type="button" onclick="exportExcel()" style="background:#27ae60; color:white; border:none; padding:10px 20px; border-radius:8px; cursor:pointer; font-weight:bold;">
+                        📥 Exporter Excel
+                    </button>
                 </form>
 
                 <div class="table-responsive">
@@ -292,6 +295,15 @@ function searchTable() {
             tr[i].style.display = textValue.toUpperCase().indexOf(filter) > -1 ? "" : "none";
         }
     }
+}
+function exportExcel() {
+    // On récupère les valeurs actuelles des filtres
+    const debut = document.querySelector('input[name="f_date_debut"]').value;
+    const fin = document.querySelector('input[name="f_date_fin"]').value;
+    const action = document.querySelector('select[name="f_action"]').value;
+    
+    // On redirige vers la page d'export avec les paramètres
+    window.location.href = `export_inventaire.php?f_date_debut=${debut}&f_date_fin=${fin}&f_action=${action}`;
 }
 </script>
 
