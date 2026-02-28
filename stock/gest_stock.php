@@ -128,7 +128,7 @@ foreach($inventaire as $inv) { if($inv['quantite_globale'] <= $inv['seuil_alerte
     .stock-card { 
         background: white; 
         border-radius: 15px; 
-        padding: 15px; /* Réduit sur mobile */
+        padding: 5px; /* Réduit sur mobile */
         box-shadow: var(--shadow); 
         border: 1px solid #edf2f7; 
         width: 100%; /* S'assure qu'elle ne dépasse pas */
