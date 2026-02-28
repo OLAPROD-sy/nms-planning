@@ -217,6 +217,9 @@ foreach($inventaire as $inv) { if($inv['quantite_globale'] <= $inv['seuil_alerte
                     <input type="date" name="f_date_fin" class="filter-input" value="<?= $_GET['f_date_fin'] ?? '' ?>">
                     <button type="submit" style="background:#FF9800; color:white; border:none; padding:10px 20px; border-radius:8px; cursor:pointer;">Filtrer</button>
                 </form>
+                <div class="search-bar-container">
+                        <input type="text" id="searchInput" onkeyup="searchTable()" placeholder="🔍 Rechercher un produit...">
+                    </div>
 
                 <div class="table-responsive">
                     <table class="table-nms">
