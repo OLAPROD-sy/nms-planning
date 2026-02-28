@@ -281,6 +281,7 @@ $inventaire = $pdo->query("SELECT * FROM produits_admin ORDER BY nom_produit ASC
         
         .filter-group {
             width: 100%;
+            flex:1 1 150px
         }
 
         /* Groupe de boutons d'action sur mobile */
