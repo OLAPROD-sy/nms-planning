@@ -79,7 +79,7 @@ foreach($inventaire as $inv) { if($inv['quantite_globale'] <= $inv['seuil_alerte
     
     /* RESET CRITIQUE POUR MOBILE */
     * { box-sizing: border-box; }
-    body, html { overflow-x: hidden; width: 100%; margin: 0; padding: 0; }
+    body, html { overflow-x: auto; width: 100%; margin: 0; padding: 0; }
     
     /* Adaptabilité Globale */
     .admin-container { max-width: 1400px; margin: 20px auto; padding: 0 15px; box-sizing: border-box; }
@@ -92,7 +92,7 @@ foreach($inventaire as $inv) { if($inv['quantite_globale'] <= $inv['seuil_alerte
     /* Cartes */
     .stock-card { background: white; border-radius: 18px; padding: 20px; box-shadow: var(--shadow); border: 1px solid #edf2f7; box-sizing: border-box; }
     
-    
+    /* Formulaires Responsifs (Flex-Wrap) */
     .responsive-form { display: flex; flex-wrap: wrap; gap: 10px; width: 100%; }
     .filter-input { flex: 1; min-width: 140px; padding: 12px; border-radius: 8px; border: 1px solid #ddd; font-size: 16px; box-sizing: border-box; }
     
@@ -134,7 +134,7 @@ foreach($inventaire as $inv) { if($inv['quantite_globale'] <= $inv['seuil_alerte
     </div>
 
     <div class="grid-admin">
-        <div style="display: flex; flex-direction: column; gap: 20px;">
+        <div style="display: flex; flex-direction: column; gap: 20px;overflow: auto;">
             <div class="stock-card">
                 <h3>✨ Nouveau Produit</h3>
                 <form method="post" class="responsive-form">
@@ -172,7 +172,7 @@ foreach($inventaire as $inv) { if($inv['quantite_globale'] <= $inv['seuil_alerte
             </div>
         </div>
 
-        <div style="display: flex; flex-direction: column; gap: 20px;">
+        <div style="display: flex; flex-direction: column; gap: 20px; overflow: auto;">
             <div class="stock-card">
                 <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 15px;">
                     <h3 style="margin:0;">📊 État du Stock</h3>
