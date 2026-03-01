@@ -21,6 +21,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['toggle_status'])) {
     exit;
 }
 
+// Récupération des utilisateurs classés par site
+$stmt = $pdo->query('
+    SELECT u.*, s.nom_site 
+    FROM users u 
+    LEFT JOIN sites s ON u.id_site = s.id_site 
+    ORDER BY 
+        CASE WHEN u.role = "ADMIN" THEN 0 ELSE 1 END, -- Admin en premier
+        s.nom_site ASC, 
+        u.nom ASC
+');
+$all_users = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+// On groupe les utilisateurs par "Entête de section"
+$grouped_users = [];
+foreach ($all_users as $u) {
+    if ($u['role'] === 'ADMIN') {
+        $section_name = "⭐ DIRECTION / RESPONSABLES";
+    } else {
+        $section_name = "📍 " . ($u['nom_site'] ?? 'SANS SITE ASSIGNÉ');
+    }
+    $grouped_users[$section_name][] = $u;
+}
+
 // ... (Gardez votre logique de suppression ici) ...
 
 // Récupération avec colonne is_active
@@ -300,79 +323,100 @@ $users = $pdo->query('
 </div>
 
 <div class="users-grid">
-    <?php foreach ($users as $u): ?>
-        <div class="user-card">
-            <div class="avatar-container">
-                <?php if (!empty($u['photo'])): ?>
-                    <img src="/<?= htmlspecialchars($u['photo']) ?>" class="user-avatar">
-                <?php else: ?>
-                    <div class="user-avatar" style="background: #e9ecef; display:flex; align-items:center; justify-content:center; color:#adb5bd;">
-                        <?= strtoupper(substr($u['nom'], 0, 1)) ?>
-                    </div>
-                <?php endif; ?>
-            </div>
+    <div class="users-container" style="max-width: 1300px; margin: 0 auto; padding: 0 20px;">
 
-            <div class="user-info">
-                <div class="user-name"><?= htmlspecialchars($u['prenom'] . ' ' . $u['nom']) ?></div>
-                <div class="user-role role-<?= strtolower($u['role']) ?>"><?= $u['role'] ?></div>
-                
-                <div class="user-details">
-                    <div class="detail-item">
-                        <span>📍</span> <?= htmlspecialchars($u['nom_site'] ?? 'Non assigné') ?>
-                    </div>
-                    <div class="detail-item">
-                        <span>📞</span> <?= htmlspecialchars($u['contact'] ?? 'Non renseigné') ?>
-                    </div>
-                </div>
-
-                <?php 
-                    $isActive = ((int)$u['actif'] === 1);
-                    $statusClass = $isActive ? 'status-online' : 'status-offline';
-                    $statusText = $isActive ? 'Actif' : 'Inactif';
-                ?>
-                <div class="status-pill <?= $statusClass ?>">
-                    <span class="status-dot"></span> <?= $statusText ?>
-                </div>
-            </div>
-
-            <div class="user-actions-container">
-                <div class="user-actions">
-                    <a href="edit_users.php?id=<?= $u['id_user'] ?>" class="btn-action btn-edit">✏️</a>
-                    <a href="delete_user.php?id=<?= $u['id_user'] ?>" 
-                       class="btn-action btn-delete" 
-                       onclick="return confirm('Supprimer définitivement <?= htmlspecialchars($u['prenom']) ?> ?')">
-                       🗑️
-                    </a>
-                </div>
-                <form method="POST" style="margin-top:5px;">
-                    <input type="hidden" name="id_user" value="<?= $u['id_user'] ?>">
-                    <input type="hidden" name="current_status" value="<?= $u['actif'] ?>">
-                    <button type="submit" name="toggle_status" class="btn-toggle-status">
-                        <?= $isActive ? 'Désactiver' : 'Activer' ?>
-                    </button>
-                </form>
-            </div>
+    <?php foreach ($grouped_users as $site_title => $members): ?>
+        
+        <div class="site-section-header" style="
+            margin: 40px 0 20px 0; 
+            padding-bottom: 10px; 
+            border-bottom: 2px solid #EEE;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        ">
+            <h2 style="font-size: 18px; font-weight: 800; color: var(--dark); text-transform: uppercase; letter-spacing: 1px;">
+                <?= htmlspecialchars($site_title) ?>
+            </h2>
+            <span style="background: #EEE; padding: 2px 10px; border-radius: 10px; font-size: 12px; color: #666;">
+                <?= count($members) ?> membre(s)
+            </span>
         </div>
+
+        <div class="users-grid" style="display: grid; gap: 15px; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); margin-bottom: 30px;">
+            <?php foreach ($members as $u): ?>
+                <div class="user-card" data-search-content="<?= htmlspecialchars(strtolower($u['prenom'].' '.$u['nom'].' '.$u['role'].' '.($u['nom_site']??''))) ?>">
+                    <div class="avatar-container">
+                        <?php if (!empty($u['photo'])): ?>
+                            <img src="/<?= htmlspecialchars($u['photo']) ?>" class="user-avatar" style="width: 60px; height: 60px; border-radius: 50%; object-fit: cover;">
+                        <?php else: ?>
+                            <div class="user-avatar" style="width: 60px; height: 60px; border-radius: 50%; background: #e9ecef; display:flex; align-items:center; justify-content:center; color:#adb5bd; font-weight: bold;">
+                                <?= strtoupper(substr($u['nom'], 0, 1)) ?>
+                            </div>
+                        <?php endif; ?>
+                    </div>
+
+                    <div class="user-info" style="flex: 1;">
+                        <div class="user-name" style="font-weight: 700;"><?= htmlspecialchars($u['prenom'] . ' ' . $u['nom']) ?></div>
+                        <div class="user-role role-<?= strtolower($u['role']) ?>" style="font-size: 11px;"><?= $u['role'] ?></div>
+                        
+                        <div class="user-details" style="margin-top: 5px; font-size: 12px; color: #666;">
+                            <div>📞 <?= htmlspecialchars($u['contact'] ?? '-') ?></div>
+                        </div>
+
+                        <?php 
+                            $isActive = ((int)$u['actif'] === 1);
+                        ?>
+                        <div class="status-pill <?= $isActive ? 'status-online' : 'status-offline' ?>">
+                            <span class="status-dot"></span> <?= $isActive ? 'Actif' : 'Inactif' ?>
+                        </div>
+                    </div>
+
+                    <div class="user-actions-container">
+                        <div class="user-actions">
+                            <a href="edit_users.php?id=<?= $u['id_user'] ?>" class="btn-action btn-edit">✏️</a>
+                        </div>
+                        <form method="POST" style="margin-top:8px;">
+                            <input type="hidden" name="id_user" value="<?= $u['id_user'] ?>">
+                            <input type="hidden" name="current_status" value="<?= $u['actif'] ?>">
+                            <button type="submit" name="toggle_status" class="btn-toggle-status" style="width: 100%; cursor:pointer;">
+                                <?= $isActive ? 'Bloquer' : 'Activer' ?>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            <?php endforeach; ?>
+        </div>
+
     <?php endforeach; ?>
+</div>
 </div>
 <script>
 document.addEventListener('DOMContentLoaded', () => {
     const searchInput = document.getElementById('userSearch');
-    const userCards = document.querySelectorAll('.user-card');
+    const sections = document.querySelectorAll('.site-section-header');
 
     searchInput.addEventListener('input', function() {
         const searchTerm = this.value.toLowerCase().trim();
 
-        userCards.forEach(card => {
-            // On récupère tout le texte de la carte (nom, rôle, site)
-            const text = card.textContent.toLowerCase();
-            
-            if (text.includes(searchTerm)) {
-                card.style.display = 'flex'; // On affiche
-                card.style.animation = 'fadeIn 0.3s ease';
-            } else {
-                card.style.display = 'none'; // On cache
-            }
+        document.querySelectorAll('.site-section-header').forEach(section => {
+            const grid = section.nextElementSibling; // La grille .users-grid
+            const cards = grid.querySelectorAll('.user-card');
+            let hasVisibleCards = false;
+
+            cards.forEach(card => {
+                const content = card.getAttribute('data-search-content');
+                if (content.includes(searchTerm)) {
+                    card.style.display = 'flex';
+                    hasVisibleCards = true;
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+
+            // Si aucune carte n'est visible dans ce site, on cache aussi le titre du site
+            section.style.display = hasVisibleCards ? 'flex' : 'none';
+            grid.style.display = hasVisibleCards ? 'grid' : 'none';
         });
     });
 });

@@ -349,7 +349,7 @@ include_once __DIR__ . '/../includes/header.php';
             </div>
             <button type="submit" class="btn-main" style="background: var(--p-blue); color:white; padding: 10px 20px; border:none; border-radius:8px; cursor:pointer; height:41px;">Appliquer</button>
             <button type="button" onclick="exportToExcel()" class="btn-main" style="background: #27ae60; color:white; border:none; padding:10px 20px; border-radius:8px; cursor:pointer; font-weight: bold;">
-                Excel 📥 Exporter en Excel
+                📥 Exporter en Excel
             </button>  
         </form>
     </div>
