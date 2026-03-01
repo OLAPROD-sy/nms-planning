@@ -77,8 +77,6 @@ $total_quantite = 0;
             <td align="right" style="font-weight: bold;"><?= number_format($montant_ligne, 0, '', ' ') ?></td>
         </tr>
         <?php endforeach; ?>
-    </tbody>
-    <tfoot>
         <tr style="background-color: #f1f5f9; font-weight: bold;">
             <td colspan="3" align="right">QUANTITÉ TOTALE D'ARTICLES :</td>
             <td align="center"><?= $total_quantite ?></td>
@@ -88,7 +86,10 @@ $total_quantite = 0;
             <td colspan="5" align="right">MONTANT TOTAL GÉNÉRAL (FCFA) :</td>
             <td align="right" style="color: #ef4444; font-size: 14px;"><?= number_format($grand_total, 0, '', ' ') ?></td>
         </tr>
-    </tfoot>
+    </tbody>
+    
+        
+
 </table>
 
 <br><br>
