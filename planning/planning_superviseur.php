@@ -237,7 +237,7 @@ $recent_plannings = $stmtPlan->fetchAll(PDO::FETCH_ASSOC);
 
         <div class="card">
             <h3>📋 Programmations Récentes</h3>
-            <div class="table-container">
+            <div class="table-container" style="overflow-x: auto;">
                 <table class="styled-table">
                     <thead>
                         <tr>
