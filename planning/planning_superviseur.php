@@ -132,6 +132,17 @@ $recent_plannings = $stmtPlan->fetchAll(PDO::FETCH_ASSOC);
     .styled-table th { background: #f8f9fa; padding: 12px; text-align: left; border-bottom: 2px solid #eee; }
     .styled-table td { padding: 12px; border-bottom: 1px solid #f0f0f0; }
     .badge-date { background: #eee; padding: 3px 8px; border-radius: 4px; font-family: monospace; }
+
+    .side-col {display: flex; flex-direction: column; gap: 20px;overflow: auto;}
+    .main-col {display: flex; flex-direction: column; gap: 20px;overflow: auto;}
+
+    @media (max-width: 800px) {
+        .admin-grid { grid-template-columns: 1fr; }
+        .schedule-header { flex-direction: column; align-items: flex-start; }
+        .filter-box { width: 100%; justify-content: space-between; }
+    }
+
+    
     
     @media (max-width: 1000px) { .admin-grid { grid-template-columns: 1fr; } }
 </style>

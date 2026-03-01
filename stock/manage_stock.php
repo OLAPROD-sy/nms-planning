@@ -167,7 +167,7 @@ $historique = $stmtH->fetchAll(PDO::FETCH_ASSOC);
                 <?php foreach($liste_produits as $p): 
                     $is_low = $p['quantite_actuelle'] <= $p['quantite_alerte'];
                 ?>
-                <div style="display:flex; justify-content:space-between; padding:8px; border-radius:5px; margin-bottom:5px; background: <?= $is_low ? '#fff5f5':'#fafafa' ?>; border-left: 4px solid <?= $is_low ? 'var(--p-red)':'var(--p-green)' ?>">
+                <div style="display:flex; justify-content:space-between; padding:8px; border-radius:5px; margin-bottom:5px; background: <?= $is_low ? '#fff5f5':'#fafafa' ?>; border-left: 4px solid <?= $is_low ? 'var(--p-red)':'var(--p-green)' ?> ; overflow-y: auto;">
                     <span style="font-size:0.9em"><?= htmlspecialchars($p['nom_produit']) ?></span>
                     <strong><?= $p['quantite_actuelle'] ?></strong>
                 </div>
