@@ -193,6 +193,9 @@ foreach ($flux as &$f) {
             <div class="stock-card">
                 <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 15px;">
                     <h3 style="margin:0;">📊 État du Stock</h3>
+                    <a href="export_stock.php" style="background: #16a34a; color: white; text-decoration: none; padding: 8px 15px; border-radius: 6px; font-weight: bold; font-size: 14px; display: flex; align-items: center; gap: 8px;">
+                        📊 Exporter l'état (Excel)
+                    </a>
                     <div class="search-bar-container">
                         <input type="text" id="searchInput" onkeyup="searchTable()" placeholder="🔍 Rechercher un produit...">
                     </div>
