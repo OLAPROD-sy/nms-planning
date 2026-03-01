@@ -9,13 +9,27 @@ if ($_SESSION['role'] !== 'ADMIN' && $_SESSION['role'] !== 'SUPERVISOR') {
 
 // 1. Gestion des périodes
 $period = $_GET['period'] ?? 'semaine';
-$date_start = $_GET['date_start'] ?? date('Y-m-d', strtotime('monday this week'));
-$date_end = $_GET['date_end'] ?? date('Y-m-d', strtotime('sunday this week'));
 
-if ($period === 'mois') {
+// Initialisation par défaut (Semaine en cours)
+$date_start = $_GET['date_start'] ?? date('Y-m-d', strtotime('monday tonight -7 days')); 
+$date_end = $_GET['date_end'] ?? date('Y-m-d', strtotime('sunday tonight'));
+
+// Correction fiable pour la semaine en cours
+if ($period === 'semaine' && !isset($_GET['date_start'])) {
+    // Si on est lundi, 'monday this week' est aujourd'hui. 
+    // Si on est dimanche, 'monday this week' peut varier.
+    // Cette méthode est la plus robuste :
+    $monday = strtotime('last monday', strtotime('tomorrow'));
+    $sunday = strtotime('next sunday', $monday);
+    
+    $date_start = date('Y-m-d', $monday);
+    $date_end = date('Y-m-d', $sunday);
+} 
+elseif ($period === 'mois') {
     $date_start = date('Y-m-01');
     $date_end = date('Y-m-t');
-} elseif ($period === 'annee') {
+} 
+elseif ($period === 'annee') {
     $date_start = date('Y-01-01');
     $date_end = date('Y-12-31');
 }
