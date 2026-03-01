@@ -78,12 +78,12 @@ $total_quantite = 0;
         </tr>
         <?php endforeach; ?>
         <tr style="background-color: #f1f5f9; font-weight: bold;">
-            <td colspan="3" align="right">QUANTITÉ TOTALE D'ARTICLES :</td>
+            <td colspan="3" align="center">QUANTITÉ TOTALE D'ARTICLES :</td>
             <td align="center"><?= $total_quantite ?></td>
             <td colspan="2"></td>
         </tr>
         <tr style="background-color: #fff1f2; font-weight: bold; height: 30px;">
-            <td colspan="5" align="right">MONTANT TOTAL GÉNÉRAL (FCFA) :</td>
+            <td colspan="5" align="center">MONTANT TOTAL GÉNÉRAL (FCFA) :</td>
             <td align="right" style="color: #ef4444; font-size: 14px;"><?= number_format($grand_total, 0, '', ' ') ?></td>
         </tr>
     </tbody>
