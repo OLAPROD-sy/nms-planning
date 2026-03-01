@@ -20,8 +20,6 @@ if (!empty($_GET['f_date_debut']) && !empty($_GET['f_date_fin'])) {
     $params[] = $_GET['f_date_fin'];
 }
 
-
-
 // 2. Requête SQL
 $sql = "SELECT m.*, p.nom_produit, p.unite_mesure 
         FROM mouvements_stock_admin m 
@@ -35,17 +33,6 @@ $sql .= " ORDER BY m.date_mouvement DESC";
 $stmt = $pdo->prepare($sql);
 $stmt->execute($params);
 $donnees = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-// Initialisation du total général
-$total_general_periode = 0;
-
-// Dans votre boucle d'affichage ou avant l'export
-foreach ($donnees as &$f) {
-    // Calcul du montant par ligne
-    $f['montant_ligne'] = $f['quantite'] * $f['prix_mouvement'];
-    // Accumulation pour le total en bas de tableau
-    $total_general_periode += $f['montant_ligne'];
-}
 
 // 3. Configuration des headers Excel
 $filename = "Inventaire_" . ($_GET['f_action'] ?? 'Global') . "_" . date('d-m-Y') . ".xls";
@@ -89,15 +76,24 @@ header("Content-Disposition: attachment; filename=\"$filename\"");
         <?php endforeach; ?>
     </tbody>
     <tfoot>
+        <?php 
+        $grand_total = 0;
+        $total_quantite = 0;
+        foreach ($donnees as $row): 
+            $montant_ligne = $row['quantite'] * $row['prix_mouvement'];
+            $grand_total += $montant_ligne;
+            $total_quantite += $row['quantite'];
+        ?>
         <tr style="background-color: #f1f5f9; font-weight: bold;">
             <td colspan="3" align="right">QUANTITÉ TOTALE D'ARTICLES :</td>
             <td align="center"><?= $total_quantite ?></td>
             <td colspan="2"></td>
         </tr>
-        <tr style="background-color: #1a1414; font-weight: bold; height: 30px;">
+        <tr style="background-color: #fff1f2; font-weight: bold; height: 30px;">
             <td colspan="5" align="right">MONTANT TOTAL GÉNÉRAL (FCFA) :</td>
-            <td align="right" style="color: #ef4444; font-size: 14px;"><?= number_format($total_general_periode, 0, '', ' ') ?></td>
+            <td align="right" style="color: #ef4444; font-size: 14px;"><?= number_format($grand_total, 0, '', ' ') ?></td>
         </tr>
+        <?php endforeach; ?>
     </tfoot>
 </table>
 
