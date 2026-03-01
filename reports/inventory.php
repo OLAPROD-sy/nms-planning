@@ -46,38 +46,47 @@ if ($siteNameCol) {
     $sites_map = $stmtSites->fetchAll(PDO::FETCH_KEY_PAIR);
 }
 
-// 3. Récupération des données
-$stmt = $pdo->prepare('
+// ... (Gardez la détection dynamique du nom du site intacte)
+
+// 3. Récupération des données (Mouvements détaillés)
+$sql_mouv = '
     SELECT m.*, p.nom_produit
     FROM mouvements_stock m
     JOIN produits p ON m.id_produit = p.id_produit
     WHERE m.date_mouvement BETWEEN ? AND ?
+    ' . $site_condition . '
     ORDER BY m.date_mouvement DESC
-');
-$stmt->execute([$date_start . ' 00:00:00', $date_end . ' 23:59:59']);
+';
+$stmt = $pdo->prepare($sql_mouv);
+$stmt->execute($params);
 $mouvements = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-$stmt = $pdo->prepare('
+// 4. Résumé par Produit (Bilan net)
+$sql_resume = '
     SELECT 
         p.nom_produit,
         m.id_site,
-        SUM(CASE WHEN m.type_mouvement = "entree" THEN m.quantite ELSE 0 END) as total_entrees,
-        SUM(CASE WHEN m.type_mouvement = "sortie" THEN m.quantite ELSE 0 END) as total_sorties,
-        (SUM(CASE WHEN m.type_mouvement = "entree" THEN m.quantite ELSE 0 END) - 
-         SUM(CASE WHEN m.type_mouvement = "sortie" THEN m.quantite ELSE 0 END)) as bilan_net
+        SUM(CASE WHEN LOWER(m.type_mouvement) = "entree" THEN m.quantite ELSE 0 END) as total_entrees,
+        SUM(CASE WHEN LOWER(m.type_mouvement) = "sortie" THEN m.quantite ELSE 0 END) as total_sorties,
+        (SUM(CASE WHEN LOWER(m.type_mouvement) = "entree" THEN m.quantite ELSE 0 END) - 
+         SUM(CASE WHEN LOWER(m.type_mouvement) = "sortie" THEN m.quantite ELSE 0 END)) as bilan_net
     FROM mouvements_stock m
     JOIN produits p ON m.id_produit = p.id_produit
     WHERE m.date_mouvement BETWEEN ? AND ?
+    ' . $site_condition . '
     GROUP BY p.id_produit, m.id_site
     ORDER BY p.nom_produit
-');
-$stmt->execute([$date_start . ' 00:00:00', $date_end . ' 23:59:59']);
+';
+$stmt = $pdo->prepare($sql_resume);
+$stmt->execute($params);
 $resume = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// Calcul des KPI globaux
+// Calcul des KPI globaux mis à jour selon les filtres
 $global_in = 0; $global_out = 0;
-foreach($resume as $r) { $global_in += $r['total_entrees']; $global_out += $r['total_sorties']; }
-
+foreach($resume as $r) { 
+    $global_in += $r['total_entrees']; 
+    $global_out += $r['total_sorties']; 
+}
 include_once __DIR__ . '/../includes/header.php'; 
 ?>
 
@@ -308,9 +317,9 @@ include_once __DIR__ . '/../includes/header.php';
                 </select>
             </div>
             <button type="submit" class="btn-main" style="background: var(--p-blue); color:white; padding: 10px 20px; border:none; border-radius:8px; cursor:pointer; height:41px;">Appliquer</button>
-            <button onclick="window.print()" class="btn-main" style="background: #2ecc71; color:white; border:none; padding:10px 20px; border-radius:8px; cursor:pointer;">
-                📄 Télécharger en PDF (Imprimer)
-            </button>     
+            <button type="button" onclick="exportToExcel()" class="btn-main" style="background: #27ae60; color:white; border:none; padding:10px 20px; border-radius:8px; cursor:pointer; font-weight: bold;">
+                Excel 📥 Exporter en Excel
+            </button>  
         </form>
     </div>
 
@@ -333,6 +342,33 @@ include_once __DIR__ . '/../includes/header.php';
             <h3>Mouvements</h3>
             <div class="value" style="color: var(--p-dark);"><?= count($mouvements) ?></div>
         </div>
+    </div>
+
+    <div class="section-card">
+    <div class="section-title">📊 Part de consommation par site (Sorties)</div>
+    <?php
+        $max_out = $global_out > 0 ? $global_out : 1;
+        // On regroupe les sorties par site pour le graphique
+        $site_usage = [];
+        foreach($resume as $r) {
+            $site_name = $sites_map[$r['id_site']] ?? 'Inconnu';
+            if(!isset($site_usage[$site_name])) $site_usage[$site_name] = 0;
+            $site_usage[$site_name] += $r['total_sorties'];
+        }
+        
+        foreach($site_usage as $name => $val): 
+            $prc = ($val / $max_out) * 100;
+        ?>
+        <div style="margin-bottom: 15px;">
+            <div style="display: flex; justify-content: space-between; font-size: 0.85em; margin-bottom: 5px;">
+                <span>📍 <?= htmlspecialchars($name) ?></span>
+                <strong><?= $val ?> unités sorties</strong>
+            </div>
+            <div style="background: #eee; border-radius: 10px; height: 12px; width: 100%; overflow: hidden;">
+                <div style="background: var(--p-red); width: <?= $prc ?>%; height: 100%; transition: width 0.5s;"></div>
+            </div>
+        </div>
+        <?php endforeach; ?>
     </div>
 
     <div class="section-card">
@@ -397,12 +433,14 @@ include_once __DIR__ . '/../includes/header.php';
                         <td><strong><?= htmlspecialchars($m['nom_produit']) ?></strong></td>
                         <td><?= htmlspecialchars($sites_map[$m['id_site']] ?? 'Global') ?></td>
                         <td>
-                            <?php if ($isEntree): ?>
-                                <span class="badge badge-in" style="background: #e8f5e9; color: #27ae60; padding: 4px 10px; border-radius: 20px; font-weight: bold; font-size: 0.75em;">
+                            <?php 
+                            $type_brut = trim(strtolower($m['type_mouvement']));
+                            if ($type_brut === 'entree'): ?>
+                                <span class="badge" style="background: #e8f5e9; color: #27ae60; padding: 4px 10px; border-radius: 20px; font-weight: bold; font-size: 0.75em; border: 1px solid #27ae60;">
                                     ⬆️ ENTRÉE
                                 </span>
                             <?php else: ?>
-                                <span class="badge badge-out" style="background: #ffebee; color: #e74c3c; padding: 4px 10px; border-radius: 20px; font-weight: bold; font-size: 0.75em;">
+                                <span class="badge" style="background: #ffebee; color: #e74c3c; padding: 4px 10px; border-radius: 20px; font-weight: bold; font-size: 0.75em; border: 1px solid #e74c3c;">
                                     ⬇️ SORTIE
                                 </span>
                             <?php endif; ?>
@@ -433,5 +471,22 @@ include_once __DIR__ . '/../includes/header.php';
         </p>
     </div>
 </div>
+<script>
+    // Force la soumission du formulaire si une date manuelle est changée
+    document.querySelectorAll('input[type="date"]').forEach(input => {
+        input.addEventListener('change', () => {
+            document.querySelector('.filter-grid').submit();
+        });
+    });
 
+    function exportToExcel() {
+    // Récupère les valeurs actuelles des filtres dans le formulaire
+    const start = document.querySelector('input[name="date_start"]').value;
+    const end = document.querySelector('input[name="date_end"]').value;
+    const site = document.querySelector('select[name="id_site"]').value;
+    
+    // Redirige vers le script d'export avec les bons paramètres
+    window.location.href = `export_inventory.php?date_start=${start}&date_end=${end}&id_site=${site}`;
+}
+</script>
 <?php include_once __DIR__ . '/../includes/footer.php'; ?>
