@@ -302,6 +302,83 @@ $users = $pdo->query('
 
 
 
+    .users-container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+    
+    .site-section-title {
+        margin: 40px 0 20px 0;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        border-bottom: 2px solid #eee;
+        padding-bottom: 10px;
+    }
+
+    .users-grid {
+        display: grid;
+        gap: 20px;
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    }
+
+    /* La Carte Utilisateur */
+    .user-card {
+        background: white;
+        border-radius: 16px;
+        padding: 20px;
+        display: flex;
+        gap: 15px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        border: 1px solid #f0f0f0;
+        position: relative;
+    }
+
+    /* Responsivité Mobile */
+    @media (max-width: 480px) {
+        .user-card {
+            flex-direction: column; /* On empile les éléments sur petit écran */
+            align-items: center;
+            text-align: center;
+        }
+        .user-actions-container {
+            width: 100%;
+            border-top: 1px solid #eee;
+            padding-top: 10px;
+            margin-top: 10px;
+            flex-direction: row !important;
+            justify-content: center;
+        }
+        .users-grid {
+            grid-template-columns: 1fr; /* Une seule colonne sur mobile */
+        }
+    }
+
+    .user-avatar {
+        width: 70px; height: 70px; border-radius: 50%; object-fit: cover;
+        background: #f8f9fa; border: 2px solid #FF9800;
+    }
+
+    .user-info { flex: 1; }
+    .user-name { font-weight: 800; font-size: 17px; color: #2c3e50; }
+    
+    /* Badges de rôle */
+    .role-badge {
+        display: inline-block; padding: 3px 10px; border-radius: 20px;
+        font-size: 11px; font-weight: 700; text-transform: uppercase; margin: 5px 0;
+    }
+    .role-admin { background: #ffebee; color: #f44336; }
+    .role-agent { background: #e8f5e9; color: #4caf50; }
+
+    .user-details { font-size: 13px; color: #666; margin: 8px 0; }
+    .detail-item { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+
+    /* Actions */
+    .user-actions-container { display: flex; flex-direction: column; gap: 10px; align-items: flex-end; }
+    .action-group { display: flex; gap: 8px; }
+    
+    .btn-toggle-status {
+        background: #f0f0f0; border: none; padding: 6px 12px;
+        border-radius: 8px; font-size: 11px; font-weight: 600; cursor: pointer;
+    }
+
 </style>
 
 <div class="page-header" style="padding: 25px 20px 10px 20px;">
@@ -323,73 +400,61 @@ $users = $pdo->query('
 </div>
 
 <div class="users-grid">
-    <div class="users-container" style="max-width: 1300px; margin: 0 auto; padding: 0 20px;">
-
-    <?php foreach ($grouped_users as $site_title => $members): ?>
-        
-        <div class="site-section-header" style="
-            margin: 40px 0 20px 0; 
-            padding-bottom: 10px; 
-            border-bottom: 2px solid #EEE;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        ">
-            <h2 style="font-size: 18px; font-weight: 800; color: var(--dark); text-transform: uppercase; letter-spacing: 1px;">
-                <?= htmlspecialchars($site_title) ?>
-            </h2>
-            <span style="background: #EEE; padding: 2px 10px; border-radius: 10px; font-size: 12px; color: #666;">
-                <?= count($members) ?> membre(s)
-            </span>
-        </div>
-
-        <div class="users-grid" style="display: grid; gap: 15px; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); margin-bottom: 30px;">
-            <?php foreach ($members as $u): ?>
-                <div class="user-card" data-search-content="<?= htmlspecialchars(strtolower($u['prenom'].' '.$u['nom'].' '.$u['role'].' '.($u['nom_site']??''))) ?>">
-                    <div class="avatar-container">
-                        <?php if (!empty($u['photo'])): ?>
-                            <img src="/<?= htmlspecialchars($u['photo']) ?>" class="user-avatar" style="width: 60px; height: 60px; border-radius: 50%; object-fit: cover;">
-                        <?php else: ?>
-                            <div class="user-avatar" style="width: 60px; height: 60px; border-radius: 50%; background: #e9ecef; display:flex; align-items:center; justify-content:center; color:#adb5bd; font-weight: bold;">
-                                <?= strtoupper(substr($u['nom'], 0, 1)) ?>
-                            </div>
-                        <?php endif; ?>
-                    </div>
-
-                    <div class="user-info" style="flex: 1;">
-                        <div class="user-name" style="font-weight: 700;"><?= htmlspecialchars($u['prenom'] . ' ' . $u['nom']) ?></div>
-                        <div class="user-role role-<?= strtolower($u['role']) ?>" style="font-size: 11px;"><?= $u['role'] ?></div>
-                        
-                        <div class="user-details" style="margin-top: 5px; font-size: 12px; color: #666;">
-                            <div>📞 <?= htmlspecialchars($u['contact'] ?? '-') ?></div>
-                        </div>
-
-                        <?php 
-                            $isActive = ((int)$u['actif'] === 1);
-                        ?>
-                        <div class="status-pill <?= $isActive ? 'status-online' : 'status-offline' ?>">
-                            <span class="status-dot"></span> <?= $isActive ? 'Actif' : 'Inactif' ?>
-                        </div>
-                    </div>
-
-                    <div class="user-actions-container">
-                        <div class="user-actions">
-                            <a href="edit_users.php?id=<?= $u['id_user'] ?>" class="btn-action btn-edit">✏️</a>
-                        </div>
-                        <form method="POST" style="margin-top:8px;">
-                            <input type="hidden" name="id_user" value="<?= $u['id_user'] ?>">
-                            <input type="hidden" name="current_status" value="<?= $u['actif'] ?>">
-                            <button type="submit" name="toggle_status" class="btn-toggle-status" style="width: 100%; cursor:pointer;">
-                                <?= $isActive ? 'Bloquer' : 'Activer' ?>
-                            </button>
-                        </form>
-                    </div>
+    <div class="users-container">
+        <?php foreach ($grouped_users as $section => $members): ?>
+            <div class="site-section-wrapper" data-section-name="<?= htmlspecialchars($section) ?>">
+                <div class="site-section-title">
+                    <h2 style="font-size: 1.2rem; color: #444;"><?= $section ?></h2>
+                    <span style="background: #ddd; padding: 2px 8px; border-radius: 10px; font-size: 12px;"><?= count($members) ?></span>
                 </div>
-            <?php endforeach; ?>
-        </div>
 
-    <?php endforeach; ?>
-</div>
+                <div class="users-grid">
+                    <?php foreach ($members as $u): ?>
+                        <div class="user-card" data-search="<?= strtolower($u['prenom'].' '.$u['nom'].' '.$u['role']) ?>">
+                            <div class="avatar-zone">
+                                <?php if (!empty($u['photo'])): ?>
+                                    <img src="/<?= htmlspecialchars($u['photo']) ?>" class="user-avatar">
+                                <?php else: ?>
+                                    <div class="user-avatar" style="display:flex; align-items:center; justify-content:center; background:#eee; color:#999; font-weight:bold;">
+                                        <?= strtoupper(substr($u['nom'], 0, 1)) ?>
+                                    </div>
+                                <?php endif; ?>
+                            </div>
+
+                            <div class="user-info">
+                                <div class="user-name"><?= htmlspecialchars($u['prenom'].' '.$u['nom']) ?></div>
+                                <div class="role-badge role-<?= strtolower($u['role']) ?>"><?= $u['role'] ?></div>
+                                
+                                <div class="user-details">
+                                    <div class="detail-item"><span>📍</span> <?= htmlspecialchars($u['nom_site'] ?? 'Non assigné') ?></div>
+                                    <div class="detail-item"><span>📞</span> <?= htmlspecialchars($u['contact'] ?? 'N/A') ?></div>
+                                </div>
+
+                                <?php $isActive = ((int)$u['actif'] === 1); ?>
+                                <div class="status-pill <?= $isActive ? 'status-online' : 'status-offline' ?>">
+                                    <span class="status-dot"></span> <?= $isActive ? 'Actif' : 'Inactif' ?>
+                                </div>
+                            </div>
+
+                            <div class="user-actions-container">
+                                <div class="action-group">
+                                    <a href="edit_users.php?id=<?= $u['id_user'] ?>" class="btn-action btn-edit">✏️</a>
+                                    <a href="delete_user.php?id=<?= $u['id_user'] ?>" class="btn-action btn-delete" onclick="return confirm('Supprimer ?')">🗑️</a>
+                                </div>
+                                <form method="POST">
+                                    <input type="hidden" name="id_user" value="<?= $u['id_user'] ?>">
+                                    <input type="hidden" name="current_status" value="<?= $u['actif'] ?>">
+                                    <button type="submit" name="toggle_status" class="btn-toggle-status">
+                                        <?= $isActive ? 'Désactiver' : 'Activer' ?>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+        <?php endforeach; ?>
+    </div>
 </div>
 <script>
 document.addEventListener('DOMContentLoaded', () => {
