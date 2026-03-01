@@ -252,6 +252,34 @@ $sites = $stmt->fetchAll(PDO::FETCH_ASSOC);
         .search-container { margin: 20px auto 0; }
     }
     .geo-badge { font-size: 11px; background: #f1f5f9; padding: 2px 8px; border-radius: 6px; color: #475569; font-family: monospace; }
+
+    /* Empêche le décalage visuel pendant la recherche sur mobile */
+.sites-grid {
+    min-height: 200px;
+    transition: all 0.3s ease;
+}
+
+/* Force l'affichage correct quand l'élément n'est pas masqué */
+.site-card {
+    display: flex !important; /* Par défaut elles sont en flex */
+    animation: fadeIn 0.3s ease;
+}
+
+/* Style spécifique pour la barre de recherche sur mobile */
+@media (max-width: 768px) {
+    .search-container {
+        width: 100%;
+        margin-bottom: 20px;
+    }
+    .search-input {
+        font-size: 16px; /* Empêche l'auto-zoom d'iOS sur les inputs */
+    }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
 </style>
 
 <div class="page-wrapper">
@@ -365,21 +393,25 @@ $sites = $stmt->fetchAll(PDO::FETCH_ASSOC);
 </div>
 <script>
     // --- RECHERCHE TEMPS RÉEL ---
-    document.getElementById('siteSearch').addEventListener('input', function(e) {
-        const term = e.target.value.toLowerCase();
-        const cards = document.querySelectorAll('.site-card');
+   document.getElementById('siteSearch').addEventListener('input', function(e) {
+    const term = e.target.value.trim().toLowerCase();
+    const cards = document.querySelectorAll('.site-card');
+    
+    cards.forEach(card => {
+        // On récupère le contenu directement dans le texte de la carte si l'attribut fail
+        const cardText = card.innerText.toLowerCase();
+        const searchableAttr = card.getAttribute('data-searchable') || "";
         
-        cards.forEach(card => {
-            const content = card.getAttribute('data-searchable');
-            if(content.includes(term)) {
-                card.style.display = 'flex';
-                card.style.animation = 'fadeIn 0.3s ease';
-            } else {
-                card.style.display = 'none';
-            }
-        });
+        if (cardText.includes(term) || searchableAttr.includes(term)) {
+            // Au lieu de forcer 'flex', on retire juste le masquage
+            card.style.display = ''; 
+            card.style.opacity = '1';
+        } else {
+            card.style.display = 'none';
+            card.style.opacity = '0';
+        }
     });
-
+});
     // Animation de toast (si présent)
     const toast = document.querySelector('.alert-toast');
     if(toast) {
