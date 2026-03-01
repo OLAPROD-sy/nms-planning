@@ -96,6 +96,7 @@ $sql_resume = '
     JOIN produits p ON m.id_produit = p.id_produit
     WHERE m.date_mouvement BETWEEN ? AND ?
     ' . $site_condition . '
+    ' . $type_condition . '
     GROUP BY p.id_produit, m.id_site
     ORDER BY p.nom_produit
 ';
