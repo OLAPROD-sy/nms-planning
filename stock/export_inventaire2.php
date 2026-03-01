@@ -58,13 +58,14 @@ header("Content-Disposition: attachment; filename=\"$filename\"");
             <th>Montant Total (FCFA)</th>
         </tr>
     </thead>
-    <tbody>
-        <?php 
+    <?php 
         $grand_total = 0;
         foreach ($donnees as $row): 
             $montant_ligne = $row['quantite'] * $row['prix_mouvement'];
             $grand_total += $montant_ligne;
         ?>
+    <tbody>
+        
         <tr>
             <td><?= date('d/m/Y H:i', strtotime($row['date_mouvement'])) ?></td>
             <td><?= htmlspecialchars($row['nom_produit']) ?> (<?= $row['unite_mesure'] ?>)</td>
@@ -73,12 +74,12 @@ header("Content-Disposition: attachment; filename=\"$filename\"");
             <td align="right"><?= number_format($row['prix_mouvement'], 0, '', ' ') ?></td>
             <td align="right" style="font-weight: bold;"><?= number_format($montant_ligne, 0, '', ' ') ?></td>
         </tr>
-        <?php endforeach; ?>
-    </tbody>
+        </tbody>
     <tfoot>
         <tr style="background-color: #fff1f2; font-weight: bold;">
             <td colspan="5" align="right">MONTANT TOTAL GÉNÉRAL :</td>
             <td align="right" style="color: #ef4444;"><?= number_format($grand_total, 0, '', ' ') ?> FCFA</td>
         </tr>
     </tfoot>
+    <?php endforeach; ?>
 </table>
