@@ -405,7 +405,7 @@ $users = $pdo->query('
             <div class="site-section-wrapper" data-section-name="<?= htmlspecialchars($section) ?>">
                 <div class="site-section-title">
                     <h2 style="font-size: 1.2rem; color: #444;"><?= $section ?></h2>
-                    <span style="background: #ddd; padding: 2px 8px; border-radius: 10px; font-size: 12px;"><?= count($members) ?></span>
+                    <span style="background: #ddd; padding: 2px 8px; border-radius: 10px; font-size: 12px;"><?= count($members) ?> membre(s)</span>
                 </div>
 
                 <div class="users-grid">
@@ -482,6 +482,42 @@ document.addEventListener('DOMContentLoaded', () => {
             // Si aucune carte n'est visible dans ce site, on cache aussi le titre du site
             section.style.display = hasVisibleCards ? 'flex' : 'none';
             grid.style.display = hasVisibleCards ? 'grid' : 'none';
+        });
+    });
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+    const searchInput = document.getElementById('userSearch');
+    
+    // On cible les conteneurs de sections (Titre + Grille)
+    const sections = document.querySelectorAll('.site-section-wrapper');
+
+    searchInput.addEventListener('input', function() {
+        const searchTerm = this.value.toLowerCase().trim();
+
+        sections.forEach(section => {
+            const cards = section.querySelectorAll('.user-card');
+            let hasVisibleCards = false;
+
+            cards.forEach(card => {
+                // On récupère l'attribut data-search que nous avons mis dans le HTML
+                const searchText = card.getAttribute('data-search');
+                
+                if (searchText.includes(searchTerm)) {
+                    card.style.display = 'flex'; // On affiche la carte
+                    hasVisibleCards = true;
+                } else {
+                    card.style.display = 'none'; // On cache la carte
+                }
+            });
+
+            // Si le site contient au moins un employé qui correspond, on affiche le titre
+            // Sinon, on cache toute la section du site
+            if (hasVisibleCards) {
+                section.style.display = 'block';
+            } else {
+                section.style.display = 'none';
+            }
         });
     });
 });
