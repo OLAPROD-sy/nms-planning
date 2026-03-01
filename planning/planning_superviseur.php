@@ -109,10 +109,18 @@ $recent_plannings = $stmtPlan->fetchAll(PDO::FETCH_ASSOC);
 <?php include_once __DIR__ . '/../includes/header.php'; ?>
 
 <style>
-    .admin-grid { display: grid; grid-template-columns: 1fr 2fr; gap: 20px; padding: 20px; max-width: 1400px; margin: auto; }
-    .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); margin-bottom: 20px; }
-    .card h3 { margin-top: 0; color: var(--primary-orange); border-bottom: 2px solid #f0f0f0; padding-bottom: 10px; margin-bottom: 15px; }
-    
+    .admin-grid { display: grid; grid-template-columns: 350px 1fr; gap: 20px; padding: 20px; max-width: 1400px; margin: auto; align-items: start; /* Empêche l'étirement vertical forcé */}
+    .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); margin-bottom: 20px; border: 1px solid #f0f0f0; /* Ajout d'une fine bordure pour la netteté */}
+.card h3 { 
+        margin: 0 0 15px 0; 
+        color: #ff7403; 
+        border-bottom: 2px solid #fff5ed; 
+        padding-bottom: 10px; 
+        font-size: 1.1em;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }    
     .week-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 8px; margin: 15px 0; }
     .day-option { border: 1px solid #ddd; border-radius: 8px; padding: 8px; text-align: center; cursor: pointer; font-size: 0.85em; }
     .day-option.selected { background: #e8f5e9; border-color: #4caf50; font-weight: bold; }
