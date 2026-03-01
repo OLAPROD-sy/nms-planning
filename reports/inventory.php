@@ -484,8 +484,14 @@ include_once __DIR__ . '/../includes/header.php';
     const end = document.querySelector('input[name="date_end"]').value;
     const site = document.querySelector('select[name="id_site"]').value;
     
-    // Vérifiez bien que le fichier s'appelle export_inventory.php
-    window.location.href = `export_inventory.php?date_start=${start}&date_end=${end}&id_site=${site}`;
-}
+    // On construit l'URL proprement
+    let url = `export_inventory.php?date_start=${start}&date_end=${end}`;
+    if (site) {
+        url += `&id_site=${site}`;
+    }
+    
+    window.location.href = url;
+   }
+
 </script>
 <?php include_once __DIR__ . '/../includes/footer.php'; ?>
