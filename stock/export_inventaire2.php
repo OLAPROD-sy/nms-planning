@@ -96,7 +96,7 @@ header("Content-Disposition: attachment; filename=\"$filename\"");
         </tr>
         <tr style="background-color: #1a1414; font-weight: bold; height: 30px;">
             <td colspan="5" align="right">MONTANT TOTAL GÉNÉRAL (FCFA) :</td>
-            <td align="right" style="color: #ef4444; font-size: 14px;"><?= number_format($grand_total, 0, '', ' ') ?></td>
+            <td align="right" style="color: #ef4444; font-size: 14px;"><?= number_format($total_general_periode, 0, '', ' ') ?></td>
         </tr>
     </tfoot>
 </table>
