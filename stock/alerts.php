@@ -67,6 +67,21 @@ include_once __DIR__ . '/../includes/header.php';
         margin-bottom: 25px; 
     }
     
+    .filter-section select {
+        cursor: pointer;
+        background-color: #f8fafc;
+        transition: border-color 0.3s;
+    }
+    .filter-section select:focus {
+        border-color: var(--warning);
+        outline: none;
+    }
+    
+    @media (max-width: 600px) {
+        .filter-section form { flex-direction: column; align-items: flex-start; }
+        .filter-section select { max-width: 100%; width: 100%; }
+    }
+    
     .kpi-card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border-left: 5px solid #ccc; }
     .kpi-critique { border-left-color: var(--danger); }
     .kpi-faible { border-left-color: var(--warning); }
