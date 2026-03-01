@@ -238,7 +238,7 @@ $recent_plannings = $stmtPlan->fetchAll(PDO::FETCH_ASSOC);
                         <input type="time" name="heure_fin" class="form-control" value="18:00">
                     </div>
                     <div class="form-group">
-                        <button name="programmer" class="btn-main btn-save">💾 Enregistrer</button>
+                        <button name="programmer" class="btn-main btn-save">Enregistrer</button>
                     </div>
                 </div>
             </form>
