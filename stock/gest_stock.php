@@ -184,7 +184,7 @@ foreach ($flux as &$f) {
                     </select>
                     <input type="number" name="quantite" placeholder="Qté" required class="filter-input">
                     <input type="number" step="0.01" name="prix_saisi" placeholder="Prix Unit." class="filter-input">
-                    <button type="submit" class="user_profile_btn" style="background:#1e293b;">Valider</button>
+                    <button type="submit" class="user_profile_btn" style="background:green;">Valider</button>
                 </form>
             </div>
         </div>
