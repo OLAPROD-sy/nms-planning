@@ -133,7 +133,7 @@ $sites = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     .hero-section::after {
         content: "";
-        position: absolute;
+        position: relative;
         top: -50%; right: -10%;
         width: 400px; height: 400px;
         background: radial-gradient(circle, rgba(99,102,241,0.2) 0%, transparent 70%);
