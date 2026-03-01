@@ -61,6 +61,13 @@ if ($siteNameCol) {
 }
 
 // ... (Gardez la détection dynamique du nom du site intacte)
+$filter_type = $_GET['f_type'] ?? '';
+$type_condition = "";
+
+if (!empty($filter_type)) {
+    $type_condition = " AND m.type_mouvement = ? ";
+    $params[] = $filter_type;
+}
 
 // 3. Récupération des données (Mouvements détaillés)
 $sql_mouv = '
@@ -69,6 +76,7 @@ $sql_mouv = '
     JOIN produits p ON m.id_produit = p.id_produit
     WHERE m.date_mouvement BETWEEN ? AND ?
     ' . $site_condition . '
+    ' . $type_condition . '
     ORDER BY m.date_mouvement DESC
 ';
 $stmt = $pdo->prepare($sql_mouv);
@@ -330,6 +338,14 @@ include_once __DIR__ . '/../includes/header.php';
                     <?php endforeach; ?>
                 </select>
             </div>
+            <div class="filter-group">
+                <label>Type de Flux</label>
+                <select name="f_type" class="form-control" onchange="this.form.submit()">
+                    <option value="">🔄 Tous les flux</option>
+                    <option value="entree" <?= $filter_type === 'entree' ? 'selected' : '' ?>>⬆️ Entrées uniquement</option>
+                    <option value="sortie" <?= $filter_type === 'sortie' ? 'selected' : '' ?>>⬇️ Sorties uniquement</option>
+                </select>
+            </div>
             <button type="submit" class="btn-main" style="background: var(--p-blue); color:white; padding: 10px 20px; border:none; border-radius:8px; cursor:pointer; height:41px;">Appliquer</button>
             <button type="button" onclick="exportToExcel()" class="btn-main" style="background: #27ae60; color:white; border:none; padding:10px 20px; border-radius:8px; cursor:pointer; font-weight: bold;">
                 Excel 📥 Exporter en Excel
@@ -423,8 +439,13 @@ include_once __DIR__ . '/../includes/header.php';
     </div>
 
     <div class="section-card">
-        <div class="section-title">📋 Journal Détaillé des Opérations</div>
-        <div style="overflow-x: auto;">
+            <div class="section-title" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                <span>📋 Journal Détaillé des Opérations</span>
+                <span style="background: var(--p-blue); color: white; padding: 4px 12px; border-radius: 20px; font-size: 0.7em;">
+                    <?= count($mouvements) ?> résultat(s) trouvé(s)
+                </span>
+            </div>        
+            <div style="overflow-x: auto;">
             <table class="custom-table">
                 <thead>
                     <tr>
@@ -497,15 +518,13 @@ include_once __DIR__ . '/../includes/header.php';
     const start = document.querySelector('input[name="date_start"]').value;
     const end = document.querySelector('input[name="date_end"]').value;
     const site = document.querySelector('select[name="id_site"]').value;
+    const type = document.querySelector('select[name="f_type"]').value; // Nouveau
     
-    // On construit l'URL proprement
     let url = `export_inventory.php?date_start=${start}&date_end=${end}`;
-    if (site) {
-        url += `&id_site=${site}`;
-    }
+    if (site) url += `&id_site=${site}`;
+    if (type) url += `&f_type=${type}`; // Nouveau
     
     window.location.href = url;
-   }
-
+}
 </script>
 <?php include_once __DIR__ . '/../includes/footer.php'; ?>

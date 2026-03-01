@@ -15,8 +15,10 @@ if ($_SESSION['role'] !== 'ADMIN' && $_SESSION['role'] !== 'SUPERVISOR') {
 $date_start = $_GET['date_start'] ?? date('Y-m-01');
 $date_end = $_GET['date_end'] ?? date('Y-m-t');
 $selected_site = $_GET['id_site'] ?? '';
+$filter_type = $_GET['f_type'] ?? '';
 
 $params = [$date_start . ' 00:00:00', $date_end . ' 23:59:59'];
+$type_condition = "";
 $site_condition = "";
 
 if (!empty($selected_site)) {
@@ -24,6 +26,10 @@ if (!empty($selected_site)) {
     $params[] = $selected_site;
 }
 
+if (!empty($filter_type)) {
+    $type_condition = " AND m.type_mouvement = ? ";
+    $params[] = $filter_type;
+}
 // 2. Détection dynamique du nom de la colonne du site (pour éviter l'erreur 500)
 $siteNameCol = 'id_site'; // Par défaut
 try {
@@ -38,7 +44,7 @@ $sql = "SELECT m.*, p.nom_produit, s.$siteNameCol as site_name
         FROM mouvements_stock m 
         INNER JOIN produits p ON m.id_produit = p.id_produit
         LEFT JOIN sites s ON m.id_site = s.id_site
-        WHERE m.date_mouvement BETWEEN ? AND ? $site_condition
+        WHERE m.date_mouvement BETWEEN ? AND ? $site_condition $type_condition
         ORDER BY m.date_mouvement DESC";
 
 $stmt = $pdo->prepare($sql);
