@@ -120,9 +120,16 @@ $recent_plannings = $stmtPlan->fetchAll(PDO::FETCH_ASSOC);
         display: flex;
         align-items: center;
         gap: 10px;
-    }    
-    .week-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 8px; margin: 15px 0; }
-    .day-option { border: 1px solid #ddd; border-radius: 8px; padding: 8px; text-align: center; cursor: pointer; font-size: 0.85em; }
+    }  
+    /* Ajustement du formulaire de programmation pour éviter les débordements */
+    .prog-form-grid {
+        display: grid; 
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); 
+        gap: 15px;
+    }  
+    .week-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; margin: 15px 0; }
+    .day-option { border: 1px solid #eee; border-radius: 8px; padding: 10px 5px; text-align: center; cursor: pointer; font-size: 0.85em; transition: 0.2s;
+        background: #fafafa;}
     .day-option.selected { background: #e8f5e9; border-color: #4caf50; font-weight: bold; }
     .day-option input { display: none; }
 
@@ -141,7 +148,10 @@ $recent_plannings = $stmtPlan->fetchAll(PDO::FETCH_ASSOC);
     .styled-table td { padding: 12px; border-bottom: 1px solid #f0f0f0; }
     .badge-date { background: #eee; padding: 3px 8px; border-radius: 4px; font-family: monospace; }
     
-    @media (max-width: 1000px) { .admin-grid { grid-template-columns: 1fr; } }
+    @media (max-width: 1100px) { 
+        .admin-grid { grid-template-columns: 1fr; } 
+        .week-grid { grid-template-columns: repeat(4, 1fr); }
+    }
 </style>
 
 <div class="admin-grid">
@@ -181,65 +191,41 @@ $recent_plannings = $stmtPlan->fetchAll(PDO::FETCH_ASSOC);
 
     <div class="main-col">
         <div class="card">
-            <h3>📅 Programmer un Agent</h3>
-            <form method="post">
-                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
-                    <div class="form-group">
-                        <label>Semaine</label>
-                        <select name="id_semaine" id="semSelect" class="form-control" required>
-                            <option value="">-- Choisir --</option>
-                            <?php foreach($semaines_list as $s): ?>
-                                <option value="<?= $s['id_semaine'] ?>" data-start="<?= $s['date_debut'] ?>">
-                                    Du <?= date('d/m', strtotime($s['date_debut'])) ?>
-                                </option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Nom de l'agent</label>
-                        <select name="id_agent" class="form-control" required>
-                            <option value="">-- Sélectionner un agent --</option>
-                            <?php if (!empty($agents)): ?>
-                                <?php foreach($agents as $a): ?>
-                                    <option value="<?= $a['id_user'] ?>">
-                                        <?= htmlspecialchars(strtoupper($a['nom']) . ' ' . $a['prenom']) ?>
-                                    </option>
-                                <?php endforeach; ?>
-                            <?php else: ?>
-                                <option value="" disabled>Aucun agent trouvé pour ce site</option>
-                            <?php endif; ?>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Poste</label>
-                        <select name="id_poste" class="form-control" required>
-                            <?php foreach($postes as $p): ?>
-                                <option value="<?= $p['id_poste'] ?>"><?= $p['libelle'] ?></option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
-                </div>
+    <h3>📅 Programmer un Agent</h3>
+    <form method="post">
+        <div class="prog-form-grid">
+            <div class="form-group">
+                <label>Semaine</label>
+                <select name="id_semaine" id="semSelect" class="form-control" required>
+                    <option value="">-- Choisir --</option>
+                    <?php foreach($semaines_list as $s): ?>
+                        <option value="<?= $s['id_semaine'] ?>" data-start="<?= $s['date_debut'] ?>">
+                            Du <?= date('d/m', strtotime($s['date_debut'])) ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+            </div>
 
-                <label>Jours de travail (cliquez pour sélectionner) :</label>
-                <div class="week-grid" id="daysContainer">
-                    <p style="color: #999; font-style: italic; font-size: 0.8em;">Sélectionnez une semaine...</p>
-                </div>
+        <label style="margin-top:10px; display:block;">Jours de travail :</label>
+        <div class="week-grid" id="daysContainer">
+            </div>
 
-                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; align-items: end;">
-                    <div class="form-group">
-                        <label>Début</label>
-                        <input type="time" name="heure_debut" class="form-control" value="08:00">
-                    </div>
-                    <div class="form-group">
-                        <label>Fin</label>
-                        <input type="time" name="heure_fin" class="form-control" value="18:00">
-                    </div>
-                    <div class="form-group">
-                        <button name="programmer" class="btn-main btn-save">💾 Enregistrer</button>
-                    </div>
-                </div>
-            </form>
+        <div class="prog-form-grid" style="align-items: end;">
+            <div class="form-group">
+                <label>Début</label>
+                <input type="time" name="heure_debut" class="form-control" value="08:00">
+            </div>
+            <div class="form-group">
+                <label>Fin</label>
+                <input type="time" name="heure_fin" class="form-control" value="18:00">
+            </div>
+            <div class="form-group">
+                <button name="programmer" class="btn-main btn-save" style="margin:0;">💾 Enregistrer</button>
+            </div>
         </div>
+    </form>
+</div>
 
         
 
