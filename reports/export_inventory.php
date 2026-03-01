@@ -2,7 +2,7 @@
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../includes/auth_check.php';
 
-if ($_SESSION['role'] !== 'ADMIN' && $_SESSION['role'] !== 'SUPERVISOR') { exit('Accès refusé'); }
+if ($_SESSION['role'] !== 'ADMIN') { exit('Accès refusé'); }
 
 // 1. Récupération des filtres
 $date_start = $_GET['date_start'] ?? date('Y-m-01');
