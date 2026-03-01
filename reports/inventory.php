@@ -480,12 +480,11 @@ include_once __DIR__ . '/../includes/header.php';
     });
 
     function exportToExcel() {
-    // Récupère les valeurs actuelles des filtres dans le formulaire
     const start = document.querySelector('input[name="date_start"]').value;
     const end = document.querySelector('input[name="date_end"]').value;
     const site = document.querySelector('select[name="id_site"]').value;
     
-    // Redirige vers le script d'export avec les bons paramètres
+    // Vérifiez bien que le fichier s'appelle export_inventory.php
     window.location.href = `export_inventory.php?date_start=${start}&date_end=${end}&id_site=${site}`;
 }
 </script>
