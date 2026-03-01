@@ -20,16 +20,7 @@ if (!empty($_GET['f_date_debut']) && !empty($_GET['f_date_fin'])) {
     $params[] = $_GET['f_date_fin'];
 }
 
-// Initialisation du total général
-$total_general_periode = 0;
 
-// Dans votre boucle d'affichage ou avant l'export
-foreach ($flux as &$f) {
-    // Calcul du montant par ligne
-    $f['montant_ligne'] = $f['quantite'] * $f['prix_mouvement'];
-    // Accumulation pour le total en bas de tableau
-    $total_general_periode += $f['montant_ligne'];
-}
 
 // 2. Requête SQL
 $sql = "SELECT m.*, p.nom_produit, p.unite_mesure 
@@ -44,6 +35,17 @@ $sql .= " ORDER BY m.date_mouvement DESC";
 $stmt = $pdo->prepare($sql);
 $stmt->execute($params);
 $donnees = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+// Initialisation du total général
+$total_general_periode = 0;
+
+// Dans votre boucle d'affichage ou avant l'export
+foreach ($donnees as &$f) {
+    // Calcul du montant par ligne
+    $f['montant_ligne'] = $f['quantite'] * $f['prix_mouvement'];
+    // Accumulation pour le total en bas de tableau
+    $total_general_periode += $f['montant_ligne'];
+}
 
 // 3. Configuration des headers Excel
 $filename = "Inventaire_" . ($_GET['f_action'] ?? 'Global') . "_" . date('d-m-Y') . ".xls";
