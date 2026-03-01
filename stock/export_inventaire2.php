@@ -38,6 +38,10 @@ $donnees = $stmt->fetchAll(PDO::FETCH_ASSOC);
 $filename = "Inventaire_" . ($_GET['f_action'] ?? 'Global') . "_" . date('d-m-Y') . ".xls";
 header("Content-Type: application/vnd.ms-excel; charset=utf-8");
 header("Content-Disposition: attachment; filename=\"$filename\"");
+
+// Initialisation des compteurs AVANT la boucle
+$grand_total = 0;
+$total_quantite = 0;
 ?>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <table border="1">
@@ -58,12 +62,11 @@ header("Content-Disposition: attachment; filename=\"$filename\"");
     </thead>
     <tbody>
         <?php 
-        $grand_total = 0;
-        $total_quantite = 0;
+        // BOUCLE UNIQUE : On affiche ET on calcule en même temps
         foreach ($donnees as $row): 
-            $montant_ligne = $row['quantite'] * $row['prix_mouvement'];
+            $montant_ligne = (float)$row['quantite'] * (float)$row['prix_mouvement'];
             $grand_total += $montant_ligne;
-            $total_quantite += $row['quantite'];
+            $total_quantite += (int)$row['quantite'];
         ?>
         <tr>
             <td><?= date('d/m/Y H:i', strtotime($row['date_mouvement'])) ?></td>
@@ -76,14 +79,6 @@ header("Content-Disposition: attachment; filename=\"$filename\"");
         <?php endforeach; ?>
     </tbody>
     <tfoot>
-        <?php 
-        $grand_total = 0;
-        $total_quantite = 0;
-        foreach ($donnees as $row): 
-            $montant_ligne = $row['quantite'] * $row['prix_mouvement'];
-            $grand_total += $montant_ligne;
-            $total_quantite += $row['quantite'];
-        ?>
         <tr style="background-color: #f1f5f9; font-weight: bold;">
             <td colspan="3" align="right">QUANTITÉ TOTALE D'ARTICLES :</td>
             <td align="center"><?= $total_quantite ?></td>
@@ -93,7 +88,6 @@ header("Content-Disposition: attachment; filename=\"$filename\"");
             <td colspan="5" align="right">MONTANT TOTAL GÉNÉRAL (FCFA) :</td>
             <td align="right" style="color: #ef4444; font-size: 14px;"><?= number_format($grand_total, 0, '', ' ') ?></td>
         </tr>
-        <?php endforeach; ?>
     </tfoot>
 </table>
 
