@@ -199,7 +199,7 @@ $recent_plannings = $stmtPlan->fetchAll(PDO::FETCH_ASSOC);
                         </select>
                     </div>
                     <div class="form-group">
-                        <label>Nom de l'agent</label>
+                        <label>L'agent</label>
                         <select name="id_agent" class="form-control" required>
                             <option value="">-- Sélectionner un agent --</option>
                             <?php if (!empty($agents)): ?>
