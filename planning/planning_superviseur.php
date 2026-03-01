@@ -109,27 +109,12 @@ $recent_plannings = $stmtPlan->fetchAll(PDO::FETCH_ASSOC);
 <?php include_once __DIR__ . '/../includes/header.php'; ?>
 
 <style>
-    .admin-grid { display: grid; grid-template-columns: 350px 1fr; gap: 20px; padding: 20px; max-width: 1400px; margin: auto; align-items: start; /* Empêche l'étirement vertical forcé */}
-    .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); margin-bottom: 20px; border: 1px solid #f0f0f0; /* Ajout d'une fine bordure pour la netteté */}
-.card h3 { 
-        margin: 0 0 15px 0; 
-        color: #ff7403; 
-        border-bottom: 2px solid #fff5ed; 
-        padding-bottom: 10px; 
-        font-size: 1.1em;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    }  
-    /* Ajustement du formulaire de programmation pour éviter les débordements */
-    .prog-form-grid {
-        display: grid; 
-        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); 
-        gap: 15px;
-    }  
-    .week-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; margin: 15px 0; }
-    .day-option { border: 1px solid #eee; border-radius: 8px; padding: 10px 5px; text-align: center; cursor: pointer; font-size: 0.85em; transition: 0.2s;
-        background: #fafafa;}
+    .admin-grid { display: grid; grid-template-columns: 1fr 2fr; gap: 20px; padding: 20px; max-width: 1400px; margin: auto; }
+    .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); margin-bottom: 20px; }
+    .card h3 { margin-top: 0; color: orange; border-bottom: 2px solid #f0f0f0; padding-bottom: 10px; margin-bottom: 15px; }
+    
+    .week-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 8px; margin: 15px 0; }
+    .day-option { border: 1px solid #ddd; border-radius: 8px; padding: 8px; text-align: center; cursor: pointer; font-size: 0.85em; }
     .day-option.selected { background: #e8f5e9; border-color: #4caf50; font-weight: bold; }
     .day-option input { display: none; }
 
@@ -148,10 +133,7 @@ $recent_plannings = $stmtPlan->fetchAll(PDO::FETCH_ASSOC);
     .styled-table td { padding: 12px; border-bottom: 1px solid #f0f0f0; }
     .badge-date { background: #eee; padding: 3px 8px; border-radius: 4px; font-family: monospace; }
     
-    @media (max-width: 1100px) { 
-        .admin-grid { grid-template-columns: 1fr; } 
-        .week-grid { grid-template-columns: repeat(4, 1fr); }
-    }
+    @media (max-width: 1000px) { .admin-grid { grid-template-columns: 1fr; } }
 </style>
 
 <div class="admin-grid">
@@ -191,47 +173,71 @@ $recent_plannings = $stmtPlan->fetchAll(PDO::FETCH_ASSOC);
 
     <div class="main-col">
         <div class="card">
-    <h3>📅 Programmer un Agent</h3>
-    <form method="post">
-        <div class="prog-form-grid">
-            <div class="form-group">
-                <label>Semaine</label>
-                <select name="id_semaine" id="semSelect" class="form-control" required>
-                    <option value="">-- Choisir --</option>
-                    <?php foreach($semaines_list as $s): ?>
-                        <option value="<?= $s['id_semaine'] ?>" data-start="<?= $s['date_debut'] ?>">
-                            Du <?= date('d/m', strtotime($s['date_debut'])) ?>
-                        </option>
-                    <?php endforeach; ?>
-                </select>
-            </div>
-            </div>
+            <h3>📅 Programmer un Agent</h3>
+            <form method="post">
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
+                    <div class="form-group">
+                        <label>Semaine</label>
+                        <select name="id_semaine" id="semSelect" class="form-control" required>
+                            <option value="">-- Choisir --</option>
+                            <?php foreach($semaines_list as $s): ?>
+                                <option value="<?= $s['id_semaine'] ?>" data-start="<?= $s['date_debut'] ?>">
+                                    Du <?= date('d/m', strtotime($s['date_debut'])) ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Nom de l'agent</label>
+                        <select name="id_agent" class="form-control" required>
+                            <option value="">-- Sélectionner un agent --</option>
+                            <?php if (!empty($agents)): ?>
+                                <?php foreach($agents as $a): ?>
+                                    <option value="<?= $a['id_user'] ?>">
+                                        <?= htmlspecialchars(strtoupper($a['nom']) . ' ' . $a['prenom']) ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            <?php else: ?>
+                                <option value="" disabled>Aucun agent trouvé pour ce site</option>
+                            <?php endif; ?>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Poste</label>
+                        <select name="id_poste" class="form-control" required>
+                            <?php foreach($postes as $p): ?>
+                                <option value="<?= $p['id_poste'] ?>"><?= $p['libelle'] ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                </div>
 
-        <label style="margin-top:10px; display:block;">Jours de travail :</label>
-        <div class="week-grid" id="daysContainer">
-            </div>
+                <label>Jours de travail (cliquez pour sélectionner) :</label>
+                <div class="week-grid" id="daysContainer">
+                    <p style="color: #999; font-style: italic; font-size: 0.8em;">Sélectionnez une semaine...</p>
+                </div>
 
-        <div class="prog-form-grid" style="align-items: end;">
-            <div class="form-group">
-                <label>Début</label>
-                <input type="time" name="heure_debut" class="form-control" value="08:00">
-            </div>
-            <div class="form-group">
-                <label>Fin</label>
-                <input type="time" name="heure_fin" class="form-control" value="18:00">
-            </div>
-            <div class="form-group">
-                <button name="programmer" class="btn-main btn-save" style="margin:0;">💾 Enregistrer</button>
-            </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; align-items: end;">
+                    <div class="form-group">
+                        <label>Début</label>
+                        <input type="time" name="heure_debut" class="form-control" value="08:00">
+                    </div>
+                    <div class="form-group">
+                        <label>Fin</label>
+                        <input type="time" name="heure_fin" class="form-control" value="18:00">
+                    </div>
+                    <div class="form-group">
+                        <button name="programmer" class="btn-main btn-save">💾 Enregistrer</button>
+                    </div>
+                </div>
+            </form>
         </div>
-    </form>
-</div>
 
         
 
         <div class="card">
             <h3>📋 Programmations Récentes</h3>
-            <div class="table-container" style="overflow-x: auto;">
+            <div class="table-container">
                 <table class="styled-table">
                     <thead>
                         <tr>
