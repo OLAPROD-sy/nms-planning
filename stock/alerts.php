@@ -23,13 +23,31 @@ if ($siteNameCol) {
     $sites_map = $stmtSites->fetchAll(PDO::FETCH_KEY_PAIR);
 }
 
-// 2. Récupération des données
-$stmt = $pdo->prepare('SELECT p.* FROM produits p WHERE p.quantite_actuelle < p.quantite_alerte ORDER BY p.quantite_actuelle ASC');
-$stmt->execute();
+// 1. Détection dynamique du nom du site (Gardez votre code existant pour $sites_map)
+// ... (votre code SHOW COLUMNS et $sites_map reste identique)
+
+// 2. Gestion du Filtre par Site
+$filter_site = isset($_GET['f_site']) && $_GET['f_site'] !== '' ? (int)$_GET['f_site'] : null;
+
+// Préparation des clauses WHERE
+$where_alertes = "p.quantite_actuelle < p.quantite_alerte";
+$where_faibles = "p.quantite_actuelle < 10";
+$params = [];
+
+if ($filter_site) {
+    $where_alertes .= " AND p.id_site = ?";
+    $where_faibles .= " AND p.id_site = ?";
+    $params = [$filter_site];
+}
+
+// Récupération des Produits Critiques
+$stmt = $pdo->prepare("SELECT p.* FROM produits p WHERE $where_alertes ORDER BY p.quantite_actuelle ASC");
+$stmt->execute($params);
 $alertes = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-$stmt = $pdo->prepare('SELECT p.* FROM produits p WHERE p.quantite_actuelle < 10 ORDER BY p.quantite_actuelle ASC');
-$stmt->execute();
+// Récupération des Stocks Faibles
+$stmt = $pdo->prepare("SELECT p.* FROM produits p WHERE $where_faibles ORDER BY p.quantite_actuelle ASC");
+$stmt->execute($params);
 $stocks_faibles = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 include_once __DIR__ . '/../includes/header.php'; 
@@ -104,6 +122,22 @@ include_once __DIR__ . '/../includes/header.php';
     <div class="header-section">
     <h1 style="margin-bottom: 20px; font-size: 1.5em;">⚠️ Tableau de Bord des Alertes</h1>
     </div>
+    <div class="filter-section" style="background: white; padding: 15px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); display: flex; align-items: center; gap: 15px; flex-wrap: wrap;">
+    <form method="GET" style="display: flex; align-items: center; gap: 10px; width: 100%;">
+        <label style="font-weight: bold; color: var(--dark);">📍 Filtrer par site :</label>
+        <select name="f_site" onchange="this.form.submit()" style="padding: 10px; border-radius: 8px; border: 1px solid #ddd; flex: 1; max-width: 300px; font-size: 16px;">
+            <option value="">🌍 Tous les sites</option>
+            <?php foreach($sites_map as $id => $name): ?>
+                <option value="<?= $id ?>" <?= ($filter_site == $id) ? 'selected' : '' ?>>
+                    <?= htmlspecialchars($name) ?>
+                </option>
+            <?php endforeach; ?>
+        </select>
+        <?php if($filter_site): ?>
+            <a href="alerts.php" style="color: var(--danger); text-decoration: none; font-size: 0.9em;">✖ Réinitialiser</a>
+        <?php endif; ?>
+    </form>
+</div>
     <div class="kpi-grid">
         <div class="kpi-card kpi-critique">
             <h3>Produits Critiques</h3>
