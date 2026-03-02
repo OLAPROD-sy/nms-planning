@@ -6,7 +6,10 @@ require_once __DIR__ . '/../includes/auth_check.php';
 if ($_SESSION['role'] === 'AGENT') {
     exit('Accès refusé');
 }
-
+// Si c'est un superviseur, on le force à rester sur SON site
+if ($_SESSION['role'] === 'SUPERVISEUR') {
+    $id_site = $_SESSION['id_site'];
+}
 // 1. Récupération des filtres depuis l'URL (envoyés par le JS)
 $id_site = $_GET['id_site'] ?? null;
 $date_start = $_GET['date_start'] ?? '';

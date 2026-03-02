@@ -262,9 +262,19 @@ $historique = $stmtH->fetchAll(PDO::FETCH_ASSOC);
 </div>
 <script>
 function exportHistorique() {
-    const params = new URLSearchParams(window.location.search);
-    // On redirige vers un futur fichier PHP qui générera l'excel
-    window.location.href = 'export_inventaire.php?' + params.toString();
+    // On récupère les filtres du formulaire
+    const dateStart = document.querySelector('input[name="date_start"]').value;
+    const dateEnd = document.querySelector('input[name="date_end"]').value;
+    const fType = document.querySelector('select[name="f_type"]').value;
+    const idSite = "<?= $id_site ?>"; // L'ID du site injecté par PHP
+
+    // On construit l'URL manuellement pour être sûr que id_site est présent
+    let url = `export_inventaire.php?id_site=${idSite}`;
+    if(dateStart) url += `&date_start=${dateStart}`;
+    if(dateEnd) url += `&date_end=${dateEnd}`;
+    if(fType) url += `&f_type=${fType}`;
+
+    window.location.href = url;
 }
 
 function exportStockActuel() {
