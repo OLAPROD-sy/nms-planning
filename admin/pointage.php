@@ -162,50 +162,59 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $raison = trim($_POST['raison'] ?? '');
             $date_debut = $_POST['date_debut'] ?? $today;
             $date_fin = $_POST['date_fin'] ?? $date_debut;
+            $h_dep = !empty($_POST['heure_depart']) ? $_POST['heure_depart'] : null;
+            $h_arr = !empty($_POST['heure_arrivee']) ? $_POST['heure_arrivee'] : null;
 
             if (!empty($raison) && !empty($date_debut)) {
                 $motif = $raison . (!empty($_POST['commentaire']) ? " - " . trim($_POST['commentaire']) : "");
-                
-                // Création de l'intervalle de jours
-                $start = new DateTime($date_debut);
-                $end = new DateTime($date_fin);
-                $end->modify('+1 day'); // Pour inclure la date de fin dans la boucle
-                $interval = new DateInterval('P1D');
-                $period = new DatePeriod($start, $interval, $end);
+                $is_longue_duree = ($date_debut !== $date_fin);
 
                 try {
                     $pdo->beginTransaction();
-                    $stmtIns = $pdo->prepare("INSERT INTO pointages (id_user, date_pointage, type, motif_urgence, heure_arrivee, heure_depart, id_site) 
-                                            VALUES (?, ?, ?, ?, ?, ?, ?)");
                     
-                    foreach ($period as $dt) {
-                        $current_date = $dt->format("Y-m-d");
+                    // On insère chaque jour individuellement pour la cohérence des rapports journaliers
+                    $start = new DateTime($date_debut);
+                    $end = new DateTime($date_fin);
+                    $nb_jours = $start->diff($end)->days + 1;
+                    
+                    $stmtIns = $pdo->prepare("INSERT INTO pointages (id_user, date_pointage, type, motif_urgence, heure_arrivee, heure_depart, id_site, commentaire) 
+                                            VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+                    
+                    $current = clone $start;
+                    while ($current <= $end) {
+                        // On stocke les dates limites dans le champ commentaire pour l'affichage groupé plus tard
+                        $info_groupe = $is_longue_duree ? "GROUPED:{$date_debut}:{$date_fin}:{$nb_jours}" : "SINGLE";
                         
-                        // Optionnel : Éviter les doublons si un pointage existe déjà pour cette date
-                        $stmtCheck = $pdo->prepare("SELECT id_pointage FROM pointages WHERE id_user = ? AND date_pointage = ?");
-                        $stmtCheck->execute([$id_user, $current_date]);
-                        
-                        if (!$stmtCheck->fetch()) {
-                            $stmtIns->execute([
-                                $id_user, 
-                                $current_date, 
-                                'URGENCE', 
-                                $motif, 
-                                !empty($_POST['heure_arrivee']) ? $_POST['heure_arrivee'] : null, 
-                                !empty($_POST['heure_depart']) ? $_POST['heure_depart'] : null, 
-                                $userInfo['id_site']
-                            ]);
-                        }
+                        $stmtIns->execute([
+                            $id_user, 
+                            $current->format('Y-m-d'), 
+                            'URGENCE', 
+                            $motif, 
+                            $h_arr, 
+                            $h_dep, 
+                            $userInfo['id_site'],
+                            $info_groupe
+                        ]);
+                        $current->modify('+1 day');
                     }
+                    
                     $pdo->commit();
-                    $_SESSION['flash_success'] = '🚨 Absence/Urgence enregistrée pour la période sélectionnée.';
-                    notify_supervisors_if_possible($pdo, $id_user, "🚨 ABSENCE MULTIPLE : $nom $prenom du $date_debut au $date_fin ($raison)", 'urgence');
+                    $_SESSION['flash_success'] = '🚨 Absence enregistrée.';
+
+                    // --- NOTIFICATIONS DIFFÉRENTES ---
+                    if ($is_longue_duree) {
+                        $notif_msg = "📅 LONGUE ABSENCE : $nom $prenom du " . date('d/m', strtotime($date_debut)) . " au " . date('d/m', strtotime($date_fin)) . " ($raison)";
+                        notify_supervisors_if_possible($pdo, $id_user, $notif_msg, 'urgence');
+                    } else {
+                        $heure_info = ($h_dep || $h_arr) ? " ($h_dep -> $h_arr)" : "";
+                        $notif_msg = "🕒 ABSENCE COURTE : $nom $prenom le " . date('d/m', strtotime($date_debut)) . "$heure_info - Motif: $raison";
+                        notify_supervisors_if_possible($pdo, $id_user, $notif_msg, 'urgence');
+                    }
+
                 } catch (Exception $e) {
                     $pdo->rollBack();
-                    $_SESSION['flash_error'] = '❌ Erreur lors de l\'enregistrement.';
+                    $_SESSION['flash_error'] = 'Erreur : ' . $e->getMessage();
                 }
-            } else {
-                $_SESSION['flash_error'] = '❌ Veuillez fournir une raison et une date.';
             }
     }
     header('Location: pointage.php'); exit;
@@ -353,26 +362,57 @@ $urgence_types = ['Absence justifiée', 'Congé maladie', 'Congé personnel', 'T
                     <tr><th>DATE</th><th>TYPE / MOTIF</th><th>ENTRÉE</th><th>SORTIE</th><th>DURÉE</th></tr>
                 </thead>
                 <tbody>
-                    <?php foreach ($historique as $h): ?>
+                    <?php 
+                    $displayed_groups = []; // Pour éviter les doublons d'affichage de longue durée
+                    
+                    foreach ($historique as $h): 
+                        // Analyse du champ commentaire pour le groupement
+                        $is_grouped = strpos($h['commentaire'], 'GROUPED:') === 0;
+                        if ($is_grouped) {
+                            $parts = explode(':', $h['commentaire']);
+                            $g_start = $parts[1];
+                            $g_end = $parts[2];
+                            $g_jours = $parts[3];
+                            $group_key = $g_start . $g_end . $h['motif_urgence'];
+
+                            if (in_array($group_key, $displayed_groups)) continue; // On saute si déjà affiché
+                            $displayed_groups[] = $group_key;
+                        }
+                    ?>
                     <tr>
-                        <td style="font-weight: 700; color: #1e293b;"><?= formatDateLongue($h['date_pointage']) ?></td>
+                        <td style="font-weight: 700; color: #1e293b;">
+                            <?php if ($is_grouped): ?>
+                                <span style="color: #2563eb;">Du <?= date('d/m', strtotime($g_start)) ?> Au <?= date('d/m', strtotime($g_end)) ?></span>
+                            <?php else: ?>
+                                <?= formatDateLongue($h['date_pointage']) ?>
+                            <?php endif; ?>
+                        </td>
                         <td>
                             <?php if ($h['type'] === 'URGENCE'): ?>
                                 <span style="background: #fff5f5; color: #ef4444; padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 700;">🚨 <?= htmlspecialchars($h['motif_urgence']) ?></span>
                             <?php else: ?>
                                 <span style="background: #f0fdf4; color: #16a34a; padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 700;">✅ NORMAL</span>
-                                <?php if ($h['est_en_retard'] == 1): ?>
-                                    <span style="background: #fff7ed; color: #ea580c; padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; border: 1px solid #ffedd5; margin-left: 5px;">⚠️ RETARD</span>
-                                <?php endif; ?>
                             <?php endif; ?>
                         </td>
-                        <td><?= $h['heure_arrivee'] ? substr($h['heure_arrivee'], 0, 5) : '--' ?></td>
-                        <td><?= $h['heure_depart'] ? substr($h['heure_depart'], 0, 5) : '--' ?></td>
-                        <td>
-                            <?php if($h['heure_arrivee'] && $h['heure_depart']): 
+                        
+                        <td style="text-align:center;">
+                            <?= ($is_grouped || !$h['heure_arrivee']) ? '--' : substr($h['heure_arrivee'], 0, 5) ?>
+                        </td>
+                        <td style="text-align:center;">
+                            <?= ($is_grouped || !$h['heure_depart']) ? '--' : substr($h['heure_depart'], 0, 5) ?>
+                        </td>
+
+                        <td style="font-weight: bold; color: #475569;">
+                            <?php 
+                            if ($is_grouped) {
+                                echo "<span style='color:#2563eb;'>$g_jours Jours</span>";
+                            } elseif ($h['heure_arrivee'] && $h['heure_depart']) {
                                 $d = new DateTime($h['heure_arrivee']); $f = new DateTime($h['heure_depart']);
-                                echo "<span style='background:#f1f5f9;padding:2px 8px;border-radius:4px;'>".$f->diff($d)->format('%hh %im')."</span>";
-                            endif; ?>
+                                echo $f->diff($d)->format('%hh %im');
+                            } else {
+                                echo "--";
+                            }
+                            ?>
                         </td>
                     </tr>
                     <?php endforeach; ?>
