@@ -232,6 +232,15 @@ $historique = $stmtH->fetchAll(PDO::FETCH_ASSOC);
 
                 <div class="table-container">
                     <table class="table-mvt">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Produit</th>
+                                <th>Action</th>
+                                <th>Qté</th>
+                                <th>Auteur</th>
+                            </tr>
+                        </thead>
                         <tbody>
                             <?php foreach($historique as $m): $isE = (trim(strtolower($m['type_mouvement'])) === 'entree'); ?>
                             <tr>
