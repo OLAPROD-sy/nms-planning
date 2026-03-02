@@ -59,16 +59,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_mouvement'])) {
     header('Location: ' . $_SERVER['REQUEST_URI']); exit;
 }
 
-// --- 4. RÉCUPÉRATION DONNÉES ---
+// --- 4. COMPTEUR PRODUITS EN ALERTE ---
+$stmtAlert = $pdo->prepare("SELECT COUNT(*) FROM produits WHERE id_site = ? AND quantite_actuelle <= quantite_alerte");
+$stmtAlert->execute([$id_site]);
+$nb_alertes = $stmtAlert->fetchColumn();
+
+// --- 5. RÉCUPÉRATION DONNÉES (FILTRES HISTORIQUE) ---
 $produits = $pdo->prepare('SELECT * FROM produits WHERE id_site = ? ORDER BY nom_produit');
 $produits->execute([$id_site]);
 $liste_produits = $produits->fetchAll(PDO::FETCH_ASSOC);
 
-$date_f = $_GET['date_filtre'] ?? '';
+// Filtres Historique
+$date_start = $_GET['date_start'] ?? '';
+$date_end = $_GET['date_end'] ?? '';
+$filter_type = $_GET['f_type'] ?? '';
+
 $sqlH = "SELECT m.*, p.nom_produit FROM mouvements_stock m JOIN produits p ON m.id_produit = p.id_produit WHERE m.id_site = ?";
 $paramsH = [$id_site];
-if($date_f) { $sqlH .= " AND DATE(m.date_mouvement) = ?"; $paramsH[] = $date_f; }
-$sqlH .= " ORDER BY m.date_mouvement DESC LIMIT 50";
+
+if($date_start) { $sqlH .= " AND DATE(m.date_mouvement) >= ?"; $paramsH[] = $date_start; }
+if($date_end)   { $sqlH .= " AND DATE(m.date_mouvement) <= ?"; $paramsH[] = $date_end; }
+if($filter_type) { $sqlH .= " AND m.type_mouvement = ?"; $paramsH[] = $filter_type; }
+
+$sqlH .= " ORDER BY m.date_mouvement DESC LIMIT 100";
 $stmtH = $pdo->prepare($sqlH);
 $stmtH->execute($paramsH);
 $historique = $stmtH->fetchAll(PDO::FETCH_ASSOC);
@@ -107,19 +120,27 @@ $historique = $stmtH->fetchAll(PDO::FETCH_ASSOC);
 </style>
 
 <div class="stock-wrapper">
-    <div style="background: white; padding: 15px; border-radius: 10px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
-        <h2 style="margin:0">📦 Gestion Stock </h2>
-        <div style="display:flex; gap:10px; align-items:center;">
-        <span style="color: #2c3e50; font-weight: bold; background: #ecf0f1; padding: 4px 12px; border-radius: 15px; font-size: 0.9em; display: inline-block; margin-top: 5px;">
-                📍 Site : <?= htmlspecialchars($site_nom) ?>
-        </span>
-        <a href="manage_stock.php" style="text-decoration:none; color: #666;">🔄</a>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px;">
+        <div class="card border-info" style="margin:0; display:flex; align-items:center; justify-content:space-between; padding: 15px;">
+            <div>
+                <h4 style="margin:0; color:#888; font-size:0.8em; text-transform:uppercase;">État du Site</h4>
+                <strong style="font-size:1.1em">📍 <?= htmlspecialchars($site_nom) ?></strong>
+            </div>
+            <a href="manage_stock.php" style="text-decoration:none; font-size:1.5rem">🔄</a>
+        </div>
+
+        <div class="card <?= $nb_alertes > 0 ? 'border-danger' : 'border-success' ?>" style="margin:0; display:flex; align-items:center; justify-content:space-between; padding: 15px;">
+            <div>
+                <h4 style="margin:0; color:#888; font-size:0.8em; text-transform:uppercase;">Produits en Alerte</h4>
+                <strong style="font-size:1.8em; color: <?= $nb_alertes > 0 ? 'var(--p-red)' : 'var(--p-green)' ?>"><?= $nb_alertes ?></strong>
+            </div>
+            <span style="font-size:2rem"><?= $nb_alertes > 0 ? '⚠️' : '✅' ?></span>
         </div>
     </div>
 
     <div class="stock-grid">
         <div class="stock-sidebar">
-            
+
             <div class="card border-success">
                 <h3>📦 Nouveau Produit</h3>
                 <form method="post">
@@ -161,49 +182,65 @@ $historique = $stmtH->fetchAll(PDO::FETCH_ASSOC);
                     <button type="submit" name="add_mouvement" class="btn-main" style="background: var(--p-green)">Valider</button>
                 </form>
             </div>
-
             <div class="card border-warning">
-                <h3>📊 Qté Produit Actuel & États</h3>
-                <?php foreach($liste_produits as $p): 
-                    $is_low = $p['quantite_actuelle'] <= $p['quantite_alerte'];
-                ?>
-                <div style="display:flex; justify-content:space-between; padding:8px; border-radius:5px; margin-bottom:5px; background: <?= $is_low ? '#fff5f5':'#fafafa' ?>; border-left: 4px solid <?= $is_low ? 'var(--p-red)':'var(--p-green)' ?> ; overflow-y: auto;">
-                    <span style="font-size:0.9em"><?= htmlspecialchars($p['nom_produit']) ?></span>
-                    <strong><?= $p['quantite_actuelle'] ?></strong>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px">
+                    <h3 style="border:none; margin:0">📊 État des Stocks</h3>
+                    <button onclick="exportStockActuel()" style="background:#f1c40f; border:none; padding:5px 10px; border-radius:5px; color:white; cursor:pointer; font-size:0.8em">📥 Excel</button>
                 </div>
-                <?php endforeach; ?>
+                <div style="max-height: 400px; overflow-y: auto;">
+                    <?php foreach($liste_produits as $p): 
+                        $is_low = $p['quantite_actuelle'] <= $p['quantite_alerte'];
+                    ?>
+                    <div style="display:flex; justify-content:space-between; padding:8px; border-radius:5px; margin-bottom:5px; background: <?= $is_low ? '#fff5f5':'#fafafa' ?>; border-left: 4px solid <?= $is_low ? 'var(--p-red)':'var(--p-green)' ?>;">
+                        <span style="font-size:0.9em"><?= htmlspecialchars($p['nom_produit']) ?></span>
+                        <strong><?= $p['quantite_actuelle'] ?></strong>
+                    </div>
+                    <?php endforeach; ?>
+                </div>
             </div>
         </div>
 
         <div class="stock-main">
-            <div class="card border-warning">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px">
-                    <h3 style="border:none; margin:0">📜 Historique </h3>
-                    <form method="GET" style="display:flex; gap:5px">
+            <div class="card border-info">
+                <div style="margin-bottom:20px">
+                    <h3 style="border:none; margin-bottom:15px">📜 Historique des Flux</h3>
+                    
+                    <form method="GET" style="display:flex; flex-wrap:wrap; gap:10px; background:#f8f9fa; padding:15px; border-radius:8px">
                         <input type="hidden" name="id_site" value="<?= $id_site ?>">
-                        <input type="date" name="date_filtre" class="form-control" style="margin:0; padding:5px" value="<?= $date_f ?>">
-                        <button type="submit" style="border:none; background:#eee; padding:5px 10px; border-radius:5px; cursor:pointer">OK</button>
+                        <div style="flex:1; min-width:120px">
+                            <label style="font-size:0.7em; display:block">DU</label>
+                            <input type="date" name="date_start" class="form-control" style="margin:0" value="<?= $date_start ?>">
+                        </div>
+                        <div style="flex:1; min-width:120px">
+                            <label style="font-size:0.7em; display:block">AU</label>
+                            <input type="date" name="date_end" class="form-control" style="margin:0" value="<?= $date_end ?>">
+                        </div>
+                        <div style="flex:1; min-width:120px">
+                            <label style="font-size:0.7em; display:block">TYPE</label>
+                            <select name="f_type" class="form-control" style="margin:0">
+                                <option value="">Tous</option>
+                                <option value="entree" <?= $filter_type=='entree'?'selected':'' ?>>Entrée</option>
+                                <option value="sortie" <?= $filter_type=='sortie'?'selected':'' ?>>Sortie</option>
+                            </select>
+                        </div>
+                        <div style="display:flex; align-items:flex-end; gap:5px">
+                            <button type="submit" class="btn-main" style="background:var(--p-blue); width:auto; padding:10px 20px">Filtrer</button>
+                            <button type="button" onclick="exportHistorique()" style="background:#27ae60; border:none; padding:10px 15px; border-radius:6px; color:white; cursor:pointer">📥 Excel</button>
+                        </div>
                     </form>
                 </div>
 
                 <div class="table-container">
                     <table class="table-mvt">
-                        <thead>
-                            <tr>
-                                <th>Date</th>
-                                <th>Produit</th>
-                                <th>Action</th>
-                                <th>Qté</th>
-                                <th>Auteur</th>
-                            </tr>
-                        </thead>
                         <tbody>
                             <?php foreach($historique as $m): $isE = (trim(strtolower($m['type_mouvement'])) === 'entree'); ?>
                             <tr>
                                 <td style="color:#888"><?= date('d/m H:i', strtotime($m['date_mouvement'])) ?></td>
                                 <td><strong><?= htmlspecialchars($m['nom_produit']) ?></strong></td>
-                                <td><span class="badge <?= $isE ? 'bg-e':'bg-s' ?>"><?= $isE ? 'ENTRÉE':'SORTIE' ?></span></td>
-                                <td style="font-weight:bold"><?= $m['quantite'] ?></td>
+                                <td><span class="badge <?= $isE ? 'bg-e':'bg-s' ?>"><?= strtoupper($m['type_mouvement']) ?></span></td>
+                                <td style="font-weight:bold; color: <?= $isE ? 'var(--p-green)' : 'var(--p-red)' ?>">
+                                    <?= $isE ? '+' : '-' ?><?= $m['quantite'] ?>
+                                </td>
                                 <td style="font-size:0.8em"><?= htmlspecialchars($m['responsable_nom']) ?></td>
                             </tr>
                             <?php endforeach; ?>
@@ -214,5 +251,16 @@ $historique = $stmtH->fetchAll(PDO::FETCH_ASSOC);
         </div>
     </div>
 </div>
+<script>
+function exportHistorique() {
+    const params = new URLSearchParams(window.location.search);
+    // On redirige vers un futur fichier PHP qui générera l'excel
+    window.location.href = 'export_inventaire.php?' + params.toString();
+}
 
+function exportStockActuel() {
+    const idSite = "<?= $id_site ?>";
+    window.location.href = 'export_current_history.php?id_site=' + idSite;
+}
+</script>
 <?php include_once __DIR__ . '/../includes/footer.php'; ?>

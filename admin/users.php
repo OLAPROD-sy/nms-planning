@@ -410,7 +410,7 @@ $users = $pdo->query('
 
                 <div class="users-grid">
                     <?php foreach ($members as $u): ?>
-                        <div class="user-card" data-search="<?= strtolower($u['prenom'].' '.$u['nom'].' '.$u['role']) ?>">
+                        <div class="user-card" data-search="<?= strtolower($u['prenom'].' '.$u['nom'].' '.$u['role'].' '.($u['nom_site']??'')) ?>">
                             <div class="avatar-zone">
                                 <?php if (!empty($u['photo'])): ?>
                                     <img src="/<?= htmlspecialchars($u['photo']) ?>" class="user-avatar">
