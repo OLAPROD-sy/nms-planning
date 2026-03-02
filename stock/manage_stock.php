@@ -187,6 +187,7 @@ $historique = $stmtH->fetchAll(PDO::FETCH_ASSOC);
                     <h3 style="border:none; margin:0">📊 État des Stocks</h3>
                     <button onclick="exportStockActuel()" style="background:#f1c40f; border:none; padding:5px 10px; border-radius:5px; color:white; cursor:pointer; font-size:0.8em">📥 Excel</button>
                 </div>
+                <input type="text" id="searchStock" class="form-control" placeholder="🔍 Rechercher un produit..." onkeyup="filterStock()">
                 <div style="max-height: 400px; overflow-y: auto;">
                     <?php foreach($liste_produits as $p): 
                         $is_low = $p['quantite_actuelle'] <= $p['quantite_alerte'];
@@ -280,6 +281,22 @@ function exportHistorique() {
 function exportStockActuel() {
     const idSite = "<?= $id_site ?>";
     window.location.href = `export_current_history.php?id_site=${idSite}`;
+}
+
+function filterStock() {
+    let input = document.getElementById('searchStock');
+    let filter = input.value.toLowerCase();
+    let container = document.getElementById('stockList');
+    let items = container.getElementsByClassName('product-item');
+
+    for (let i = 0; i < items.length; i++) {
+        let name = items[i].querySelector('.product-name').innerText.toLowerCase();
+        if (name.indexOf(filter) > -1) {
+            items[i].style.display = "";
+        } else {
+            items[i].style.display = "none";
+        }
+    }
 }
 </script>
 <?php include_once __DIR__ . '/../includes/footer.php'; ?>
