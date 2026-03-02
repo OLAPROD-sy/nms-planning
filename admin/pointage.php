@@ -160,26 +160,52 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         } elseif ($action === 'urgence') {
             $raison = trim($_POST['raison'] ?? '');
-            if (!empty($raison)) {
+            $date_debut = $_POST['date_debut'] ?? $today;
+            $date_fin = $_POST['date_fin'] ?? $date_debut;
+
+            if (!empty($raison) && !empty($date_debut)) {
                 $motif = $raison . (!empty($_POST['commentaire']) ? " - " . trim($_POST['commentaire']) : "");
                 
-                // On enregistre l'urgence avec les coordonnées si dispo
-                $sql = "INSERT INTO pointages (id_user, date_pointage, type, motif_urgence, heure_arrivee, heure_depart, id_site) 
-                        VALUES (?, ?, ?, ?, ?, ?, ?)";
-                $pdo->prepare($sql)->execute([
-                    $id_user, 
-                    $today, 
-                    'URGENCE', 
-                    $motif, 
-                    $_POST['heure_arrivee'] ?: null, 
-                    $_POST['heure_depart'] ?: null, 
-                    $userInfo['id_site']
-                ]);
-                
-                $_SESSION['flash_success'] = '🚨 Urgence signalée avec succès.';
-                notify_supervisors_if_possible($pdo, $id_user, "🚨 URGENCE : $nom $prenom ($motif)", 'urgence');
+                // Création de l'intervalle de jours
+                $start = new DateTime($date_debut);
+                $end = new DateTime($date_fin);
+                $end->modify('+1 day'); // Pour inclure la date de fin dans la boucle
+                $interval = new DateInterval('P1D');
+                $period = new DatePeriod($start, $interval, $end);
+
+                try {
+                    $pdo->beginTransaction();
+                    $stmtIns = $pdo->prepare("INSERT INTO pointages (id_user, date_pointage, type, motif_urgence, heure_arrivee, heure_depart, id_site) 
+                                            VALUES (?, ?, ?, ?, ?, ?, ?)");
+                    
+                    foreach ($period as $dt) {
+                        $current_date = $dt->format("Y-m-d");
+                        
+                        // Optionnel : Éviter les doublons si un pointage existe déjà pour cette date
+                        $stmtCheck = $pdo->prepare("SELECT id_pointage FROM pointages WHERE id_user = ? AND date_pointage = ?");
+                        $stmtCheck->execute([$id_user, $current_date]);
+                        
+                        if (!$stmtCheck->fetch()) {
+                            $stmtIns->execute([
+                                $id_user, 
+                                $current_date, 
+                                'URGENCE', 
+                                $motif, 
+                                !empty($_POST['heure_arrivee']) ? $_POST['heure_arrivee'] : null, 
+                                !empty($_POST['heure_depart']) ? $_POST['heure_depart'] : null, 
+                                $userInfo['id_site']
+                            ]);
+                        }
+                    }
+                    $pdo->commit();
+                    $_SESSION['flash_success'] = '🚨 Absence/Urgence enregistrée pour la période sélectionnée.';
+                    notify_supervisors_if_possible($pdo, $id_user, "🚨 ABSENCE MULTIPLE : $nom $prenom du $date_debut au $date_fin ($raison)", 'urgence');
+                } catch (Exception $e) {
+                    $pdo->rollBack();
+                    $_SESSION['flash_error'] = '❌ Erreur lors de l\'enregistrement.';
+                }
             } else {
-                $_SESSION['flash_error'] = '❌ Veuillez fournir une raison pour l\'urgence.';
+                $_SESSION['flash_error'] = '❌ Veuillez fournir une raison et une date.';
             }
     }
     header('Location: pointage.php'); exit;
@@ -272,38 +298,53 @@ $urgence_types = ['Absence justifiée', 'Congé maladie', 'Congé personnel', 'T
         </form>
     </div>
 
-    <div class="urgency-section">
-        <div class="urgency-title">🚨 Signaler une Urgence / Absence</div>
-        <form method="post">
-            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(generate_csrf_token()) ?>">
-            <input type="hidden" name="action" value="urgence">
-            <input type="hidden" name="user_lat" class="lat_input">
-            <input type="hidden" name="user_lng" class="lng_input">
-            
-            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 15px;">
-                <div class="form-group">
-                    <label style="font-size: 11px; font-weight: 700; color: #991b1b;">RAISON *</label>
-                    <select name="raison" required style="width:100%; padding:10px; border-radius:10px; border:1px solid #fecaca;">
-                        <option value="">Sélectionner...</option>
-                        <?php foreach ($urgence_types as $type): ?>
-                            <option value="<?= $type ?>"><?= $type ?></option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label style="font-size: 11px; font-weight: 700; color: #991b1b;">HEURE DÉPART</label>
-                    <input type="time" name="heure_depart" style="width:100%; padding:10px; border-radius:10px; border:1px solid #fecaca;">
-                </div>
-                <div class="form-group">
-                    <label style="font-size: 11px; font-weight: 700; color: #991b1b;">HEURE ARRIVÉE</label>
-                    <input type="time" name="heure_arrivee" style="width:100%; padding:10px; border-radius:10px; border:1px solid #fecaca;">
-                </div>
-            </div>
-            <textarea name="commentaire" placeholder="Expliquez brièvement la situation..." style="width:100%; border-radius:10px; border:1px solid #fecaca; padding:10px; font-size:14px; margin-bottom:15px;"></textarea>
-            <button type="submit" style="width:100%; background: #ef4444; color:white; border:none; padding:12px; border-radius:10px; font-weight:800; cursor:pointer;">Envoyer l'alerte</button>
-        </form>
+    <div class="urgency-section" style="background: #fff5f5; border: 1px solid #fecaca; border-radius: 20px; padding: 20px; margin-bottom: 25px;">
+    <div class="urgency-title" style="color: #991b1b; font-weight: 800; margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
+        <span>🚨</span> Signaler une Absence / Sortie Exceptionnelle
     </div>
+    <form method="post">
+        <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(generate_csrf_token()) ?>">
+        <input type="hidden" name="action" value="urgence">
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+            <div class="form-group">
+                <label style="font-size: 11px; font-weight: 700; color: #991b1b;">DATE DE DÉBUT *</label>
+                <input type="date" name="date_debut" id="date_debut" value="<?= $today ?>" required style="width:100%; padding:10px; border-radius:10px; border:1px solid #fecaca;">
+            </div>
+            <div class="form-group">
+                <label style="font-size: 11px; font-weight: 700; color: #991b1b;">DATE DE FIN</label>
+                <input type="date" name="date_fin" id="date_fin" value="<?= $today ?>" style="width:100%; padding:10px; border-radius:10px; border:1px solid #fecaca;">
+            </div>
+        </div>
 
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 15px;">
+            <div class="form-group">
+                <label style="font-size: 11px; font-weight: 700; color: #991b1b;">MOTIF *</label>
+                <select name="raison" required style="width:100%; padding:10px; border-radius:10px; border:1px solid #fecaca;">
+                    <option value="">Choisir...</option>
+                    <?php foreach ($urgence_types as $type): ?>
+                        <option value="<?= $type ?>"><?= $type ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label style="font-size: 11px; font-weight: 700; color: #991b1b;">DÉPART PRÉVU</label>
+                <input type="time" name="heure_depart" value="<?= date('H:i') ?>" style="width:100%; padding:10px; border-radius:10px; border:2px solid #f87171; background: #fff;">
+            </div>
+            <div class="form-group">
+                <label style="font-size: 11px; font-weight: 700; color: #991b1b;">RETOUR PRÉVU</label>
+                <input type="time" name="heure_arrivee" placeholder="--:--" style="width:100%; padding:10px; border-radius:10px; border:2px solid #f87171; background: #fff;">
+            </div>
+        </div>
+
+        <textarea name="commentaire" placeholder="Expliquez brièvement (ex: RDV Médical, urgence familiale...)" style="width:100%; border-radius:10px; border:1px solid #fecaca; padding:10px; font-size:14px; margin-bottom:15px; min-height: 60px;"></textarea>
+        
+        <button type="submit" style="width:100%; background: #ef4444; color:white; border:none; padding:15px; border-radius:12px; font-weight:800; cursor:pointer;">
+            🚀 Enregistrer l'absence
+        </button>
+    </form>
+</div>
     <div class="history-card">
         <h3 style="margin-bottom: 15px; font-size: 16px;">📊 Activité récente (7 jours)</h3>
         <div style="overflow-x: auto;">
@@ -369,6 +410,10 @@ $urgence_types = ['Absence justifiée', 'Congé maladie', 'Congé personnel', 'T
         const a = Math.sin(dp/2)**2 + Math.cos(p1) * Math.cos(p2) * Math.sin(dl/2)**2;
         return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
     }
+
+    document.getElementById('date_debut').addEventListener('change', function() {
+    document.getElementById('date_fin').value = this.value;
+    });
 
     function initGeo() {
         if (navigator.geolocation) {
