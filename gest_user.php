@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/../config/database.php'; // Assurez-vous que le chemin est correct
+require_once __DIR__ . '/config/database.php'; // Assurez-vous que le chemin est correct
 
 try {
     echo "<h2>Mise à jour de la base de données en cours...</h2>";
