@@ -1,6 +1,6 @@
 <?php
-require_once __DIR__ . '/config/database.php';
-require_once __DIR__ . '/includes/auth_check.php';
+require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/../includes/auth_check.php';
 
 // Protection : Seuls Admin et Superviseur peuvent exporter
 if ($_SESSION['role'] === 'AGENT') {
