@@ -279,7 +279,7 @@ function exportHistorique() {
 
 function exportStockActuel() {
     const idSite = "<?= $id_site ?>";
-    window.location.href = 'export_current_history.php?id_site=' + idSite;
+    window.location.href = `export_current_history.php?id_site=${idSite}`;
 }
 </script>
 <?php include_once __DIR__ . '/../includes/footer.php'; ?>

@@ -6,7 +6,12 @@ if ($_SESSION['role'] === 'AGENT') {
     exit('Accès refusé');
 }
 
-$id_site = $_SESSION['id_site'] ?? null;
+// Si c'est un superviseur, on le force à rester sur SON site
+if ($_SESSION['role'] === 'SUPERVISEUR') {
+    $id_site = $_SESSION['id_site'];
+}
+
+$id_site = $_GET['id_site'] ?? null;
 if (!$id_site) {
     exit('Site non spécifié');
 }
