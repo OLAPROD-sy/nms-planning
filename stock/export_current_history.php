@@ -6,7 +6,7 @@ if ($_SESSION['role'] === 'AGENT') {
     exit('Accès refusé');
 }
 
-$id_site = $_GET['id_site'] ?? null;
+$id_site = $_SESSION['id_site'] ?? null;
 if (!$id_site) {
     exit('Site non spécifié');
 }
