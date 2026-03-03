@@ -26,15 +26,9 @@ if (!$id_site) {
 // 2. Récupération du nom du site (On vérifie le nom de la colonne)
 try {
     // On tente 'nom', si ça échoue on tente 'nom_site'
-    $stmtS = $pdo->prepare("SELECT nom FROM sites WHERE id_site = ?");
+    $stmtS = $pdo->prepare("SELECT nom_site FROM sites WHERE id_site = ?");
     $stmtS->execute([$id_site]);
     $site_name = $stmtS->fetchColumn();
-    
-    if (!$site_name) {
-        $stmtS = $pdo->prepare("SELECT nom_site FROM sites WHERE id_site = ?");
-        $stmtS->execute([$id_site]);
-        $site_name = $stmtS->fetchColumn();
-    }
 } catch (Exception $e) {
     $site_name = "Site_" . $id_site;
 }

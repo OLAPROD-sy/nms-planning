@@ -9,6 +9,14 @@ if ($_SESSION['role'] !== 'ADMIN') {
 
 $message = "";
 
+// --- RÉCUPÉRATION DES SITES ET LEURS SUPERVISEURS ---
+$sites = $pdo->query("
+    SELECT s.id_site, s.nom_site, u.nom, u.prenom 
+    FROM sites s 
+    LEFT JOIN users u ON s.id_site = u.id_site AND u.role = 'SUPERVISEUR'
+    ORDER BY s.nom_site ASC
+")->fetchAll(PDO::FETCH_ASSOC);
+
 // --- LOGIQUE DE TRAITEMENT (INCHANGÉE) ---
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = $_POST['action'] ?? '';
@@ -29,21 +37,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $type = $_POST['type'];
         $qte = intval($_POST['quantite']);
         $prix_saisi = floatval($_POST['prix_saisi'] ?? 0);
+        $id_site = ($type === 'SORTIE') ? intval($_POST['id_site_destination']) : null;
         
         $operateur = ($type === 'ENTREE') ? "+" : "-";
         
-        $sql_up = "UPDATE produits_admin SET quantite_globale = quantite_globale $operateur ?";
-        $params_up = [$qte];
-        if($type === 'ENTREE' && $prix_saisi > 0) {
-            $sql_up .= ", prix_unitaire = ?";
-            $params_up[] = $prix_saisi;
-        }
-        $sql_up .= " WHERE id_produit_admin = ?";
-        $params_up[] = $id_p;
-        $pdo->prepare($sql_up)->execute($params_up);
+        $sql_up = "UPDATE produits_admin SET quantite_globale = quantite_globale $operateur ? WHERE id_produit_admin = ?";
+        $pdo->prepare($sql_up)->execute([$qte, $id_p]);
 
-        $pdo->prepare("INSERT INTO mouvements_stock_admin (id_produit_admin, type_mouvement, quantite, prix_mouvement, commentaire) VALUES (?, ?, ?, ?, ?)")
-            ->execute([$id_p, $type, $qte, $prix_saisi, $_POST['commentaire'] ?? '']);
+        // INSERTION AVEC LE SITE
+        $pdo->prepare("INSERT INTO mouvements_stock_admin (id_produit_admin, type_mouvement, quantite, prix_mouvement, commentaire, id_site_destination) VALUES (?, ?, ?, ?, ?, ?)")
+            ->execute([$id_p, $type, $qte, $prix_saisi, $_POST['commentaire'] ?? '', $id_site]);
             
         $message = "Stock mis à jour avec succès.";
     }
@@ -65,8 +68,12 @@ if (!empty($_GET['f_date_debut']) && !empty($_GET['f_date_fin'])) {
     $params[] = $_GET['f_date_debut']; $params[] = $_GET['f_date_fin'];
 }
 
-$sql_flux = "SELECT m.*, p.nom_produit, p.unite_mesure FROM mouvements_stock_admin m 
-             JOIN produits_admin p ON m.id_produit_admin = p.id_produit_admin";
+// --- MISE À JOUR DE LA REQUÊTE DU TABLEAU HISTORIQUE ---
+$sql_flux = "SELECT m.*, p.nom_produit, p.unite_mesure, s.nom_site, u.nom as sup_nom, u.prenom as sup_prenom 
+             FROM mouvements_stock_admin m 
+             JOIN produits_admin p ON m.id_produit_admin = p.id_produit_admin
+             LEFT JOIN sites s ON m.id_site_destination = s.id_site
+             LEFT JOIN users u ON s.id_site = u.id_site AND u.role = 'SUPERVISEUR'";
 if (!empty($where_clauses)) { $sql_flux .= " WHERE " . implode(" AND ", $where_clauses); }
 $sql_flux .= " ORDER BY m.date_mouvement DESC LIMIT 30";
 $stmt_flux = $pdo->prepare($sql_flux);
@@ -171,17 +178,29 @@ foreach ($flux as &$f) {
 
             <div class="stock-card">
                 <h3>🔄 Mouvement Stock</h3>
-                <form method="post" class="responsive-form">
+                <form method="post" class="responsive-form" id="mouvementForm">
                     <input type="hidden" name="action" value="mouvement">
+                    
                     <select name="id_produit" required class="filter-input" style="flex: 2;">
                         <?php foreach($inventaire as $i): ?>
                             <option value="<?= $i['id_produit_admin'] ?>"><?= htmlspecialchars($i['nom_produit']) ?> (<?= $i['unite_mesure'] ?>)</option>
                         <?php endforeach; ?>
                     </select>
-                    <select name="type" class="filter-input">
+
+                    <select name="type" id="typeMouvement" class="filter-input" onchange="toggleSiteSelection()">
                         <option value="ENTREE">Entrée (+)</option>
                         <option value="SORTIE">Sortie (-)</option>
                     </select>
+
+                    <select name="id_site_destination" id="siteSelection" class="filter-input" style="display:none; border: 2px solid #FF9800;">
+                        <option value="">-- Choisir Site Destination --</option>
+                        <?php foreach($sites as $st): ?>
+                            <option value="<?= $st['id_site'] ?>">
+                                <?= htmlspecialchars($st['nom_site']) ?> (Sup: <?= htmlspecialchars($st['nom'] ?? 'Aucun') ?>)
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+
                     <input type="number" name="quantite" placeholder="Qté" required class="filter-input">
                     <input type="number" step="0.01" name="prix_saisi" placeholder="Prix Unit." class="filter-input">
                     <button type="submit" class="user_profile_btn" style="background:green;">Valider</button>
@@ -257,7 +276,7 @@ foreach ($flux as &$f) {
                                 <th>Date</th>
                                 <th>Produit</th>
                                 <th>Action</th>
-                                <th style="text-align:right;">Quantité</th>
+                                <th>Destination / Superviseur</th> <th style="text-align:right;">Quantité</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -266,18 +285,20 @@ foreach ($flux as &$f) {
                                 <td><small><?= date('d/m/y H:i', strtotime($f['date_mouvement'])) ?></small></td>
                                 <td style="font-weight:700;"><?= htmlspecialchars($f['nom_produit']) ?></td>
                                 <td><span style="font-size:10px; font-weight:800; color:<?= $is_e ? '#16a34a':'#ef4444'?>;"><?= $f['type_mouvement'] ?></span></td>
+                                
+                                <td>
+                                    <?php if($f['type_mouvement'] === 'SORTIE' && $f['nom_site']): ?>
+                                        <div style="font-size: 12px; font-weight: bold; color: #F57C00;">📍 <?= htmlspecialchars($f['nom_site']) ?></div>
+                                        <div style="font-size: 10px; color: #64748b;">👤 Sup: <?= htmlspecialchars($f['sup_nom'] . ' ' . $f['sup_prenom']) ?></div>
+                                    <?php else: ?>
+                                        <span style="color: #cbd5e1;">---</span>
+                                    <?php endif; ?>
+                                </td>
+
                                 <td style="text-align:right; font-weight:800;"><?= $is_e ? '+':'-' ?><?= $f['quantite'] ?></td>
                             </tr>
                             <?php endforeach; ?>
                         </tbody>
-                        <tfoot>
-                            <tr style="background: #f1f5f9; font-weight: bold;">
-                                <td colspan="3" style="text-align: right;">TOTAL GÉNÉRAL DE LA PÉRIODE :</td>
-                                <td colspan="2" style="color: #16a34a; font-size: 1.1em;">
-                                    <?= number_format($total_general_periode, 0, '.', ' ') ?> FCFA
-                                </td>
-                            </tr>
-                        </tfoot>
                     </table>
                 </div>
             </div>
@@ -309,6 +330,19 @@ function exportExcel() {
     
     // On redirige vers la page d'export avec les paramètres
     window.location.href = `export_inventaire2.php?f_date_debut=${debut}&f_date_fin=${fin}&f_action=${action}`;
+}
+
+function toggleSiteSelection() {
+    const type = document.getElementById('typeMouvement').value;
+    const siteSelect = document.getElementById('siteSelection');
+    
+    if (type === 'SORTIE') {
+        siteSelect.style.display = 'block';
+        siteSelect.setAttribute('required', 'required');
+    } else {
+        siteSelect.style.display = 'none';
+        siteSelect.removeAttribute('required');
+    }
 }
 </script>
 

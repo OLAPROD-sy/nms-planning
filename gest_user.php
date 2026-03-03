@@ -1,40 +1,37 @@
 <?php
-require_once __DIR__ . '/config/database.php'; // Assurez-vous que le chemin est correct
+// 1. Connexion à la base de données
+// Ajustez le chemin vers votre fichier database.php si nécessaire
+require_once __DIR__ . '/config/database.php'; 
 
 try {
-    echo "<h2>Mise à jour de la base de données en cours...</h2>";
-    
-    // 1. Vérification de la connexion
-    if (!$pdo) {
-        throw new Exception("La connexion à la base de données a échoué.");
-    }
+    echo "<div style='font-family: sans-serif; padding: 20px;'>";
+    echo "<h2>🛠️ Mise à jour de la structure du stock</h2>";
+    echo "<hr>";
 
-    // 2. Ajout de la colonne commentaire si elle n'existe pas
-    $checkColumn = $pdo->query("SHOW COLUMNS FROM pointages LIKE 'commentaire'");
-    $columnExists = $checkColumn->fetch();
+    // 2. Vérification de la colonne id_site_destination
+    $check = $pdo->query("SHOW COLUMNS FROM mouvements_stock_admin LIKE 'id_site_destination'");
+    $exists = $check->fetch();
 
-    if (!$columnExists) {
-        $pdo->exec("ALTER TABLE pointages ADD COLUMN commentaire TEXT NULL AFTER id_site");
-        echo "<p style='color:green;'>✅ Colonne 'commentaire' ajoutée avec succès !</p>";
+    if (!$exists) {
+        // 3. Exécution de la commande ALTER TABLE
+        $sql = "ALTER TABLE mouvements_stock_admin ADD COLUMN id_site_destination INT NULL AFTER commentaire";
+        $pdo->exec($sql);
+        
+        echo "<p style='color: #16a34a; font-weight: bold;'>✅ Succès : La colonne 'id_site_destination' a été ajoutée.</p>";
     } else {
-        echo "<p style='color:orange;'>ℹ️ La colonne 'commentaire' existe déjà.</p>";
+        echo "<p style='color: #ca8a04; font-weight: bold;'>ℹ️ Info : La colonne 'id_site_destination' existe déjà dans la table.</p>";
     }
 
-    // 3. Mise à jour des anciennes données pour éviter les erreurs d'affichage
-    // On met 'SINGLE' par défaut pour les anciens enregistrements
-    $updateOld = $pdo->exec("UPDATE pointages SET commentaire = 'SINGLE' WHERE commentaire IS NULL");
-    echo "<p style='color:blue;'>✅ $updateOld anciens enregistrements mis à jour.</p>";
+    // 4. Bonus : Vérification de la contrainte (Optionnel mais recommandé)
+    // Cela permet de s'assurer que l'ID correspond bien à un site existant
+    echo "<p style='color: #64748b;'>Structure vérifiée avec succès.</p>";
+    echo "<br><a href='gest_stock.php' style='padding: 10px 20px; background: #FF9800; color: white; text-decoration: none; border-radius: 5px;'>Retour à la gestion de stock</a>";
+    echo "</div>";
 
-    // 4. Vérification de la colonne 'est_en_retard' (utilisée dans votre code précédent)
-    $checkRetard = $pdo->query("SHOW COLUMNS FROM pointages LIKE 'est_en_retard'");
-    if (!$checkRetard->fetch()) {
-        $pdo->exec("ALTER TABLE pointages ADD COLUMN est_en_retard TINYINT(1) DEFAULT 0 AFTER type");
-        echo "<p style='color:green;'>✅ Colonne 'est_en_retard' ajoutée avec succès !</p>";
-    }
-
-    echo "<hr><p><strong>Terminé !</strong> Vous pouvez maintenant supprimer ce fichier et tester votre formulaire d'urgence.</p>";
-
-} catch (Exception $e) {
-    echo "<p style='color:red;'>❌ Erreur : " . $e->getMessage() . "</p>";
+} catch (PDOException $e) {
+    echo "<div style='padding: 20px; background: #fee2e2; border: 1px solid #ef4444; border-radius: 8px; color: #b91c1c;'>";
+    echo "<h3>❌ Erreur SQL</h3>";
+    echo "<p>" . $e->getMessage() . "</p>";
+    echo "</div>";
 }
 ?>
