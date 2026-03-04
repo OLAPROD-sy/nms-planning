@@ -1,0 +1,14 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect width="512" height="512" rx="100" fill="#FF9800"/>
+    
+    <rect x="120" y="80" width="60" height="40" rx="10" fill="white" fill-opacity="0.4"/>
+    <rect x="332" y="80" width="60" height="40" rx="10" fill="white" fill-opacity="0.4"/>
+
+    <text x="50%" y="60%" dominant-baseline="middle" text-anchor="middle" fill="white" 
+          style="font-family: 'Plus Jakarta Sans', Arial, sans-serif; font-weight: 800; font-size: 200px; letter-spacing: -10px;">
+        NMS
+    </text>
+    
+    <rect x="100" y="380" width="312" height="20" rx="10" fill="white" fill-opacity="0.3"/>
+    <rect x="100" y="380" width="180" height="20" rx="10" fill="white"/>
+</svg>
