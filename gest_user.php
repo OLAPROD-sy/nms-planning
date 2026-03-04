@@ -1,6 +1,6 @@
 <?php
 require_once __DIR__ . '/../config/database.php';
-require_once __DIR__ . '/../includes/auth_check.php';
+
 
 if ($_SESSION['role'] !== 'ADMIN') {
     die("Accès refusé.");
