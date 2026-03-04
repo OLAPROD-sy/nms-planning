@@ -173,7 +173,11 @@ foreach ($flux as &$f) {
                         <option value="U">Unité (U)</option>
                         <option value="Carton">Carton</option>
                         <option value="Paquet">Paquet</option>
-                        <option value="Litre">Litre</option>
+                        <option value="Flacon de 1L">Flacon de 1L</option>
+                        <option value="Rouleau">Rouleau</option>
+                        <option value="Boîte">Boîte</option>
+                        <option value="Bidon">Bidon</option>
+                        <option value="Spray 750ml">Spray 750ml</option>
                     </select>
                     <input type="number" step="0.01" name="prix_unitaire" placeholder="Prix d'achat" class="filter-input">
                     <input type="number" name="seuil" placeholder="Seuil" class="filter-input">
