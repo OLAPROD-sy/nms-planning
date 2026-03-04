@@ -246,13 +246,22 @@ $urgence_types = ['Absence justifiée', 'Congé maladie', 'Congé personnel', 'T
             </div>
 
             <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-bottom: 15px;">
-                <select name="raison" required style="width:100%; padding:12px; border-radius:10px; border:1px solid #fecaca;">
-                    <option value="">Motif...</option>
-                    <?php foreach ($urgence_types as $t): ?><option value="<?= $t ?>"><?= $t ?></option><?php endforeach; ?>
-                </select>
-                <input type="time" name="heure_depart" value="<?= date('H:i') ?>" style="width:100%; padding:12px; border-radius:10px; border:1px solid #fecaca;">
-                <input type="time" name="heure_arrivee" placeholder="Retour" style="width:100%; padding:12px; border-radius:10px; border:1px solid #fecaca;">
-            </div>
+                <div class="form-group">
+                    <label style="font-size:11px; font-weight:700; color:#991b1b;">RAISON</label>
+                    <select name="raison" required style="width:100%; padding:12px; border-radius:10px; border:1px solid #fecaca;">
+                        <option value="">Motif...</option>
+                        <?php foreach ($urgence_types as $t): ?><option value="<?= $t ?>"><?= $t ?></option><?php endforeach; ?>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label style="font-size:11px; font-weight:700; color:#991b1b;">H. SORTIE</label>
+                    <input type="time" name="heure_depart" value="<?= date('H:i') ?>" style="width:100%; padding:12px; border-radius:10px; border:1px solid #fecaca;">
+                </div>
+                <div class="form-group">
+                    <label style="font-size:11px; font-weight:700; color:#991b1b;">H. RETOUR</label>
+                    <input type="time" name="heure_arrivee" placeholder="Retour" style="width:100%; padding:12px; border-radius:10px; border:1px solid #fecaca;">
+                </div>
+             </div>
             <textarea name="commentaire" placeholder="Plus de détails..." style="width:100%; padding:12px; border-radius:10px; border:1px solid #fecaca; min-height:60px; margin-bottom:15px;"></textarea>
             <button type="submit" style="width:100%; background:#ef4444; color:white; border:none; padding:15px; border-radius:12px; font-weight:800; cursor:pointer;">💾 Enregistrer</button>
         </form>
