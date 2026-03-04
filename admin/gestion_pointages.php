@@ -15,7 +15,7 @@ function formatDateLongue($date) {
     return $jours[$dateObj->format('w')] . ' ' . $dateObj->format('d') . ' ' . $mois[$dateObj->format('n')] . ' ' . $dateObj->format('Y');
 }
 
-// 1. Logique de récupération
+// 1. Récupération des filtres
 $date_debut = $_GET['date_debut'] ?? date('Y-m-01');
 $date_fin = $_GET['date_fin'] ?? date('Y-m-d');
 $filtre_site = isset($_GET['site']) && $_GET['site'] !== '' ? $_GET['site'] : ''; 
@@ -23,6 +23,7 @@ $filtre_type = $_GET['f_type'] ?? '';
 $filtre_user = $_GET['user'] ?? '';
 $filtre_retard = isset($_GET['only_retard']) && $_GET['only_retard'] == '1' ? 1 : 0;
 
+// 2. Construction de la requête SQL avec logique de filtrage intelligente
 $sql = "SELECT p.*, u.prenom, u.nom, u.role, s.nom_site as site_nom 
         FROM pointages p
         LEFT JOIN users u ON p.id_user = u.id_user
@@ -31,7 +32,17 @@ $sql = "SELECT p.*, u.prenom, u.nom, u.role, s.nom_site as site_nom
 
 $params = [$date_debut, $date_fin];
 
-if ($filtre_type) { $sql .= " AND p.type = ?"; $params[] = $filtre_type; }
+// --- LOGIQUE DE FILTRAGE MISE À JOUR ---
+if ($filtre_type === 'ABSENCE') {
+    // On cherche soit le type ABSENCE, soit les urgences qui sont des périodes groupées
+    $sql .= " AND (p.type = 'ABSENCE' OR p.commentaire LIKE 'GROUPED:%')";
+} elseif ($filtre_type === 'URGENCE') {
+    // On cherche les urgences qui ne sont PAS des périodes groupées
+    $sql .= " AND p.type = 'URGENCE' AND (p.commentaire NOT LIKE 'GROUPED:%' OR p.commentaire IS NULL)";
+} elseif ($filtre_type === 'NORMAL') {
+    $sql .= " AND p.type = 'NORMAL'";
+}
+
 if ($filtre_site !== '') { $sql .= " AND p.id_site = ?"; $params[] = intval($filtre_site); }
 if ($filtre_user) { 
     $sql .= " AND (u.prenom LIKE ? OR u.nom LIKE ?)"; 
@@ -47,7 +58,7 @@ $pointages = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 $sites = $pdo->query("SELECT id_site, nom_site FROM sites ORDER BY nom_site")->fetchAll(PDO::FETCH_ASSOC);
 
-// --- CALCUL DES STATS ---
+// 3. Calcul des compteurs pour les badges du haut
 $nb_retards = 0; $nb_absences = 0; $nb_urgences = 0; $total_minutes = 0;
 foreach ($pointages as $p) {
     $is_grouped = (strpos($p['commentaire'] ?? '', 'GROUPED:') === 0);
@@ -82,7 +93,7 @@ foreach ($pointages as $p) {
 
     .table-container { background: white; border-radius: 12px; overflow-x: auto; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
     .modern-table { width: 100%; border-collapse: collapse; min-width: 950px; }
-    .modern-table th { background: #f8fafc; padding: 15px; text-align: left; font-size: 0.7rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid #eee; }
+    .modern-table th { background: #f8fafc; padding: 15px; text-align: left; font-size: 0.7rem; color: #64748b; text-transform: uppercase; border-bottom: 1px solid #eee; }
     .modern-table td { padding: 15px; border-bottom: 1px solid #f1f1f1; vertical-align: middle; font-size: 0.9rem; }
 
     .badge { padding: 4px 10px; border-radius: 6px; font-size: 0.7rem; font-weight: 800; display: inline-flex; align-items: center; gap: 4px; }
@@ -95,12 +106,12 @@ foreach ($pointages as $p) {
 <div class="page-wrapper">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:25px;">
         <h1 style="font-weight:800; color:#2c3e50; margin:0;">📊 Suivi Présence Admin</h1>
-        <button onclick="exportExcel()" style="background:#27ae60; color:white; padding:10px 18px; border-radius:8px; border:none; cursor:pointer; font-weight:bold; font-size:0.85rem;">📥 Exporter Excel</button>
+        <button onclick="exportExcel()" style="background:#27ae60; color:white; padding:10px 18px; border-radius:8px; border:none; cursor:pointer; font-weight:bold;">📥 Exporter Excel</button>
     </div>
 
     <div class="stats-row">
         <div class="stat-card red"><div class="stat-label">Retards</div><div class="stat-value"><?= $nb_retards ?></div></div>
-        <div class="stat-card purple"><div class="stat-label">Absences</div><div class="stat-value"><?= $nb_absences ?></div></div>
+        <div class="stat-card purple"><div class="stat-label">Absences Longues</div><div class="stat-value"><?= $nb_absences ?></div></div>
         <div class="stat-card orange"><div class="stat-label">Urgences Courtes</div><div class="stat-value"><?= $nb_urgences ?></div></div>
         <div class="stat-card blue"><div class="stat-label">Heures Travail</div><div class="stat-value"><?= intdiv($total_minutes, 60) ?>h <?= ($total_minutes % 60) ?>m</div></div>
     </div>
@@ -137,10 +148,10 @@ foreach ($pointages as $p) {
                 <tr>
                     <th>Collaborateur</th>
                     <th>Site / Date</th>
-                    <th>Type Exact</th>
+                    <th>Statut</th>
                     <th>Horaire / Période</th>
                     <th>Durée</th>
-                    <th>Actions</th>
+                    <th>Action</th>
                 </tr>
             </thead>
             <tbody>
@@ -148,9 +159,9 @@ foreach ($pointages as $p) {
                     $is_grouped = (strpos($p['commentaire'] ?? '', 'GROUPED:') === 0);
                     $abs_data = $is_grouped ? explode(':', $p['commentaire']) : [];
                 ?>
-                <tr>
+                <tr style="<?= $is_grouped ? 'background-color: #faf5ff;' : '' ?>">
                     <td>
-                        <div style="font-weight:700; color:#2c3e50;"><?= htmlspecialchars($p['prenom'].' '.$p['nom']) ?></div>
+                        <div style="font-weight:700;"><?= htmlspecialchars($p['prenom'].' '.$p['nom']) ?></div>
                         <span style="font-size:0.7rem; color:#94a3b8;"><?= htmlspecialchars($p['role']) ?></span>
                     </td>
                     <td>
@@ -158,9 +169,7 @@ foreach ($pointages as $p) {
                         <div style="font-size:0.75rem; color:#94a3b8;"><?= date('d/m/Y', strtotime($p['date_pointage'])) ?></div>
                     </td>
                     <td>
-                        <?php 
-                        // LOGIQUE DE DÉTECTION STRICTE
-                        if ($is_grouped || $p['type'] === 'ABSENCE'): ?>
+                        <?php if ($is_grouped || $p['type'] === 'ABSENCE'): ?>
                             <span class="badge b-absence">📁 ABSENCE</span>
                         <?php elseif ($p['type'] === 'URGENCE'): ?>
                             <span class="badge b-urgence">🚨 URGENCE COURTE</span>
@@ -172,30 +181,27 @@ foreach ($pointages as $p) {
                     </td>
                     <td>
                         <?php if ($is_grouped): ?>
-                            <span style="color:var(--p-purple); font-weight:800; font-size:0.85rem;">Du <?= $abs_data[1] ?> au <?= $abs_data[2] ?></span>
+                            <span style="color:var(--p-purple); font-weight:800;">Du <?= $abs_data[1] ?> au <?= $abs_data[2] ?></span>
                         <?php else: ?>
                             <div style="font-family:monospace; font-size:0.8rem;">
-                                <span style="color:var(--p-green)">Arrivé: <?= substr($p['heure_arrivee'], 0, 5) ?: '--:--' ?></span><br>
-                                <span style="color:var(--p-red)">Sortie: <?= substr($p['heure_depart'], 0, 5) ?: '--:--' ?></span>
+                                In: <?= substr($p['heure_arrivee'], 0, 5) ?: '--:--' ?><br>
+                                Out: <?= substr($p['heure_depart'], 0, 5) ?: '--:--' ?>
                             </div>
                         <?php endif; ?>
                     </td>
-                    <td style="font-weight:700; color:#334155;">
+                    <td style="font-weight:700;">
                         <?php 
-                        if ($is_grouped) {
-                            echo $abs_data[3] . ' Jours';
-                        } elseif ($p['heure_arrivee'] && $p['heure_depart']) {
+                        if ($is_grouped) echo $abs_data[3] . ' Jours';
+                        elseif ($p['heure_arrivee'] && $p['heure_depart']) {
                             $d1 = new DateTime($p['heure_arrivee']); $d2 = new DateTime($p['heure_depart']);
-                            $diff = $d1->diff($d2); echo $diff->h . 'h ' . $diff->i . 'm';
-                        } else {
-                            echo '-';
-                        }
+                            echo $d1->diff($d2)->format('%hh %im');
+                        } else echo '-';
                         ?>
                     </td>
                     <td>
                         <?php $note = $p['motif_urgence'] ?: ($is_grouped ? ($abs_data[4] ?? '') : ''); ?>
                         <?php if(!empty($note)): ?>
-                            <button onclick="alert('Note: <?= addslashes($note) ?>')" style="background:none; border:1px solid #e2e8f0; padding:5px 8px; border-radius:6px; cursor:pointer;">👁️</button>
+                            <button onclick="alert('Note: <?= addslashes($note) ?>')" style="border:1px solid #ddd; background:white; border-radius:4px; cursor:pointer;">👁️</button>
                         <?php endif; ?>
                     </td>
                 </tr>
