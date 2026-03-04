@@ -29,7 +29,7 @@ try {
     $pdo->beginTransaction();
 
     // 1. SUPPRESSION DES ANCIENS PRODUITS (Nettoyage complet)
-    $pdo->exec("TRUNCATE TABLE produits_admin");
+    $pdo->exec("DELETE FROM produits_admin");
 
     // 2. INSERTION DES NOUVEAUX PRODUITS
     $stmt = $pdo->prepare("INSERT INTO produits_admin (nom_produit, unite_mesure, quantite_globale, prix_unitaire, seuil_alerte) 
