@@ -195,7 +195,7 @@ $stats_normal = array_filter($pointages, fn($p) => $p['type'] === 'NORMAL');
                     </td>
                     <td>
                         <?php if ($p['type'] === 'ABSENCE'): ?>
-                            <span class="badge badge-absence">📁 Absence</span>
+                            <span class="badge badge-absence">📁 Absence </span>
                         <?php elseif ($p['type'] === 'URGENCE'): ?>
                             <span class="badge badge-urgence">🚨 Urgence Courte</span>
                         <?php elseif ($p['est_en_retard'] == 1): ?>
