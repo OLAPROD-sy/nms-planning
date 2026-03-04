@@ -8,22 +8,14 @@ if ($_SESSION['role'] !== 'ADMIN') {
     header('Location: /'); exit;
 }
 
-function formatDateLongue($date) {
-    $dateObj = new DateTime($date);
-    $jours = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
-    $mois = ['', 'Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
-    return $jours[$dateObj->format('w')] . ' ' . $dateObj->format('d') . ' ' . $mois[$dateObj->format('n')] . ' ' . $dateObj->format('Y');
-}
-
 // 1. Récupération des filtres
 $date_debut = $_GET['date_debut'] ?? date('Y-m-01');
 $date_fin = $_GET['date_fin'] ?? date('Y-m-d');
 $filtre_site = isset($_GET['site']) && $_GET['site'] !== '' ? $_GET['site'] : ''; 
 $filtre_type = $_GET['f_type'] ?? ''; 
 $filtre_user = $_GET['user'] ?? '';
-$filtre_retard = isset($_GET['only_retard']) && $_GET['only_retard'] == '1' ? 1 : 0;
 
-// 2. Construction de la requête SQL avec logique de filtrage intelligente
+// 2. Construction de la requête SQL
 $sql = "SELECT p.*, u.prenom, u.nom, u.role, s.nom_site as site_nom 
         FROM pointages p
         LEFT JOIN users u ON p.id_user = u.id_user
@@ -32,24 +24,22 @@ $sql = "SELECT p.*, u.prenom, u.nom, u.role, s.nom_site as site_nom
 
 $params = [$date_debut, $date_fin];
 
-// --- LOGIQUE DE FILTRAGE MISE À JOUR ---
+// --- LOGIQUE DE FILTRAGE ---
 if ($filtre_type === 'ABSENCE') {
-    // On cherche soit le type ABSENCE, soit les urgences qui sont des périodes groupées
     $sql .= " AND (p.type = 'ABSENCE' OR p.commentaire LIKE 'GROUPED:%')";
 } elseif ($filtre_type === 'URGENCE') {
-    // On cherche les urgences qui ne sont PAS des périodes groupées
     $sql .= " AND p.type = 'URGENCE' AND (p.commentaire NOT LIKE 'GROUPED:%' OR p.commentaire IS NULL)";
+} elseif ($filtre_type === 'RETARD') {
+    $sql .= " AND p.est_en_retard = 1";
 } elseif ($filtre_type === 'NORMAL') {
-    $sql .= " AND p.type = 'NORMAL'";
+    $sql .= " AND p.type = 'NORMAL' AND p.est_en_retard = 0";
 }
 
 if ($filtre_site !== '') { $sql .= " AND p.id_site = ?"; $params[] = intval($filtre_site); }
 if ($filtre_user) { 
     $sql .= " AND (u.prenom LIKE ? OR u.nom LIKE ?)"; 
-    $params[] = '%' . $filtre_user . '%'; 
-    $params[] = '%' . $filtre_user . '%'; 
+    $params[] = '%' . $filtre_user . '%'; $params[] = '%' . $filtre_user . '%'; 
 }
-if ($filtre_retard) { $sql .= " AND p.est_en_retard = 1"; }
 
 $sql .= " ORDER BY p.date_pointage DESC, p.created_at DESC";
 $stmt = $pdo->prepare($sql);
@@ -58,14 +48,13 @@ $pointages = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 $sites = $pdo->query("SELECT id_site, nom_site FROM sites ORDER BY nom_site")->fetchAll(PDO::FETCH_ASSOC);
 
-// 3. Calcul des compteurs pour les badges du haut
+// 3. Calcul des compteurs
 $nb_retards = 0; $nb_absences = 0; $nb_urgences = 0; $total_minutes = 0;
 foreach ($pointages as $p) {
     $is_grouped = (strpos($p['commentaire'] ?? '', 'GROUPED:') === 0);
     if ($p['est_en_retard'] == 1) $nb_retards++;
     if ($is_grouped || $p['type'] === 'ABSENCE') $nb_absences++;
     if (!$is_grouped && $p['type'] === 'URGENCE') $nb_urgences++;
-    
     if ($p['heure_arrivee'] && $p['heure_depart'] && !$is_grouped) {
         $d = new DateTime($p['heure_arrivee']); $f = new DateTime($p['heure_depart']);
         $total_minutes += ($f->diff($d)->h * 60) + $f->diff($d)->i;
@@ -106,14 +95,13 @@ foreach ($pointages as $p) {
 <div class="page-wrapper">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:25px;">
         <h1 style="font-weight:800; color:#2c3e50; margin:0;">📊 Suivi Présence Admin</h1>
-        <button onclick="exportExcel()" style="background:#27ae60; color:white; padding:10px 18px; border-radius:8px; border:none; cursor:pointer; font-weight:bold;">📥 Exporter Excel</button>
+        <button onclick="exportExcel()" style="background:#27ae60; color:white; padding:10px 18px; border-radius:8px; border:none; cursor:pointer; font-weight:bold; font-size:0.85rem;">📥 Exporter Excel</button>
     </div>
 
     <div class="stats-row">
-        <div class="stat-card red"><div class="stat-label">Retards</div><div class="stat-value"><?= $nb_retards ?></div></div>
-        <div class="stat-card purple"><div class="stat-label">Absences Longues</div><div class="stat-value"><?= $nb_absences ?></div></div>
-        <div class="stat-card orange"><div class="stat-label">Urgences Courtes</div><div class="stat-value"><?= $nb_urgences ?></div></div>
-        <div class="stat-card blue"><div class="stat-label">Heures Travail</div><div class="stat-value"><?= intdiv($total_minutes, 60) ?>h <?= ($total_minutes % 60) ?>m</div></div>
+        <div class="stat-card red"><div class="stat-label">Retards</div><div class="stat-value" style="color:var(--p-red)"><?= $nb_retards ?></div></div>
+        <div class="stat-card purple"><div class="stat-label">Absences</div><div class="stat-value" style="color:var(--p-purple)"><?= $nb_absences ?></div></div>
+        <div class="stat-card orange"><div class="stat-label">Urgences</div><div class="stat-value" style="color:var(--p-orange)"><?= $nb_urgences ?></div></div>
     </div>
 
     <div class="filter-box">
@@ -121,11 +109,12 @@ foreach ($pointages as $p) {
             <div><label style="font-size:0.7rem;font-weight:bold;">DÉBUT</label><input type="date" name="date_debut" value="<?= $date_debut ?>" class="custom-input"></div>
             <div><label style="font-size:0.7rem;font-weight:bold;">FIN</label><input type="date" name="date_fin" value="<?= $date_fin ?>" class="custom-input"></div>
             <div>
-                <label style="font-size:0.7rem;font-weight:bold;">TYPE</label>
+                <label style="font-size:0.7rem;font-weight:bold;">STATUT PRÉSENCE</label>
                 <select name="f_type" class="custom-input">
-                    <option value="">Tous les types</option>
-                    <option value="NORMAL" <?= $filtre_type == 'NORMAL' ? 'selected' : '' ?>>Normal</option>
-                    <option value="URGENCE" <?= $filtre_type == 'URGENCE' ? 'selected' : '' ?>>Urgence Courte</option>
+                    <option value="">Tout afficher</option>
+                    <option value="NORMAL" <?= $filtre_type == 'NORMAL' ? 'selected' : '' ?>>Ponctuel (Normal)</option>
+                    <option value="RETARD" <?= $filtre_type == 'RETARD' ? 'selected' : '' ?>>En Retard ⏰</option>
+                    <option value="URGENCE" <?= $filtre_type == 'URGENCE' ? 'selected' : '' ?>>Urgence/Permission</option>
                     <option value="ABSENCE" <?= $filtre_type == 'ABSENCE' ? 'selected' : '' ?>>Absence Longue</option>
                 </select>
             </div>
@@ -148,7 +137,7 @@ foreach ($pointages as $p) {
                 <tr>
                     <th>Collaborateur</th>
                     <th>Site / Date</th>
-                    <th>Statut</th>
+                    <th>Type Exact</th>
                     <th>Horaire / Période</th>
                     <th>Durée</th>
                     <th>Action</th>
@@ -159,7 +148,7 @@ foreach ($pointages as $p) {
                     $is_grouped = (strpos($p['commentaire'] ?? '', 'GROUPED:') === 0);
                     $abs_data = $is_grouped ? explode(':', $p['commentaire']) : [];
                 ?>
-                <tr style="<?= $is_grouped ? 'background-color: #faf5ff;' : '' ?>">
+                <tr>
                     <td>
                         <div style="font-weight:700;"><?= htmlspecialchars($p['prenom'].' '.$p['nom']) ?></div>
                         <span style="font-size:0.7rem; color:#94a3b8;"><?= htmlspecialchars($p['role']) ?></span>
@@ -171,10 +160,10 @@ foreach ($pointages as $p) {
                     <td>
                         <?php if ($is_grouped || $p['type'] === 'ABSENCE'): ?>
                             <span class="badge b-absence">📁 ABSENCE</span>
-                        <?php elseif ($p['type'] === 'URGENCE'): ?>
-                            <span class="badge b-urgence">🚨 URGENCE COURTE</span>
                         <?php elseif ($p['est_en_retard'] == 1): ?>
                             <span class="badge b-retard">⏰ EN RETARD</span>
+                        <?php elseif ($p['type'] === 'URGENCE'): ?>
+                            <span class="badge b-urgence">🚨 URGENCE</span>
                         <?php else: ?>
                             <span class="badge b-normal">✅ NORMAL</span>
                         <?php endif; ?>
@@ -213,8 +202,7 @@ foreach ($pointages as $p) {
 
 <script>
 function exportExcel() {
-    const form = document.getElementById('filterForm');
-    const params = new URLSearchParams(new FormData(form)).toString();
+    const params = new URLSearchParams(new FormData(document.getElementById('filterForm'))).toString();
     window.location.href = 'export_pointages_excel.php?' + params;
 }
 </script>
