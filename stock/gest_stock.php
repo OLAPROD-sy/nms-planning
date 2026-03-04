@@ -87,6 +87,7 @@ $flux = $stmt_flux->fetchAll(PDO::FETCH_ASSOC);
 
 $inventaire = $pdo->query("SELECT * FROM produits_admin ORDER BY nom_produit ASC")->fetchAll(PDO::FETCH_ASSOC);
 $nb_critique = 0;
+$nb_produits = count($inventaire);
 foreach($inventaire as $inv) { if($inv['quantite_globale'] <= $inv['seuil_alerte']) $nb_critique++; }
 
 // Initialisation du total général
@@ -151,6 +152,10 @@ foreach ($flux as &$f) {
     </div>
 
     <div class="stats-container">
+        <div class="stock-card" style="border-left: 5px solid #4ed713;">
+            <small style="color: #94a3b8; font-weight: 800;">TOTAL PRODUITS</small>
+            <div style="font-size: 24px; font-weight: 900; color: #3b82f6;"><?= $nb_produits ?> Références</div>
+        </div>  
         <div class="stock-card" style="border-left: 5px solid #ef4444;">
             <small style="color: #94a3b8; font-weight: 800;">ALERTE RÉAPPRO</small>
             <div style="font-size: 24px; font-weight: 900;"><?= $nb_critique ?> Produits</div>
