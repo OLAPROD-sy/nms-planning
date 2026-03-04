@@ -15,24 +15,14 @@ function formatDateLongue($date) {
     return $jours[$dateObj->format('w')] . ' ' . $dateObj->format('d') . ' ' . $mois[$dateObj->format('n')] . ' ' . $dateObj->format('Y');
 }
 
-// 1. Logique de récupération
+
+/// 1. Logique de récupération avec Période et Retards
 $date_debut = $_GET['date_debut'] ?? date('Y-m-01');
 $date_fin = $_GET['date_fin'] ?? date('Y-m-d');
 $filtre_site = isset($_GET['site']) && $_GET['site'] !== '' ? $_GET['site'] : ''; 
-$filtre_type = $_GET['type'] ?? '';
+$filtre_type = $_GET['f_type'] ?? ''; // Nouveau filtre type
 $filtre_user = $_GET['user'] ?? '';
 $filtre_retard = isset($_GET['only_retard']) && $_GET['only_retard'] == '1' ? 1 : 0;
-
-// LOGIQUE D'EXPORTATION (Identique)
-if (isset($_GET['export']) && $_GET['export'] === 'csv') {
-    ob_end_clean();
-    header('Content-Type: text/csv; charset=utf-8');
-    header('Content-Disposition: attachment; filename=export_pointages_'.date('Y-m-d').'.csv');
-    $output = fopen('php://output', 'w');
-    fputcsv($output, ['Collaborateur', 'Site', 'Date', 'Type', 'Entrée/Période', 'Durée', 'Retard']);
-    // Ici vous pouvez boucler sur $pointages pour remplir le CSV
-    exit(); 
-}
 
 $sql = "SELECT p.*, u.prenom, u.nom, u.role, s.nom_site as site_nom 
         FROM pointages p
@@ -42,6 +32,7 @@ $sql = "SELECT p.*, u.prenom, u.nom, u.role, s.nom_site as site_nom
 
 $params = [$date_debut, $date_fin];
 
+// Application des filtres
 if ($filtre_type) { $sql .= " AND p.type = ?"; $params[] = $filtre_type; }
 if ($filtre_site !== '') { $sql .= " AND p.id_site = ?"; $params[] = intval($filtre_site); }
 if ($filtre_user) { 
@@ -56,13 +47,17 @@ $stmt = $pdo->prepare($sql);
 $stmt->execute($params);
 $pointages = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+// Récupérer la liste des sites pour le select
 $sites = $pdo->query("SELECT id_site, nom_site FROM sites ORDER BY nom_site")->fetchAll(PDO::FETCH_ASSOC);
 
 // --- CALCUL DES STATS ---
 $nb_retards = 0;
+$nb_absences = 0; // Nouveau compteur
 $total_minutes = 0;
 foreach ($pointages as $p) {
     if ($p['est_en_retard'] == 1) $nb_retards++;
+    if ($p['type'] === 'ABSENCE') $nb_absences++;
+    
     if ($p['heure_arrivee'] && $p['heure_depart'] && $p['type'] !== 'ABSENCE') {
         $d = new DateTime($p['heure_arrivee']); 
         $f = new DateTime($p['heure_depart']);
@@ -76,169 +71,180 @@ $stats_normal = array_filter($pointages, fn($p) => $p['type'] === 'NORMAL');
 <?php include_once __DIR__ . '/../includes/header.php'; ?>
 
 <style>
-    :root { --p-orange: #f39c12; --p-green: #27ae60; --p-red: #e74c3c; --p-blue: #3498db; --bg: #f8f9fa; }
+    :root { --p-orange: #f39c12; --p-green: #27ae60; --p-red: #e74c3c; --p-blue: #3498db; --p-purple: #8e44ad; --bg: #f8f9fa; }
     .page-wrapper { max-width: 1300px; margin: 0 auto; padding: 25px; font-family: 'Inter', sans-serif; background: var(--bg); }
-    .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; margin-bottom: 30px; }
+    
+    /* KPI Cards */
+    .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px; }
     .stat-card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); border-bottom: 4px solid #ddd; transition: 0.3s; }
     .stat-card.green { border-bottom-color: var(--p-green); }
     .stat-card.orange { border-bottom-color: var(--p-orange); }
     .stat-card.blue { border-bottom-color: var(--p-blue); }
+    .stat-card.purple { border-bottom-color: var(--p-purple); }
     .stat-label { font-size: 0.85rem; color: #7f8c8d; text-transform: uppercase; font-weight: 600; }
     .stat-value { font-size: 1.8rem; font-weight: 800; color: #2c3e50; margin-top: 5px; }
+
+    /* Filtres */
     .filter-box { background: white; padding: 20px; border-radius: 12px; margin-bottom: 25px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
     .filter-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; align-items: flex-end; }
     .input-group label { display: block; font-size: 0.75rem; font-weight: 700; color: #34495e; margin-bottom: 6px; }
     .custom-input { width: 100%; padding: 10px; border: 1px solid #dfe6e9; border-radius: 8px; font-size: 0.9rem; }
+
+    /* Tableau */
     .table-container { background: white; border-radius: 12px; overflow-x: auto; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
     .modern-table { width: 100%; border-collapse: collapse; min-width: 900px; }
     .modern-table th { background: #f1f3f5; padding: 15px; text-align: left; font-size: 0.75rem; color: #4b5563; text-transform: uppercase; }
     .modern-table td { padding: 16px 15px; border-bottom: 1px solid #f1f1f1; vertical-align: middle; font-size: 0.9rem; }
+
+    /* Badges */
     .badge { padding: 5px 12px; border-radius: 20px; font-size: 0.7rem; font-weight: 700; display: inline-flex; align-items: center; gap: 5px; }
     .badge-normal { background: #e8f5e9; color: var(--p-green); }
     .badge-retard { background: #fff1f2; color: #e11d48; border: 1px solid #fecaca; }
     .badge-urgence { background: #fff3e0; color: var(--p-orange); }
-    .badge-absence { background: #f3e5f5; color: #7b1fa2; }
+    .badge-absence { background: #f3e5f5; color: #7b1fa2; border: 1px solid #e1bee7; }
     .role-tag { background: #f1f2f6; color: #576574; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; }
 </style>
 
 <div class="page-wrapper">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:25px;">
         <h1 style="font-weight:800; color:#2c3e50; margin:0;">📊 Suivi Présence Admin</h1>
-        <a href="?<?= http_build_query(array_merge($_GET, ['export' => 'csv'])) ?>" style="background:#27ae60; color:white; padding:10px 15px; border-radius:8px; text-decoration:none; font-weight:bold; font-size:0.9rem;">📥 Exporter CSV</a>
+        <button onclick="exportExcel()" style="background:#27ae60; color:white; padding:10px 15px; border-radius:8px; border:none; cursor:pointer; font-weight:bold; font-size:0.9rem;">📥 Exporter Excel</button>
     </div>
 
-    <div class="stats-row">
-        <div class="stat-card orange" style="border-bottom-color: #f31219;">
-            <div class="stat-label">Total Retards</div>
-            <div class="stat-value" style="color:#f39c12;"><?= $nb_retards ?></div>
-        </div>
-        <div class="stat-card green">
-            <div class="stat-label">Pointages Normaux</div>
-            <div class="stat-value"><?= count($stats_normal) ?></div>
-        </div>
-        <div class="stat-card orange">
-            <div class="stat-label">Urgences Déclarées</div>
-            <div class="stat-value"><?= count($stats_urgence) ?></div>
-        </div>
-        <div class="stat-card blue">
-            <div class="stat-label">Heures Totales Travail</div>
-            <div class="stat-value"><?= intdiv($total_minutes, 60) ?>h <?= ($total_minutes % 60) ?>m</div>
-        </div>
+<div class="stats-row">
+    <div class="stat-card orange" style="border-bottom-color: #f31219;">
+        <div class="stat-label">Retards</div>
+        <div class="stat-value" style="color:#f39c12;"><?= $nb_retards ?></div>
     </div>
-
-    <div class="filter-box">
-        <form method="get" class="filter-grid">
-            <div class="input-group">
-                <label>Du (Date début)</label>
-                <input type="date" name="date_debut" value="<?= htmlspecialchars($date_debut) ?>" class="custom-input">
-            </div>
-            <div class="input-group">
-                <label>Au (Date fin)</label>
-                <input type="date" name="date_fin" value="<?= htmlspecialchars($date_fin) ?>" class="custom-input">
-            </div>
-            <div class="input-group">
-                <label>Type / Retard</label>
-                <select name="only_retard" class="custom-input">
-                    <option value="">Tout (Ponctuels & Retards)</option>
-                    <option value="1" <?= $filtre_retard ? 'selected' : '' ?>>⚠️ Uniquement les Retards</option>
-                </select>
-            </div>
-            <div class="input-group">
-                <label>Site</label>
-                <select name="site" class="custom-input">
-                    <option value="">Tous les sites</option>
-                    <?php foreach ($sites as $s): ?>
-                        <option value="<?= $s['id_site'] ?>" <?= (string)$filtre_site === (string)$s['id_site'] ? 'selected' : '' ?>>
-                            <?= htmlspecialchars($s['nom_site']) ?>
-                        </option>
-                    <?php endforeach; ?>
-                </select>
-            </div>
-            <div style="display:flex; gap:10px;">
-                <button type="submit" style="flex:2; background:var(--p-blue); color:white; border:none; padding:10px; border-radius:8px; cursor:pointer; font-weight:bold;">Filtrer</button>
-                <a href="/admin/gestion_pointages.php" style="flex:1; background:#eee; color:#666; text-align:center; padding:10px; border-radius:8px; text-decoration:none;">🔄</a>
-            </div>
-        </form>
+    <div class="stat-card purple">
+        <div class="stat-label">Absences</div>
+        <div class="stat-value" style="color:var(--p-purple);"><?= $nb_absences ?></div>
     </div>
-
-    <div class="table-container">
-        <table class="modern-table">
-            <thead>
-                <tr>
-                    <th>Collaborateur</th>
-                    <th>Site / Date</th>
-                    <th>Type Exact</th>
-                    <th>Horaire / Période</th>
-                    <th>Durée</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php if (empty($pointages)): ?>
-                    <tr><td colspan="6" style="text-align:center; padding:40px; color:#95a5a6;">Aucun enregistrement trouvé.</td></tr>
-                <?php else: ?>
-                    <?php foreach ($pointages as $p): 
-                        // Analyse du commentaire pour les absences groupées
-                        $is_grouped_absence = (strpos($p['commentaire'] ?? '', 'GROUPED:') === 0);
-                        $abs_data = $is_grouped_absence ? explode(':', $p['commentaire']) : [];
-                    ?>
-                        <tr>
-                            <td>
-                                <div style="font-weight:700; color:#2c3e50;"><?= htmlspecialchars($p['prenom'] . ' ' . $p['nom']) ?></div>
-                                <span class="role-tag"><?= htmlspecialchars($p['role']) ?></span>
-                            </td>
-                            <td>
-                                <div style="font-size:0.85rem; font-weight:600;">📍 <?= htmlspecialchars($p['site_nom'] ?? 'N/A') ?></div>
-                                <div style="font-size:0.75rem; color:#95a5a6;"><?= date('d/m/Y', strtotime($p['date_pointage'])) ?></div>
-                            </td>
-                            <td>
-                                <?php if ($p['type'] === 'ABSENCE'): ?>
-                                    <span class="badge badge-absence">📁 Absence</span>
-                                <?php elseif ($p['type'] === 'URGENCE'): ?>
-                                    <span class="badge badge-urgence">🚨 Urgence</span>
-                                <?php elseif ($p['est_en_retard'] == 1): ?>
-                                    <span class="badge badge-retard">⚠️ En retard</span>
-                                <?php else: ?>
-                                    <span class="badge badge-normal">✅ Normal</span>
-                                <?php endif; ?>
-                            </td>
-                            <td>
-                                <?php if ($is_grouped_absence): ?>
-                                    <div style="font-size:0.85rem; color:#7b1fa2; font-weight:bold;">
-                                        Du <?= htmlspecialchars($abs_data[1]) ?> au <?= htmlspecialchars($abs_data[2]) ?>
-                                    </div>
-                                <?php else: ?>
-                                    <div style="display:flex; gap:10px; font-family:monospace; font-size:0.85rem;">
-                                        <span style="color:var(--p-green)">Arrivé: <?= $p['heure_arrivee'] ? substr($p['heure_arrivee'], 0, 5) : '--:--' ?></span>
-                                        <span style="color:var(--p-red)">Sortie: <?= $p['heure_depart'] ? substr($p['heure_depart'], 0, 5) : '--:--' ?></span>
-                                    </div>
-                                <?php endif; ?>
-                            </td>
-                            <td style="font-weight:700; color:#34495e;">
-                                <?php 
-                                if ($is_grouped_absence) {
-                                    echo $abs_data[3] . ' Jours';
-                                } elseif ($p['heure_arrivee'] && $p['heure_depart']) {
-                                    $debut = new DateTime($p['heure_arrivee']); $fin = new DateTime($p['heure_depart']);
-                                    $diff = $fin->diff($debut); echo $diff->h . 'h ' . $diff->i . 'm';
-                                } else { echo '-'; }
-                                ?>
-                            </td>
-                            <td>
-                                <?php 
-                                $note = $p['motif_urgence'] ?: ($is_grouped_absence ? ($abs_data[4] ?? '') : '');
-                                if (!empty($note)): ?>
-                                    <button onclick="alert('Note: <?= addslashes($note) ?>')" style="background:none; border:1px solid #ddd; padding:5px 10px; border-radius:5px; cursor:pointer; font-size:0.7rem;">Détails</button>
-                                <?php else: ?>
-                                    <span style="color:#ced4da;">---</span>
-                                <?php endif; ?>
-                            </td>
-                        </tr>
-                    <?php endforeach; ?>
-                <?php endif; ?>
-            </tbody>
-        </table>
+    <div class="stat-card orange">
+        <div class="stat-label">Urgences</div>
+        <div class="stat-value"><?= count($stats_urgence) ?></div>
+    </div>
+    <div class="stat-card blue">
+        <div class="stat-label">Heures Travail</div>
+        <div class="stat-value"><?= intdiv($total_minutes, 60) ?>h <?= ($total_minutes % 60) ?>m</div>
     </div>
 </div>
+
+<div class="filter-box">
+    <form method="get" id="filterForm" class="filter-grid">
+        <div class="input-group">
+            <label>Du (Date début)</label>
+            <input type="date" name="date_debut" value="<?= htmlspecialchars($date_debut) ?>" class="custom-input">
+        </div>
+        <div class="input-group">
+            <label>Au (Date fin)</label>
+            <input type="date" name="date_fin" value="<?= htmlspecialchars($date_fin) ?>" class="custom-input">
+        </div>
+        <div class="input-group">
+            <label>Type Pointage</label>
+            <select name="f_type" class="custom-input">
+                <option value="">Tous les types</option>
+                <option value="NORMAL" <?= $filtre_type == 'NORMAL' ? 'selected' : '' ?>>Normal</option>
+                <option value="URGENCE" <?= $filtre_type == 'URGENCE' ? 'selected' : '' ?>>Urgence Courte</option>
+                <option value="ABSENCE" <?= $filtre_type == 'ABSENCE' ? 'selected' : '' ?>>Absence</option>
+            </select>
+        </div>
+        <div class="input-group">
+            <label>Site</label>
+            <select name="site" class="custom-input">
+                <option value="">Tous les sites</option>
+                <?php foreach ($sites as $s): ?>
+                    <option value="<?= $s['id_site'] ?>" <?= (string)$filtre_site === (string)$s['id_site'] ? 'selected' : '' ?>>
+                        <?= htmlspecialchars($s['nom_site']) ?>
+                    </option>
+                <?php endforeach; ?>
+            </select>
+        </div>
+        <div style="display:flex; gap:10px;">
+            <button type="submit" style="flex:2; background:var(--p-blue); color:white; border:none; padding:10px; border-radius:8px; cursor:pointer; font-weight:bold;">Filtrer</button>
+            <a href="gestion_pointages.php" style="flex:1; background:#eee; color:#666; text-align:center; padding:10px; border-radius:8px; text-decoration:none;">🔄</a>
+        </div>
+    </form>
+</div>
+
+<div class="table-container">
+    <table class="modern-table">
+        <thead>
+            <tr>
+                <th>Collaborateur</th>
+                <th>Site / Date</th>
+                <th>Type Exact</th>
+                <th>Horaire / Période</th>
+                <th>Durée</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php foreach ($pointages as $p): 
+                $is_grouped = (strpos($p['commentaire'] ?? '', 'GROUPED:') === 0);
+                $abs = $is_grouped ? explode(':', $p['commentaire']) : [];
+            ?>
+                <tr>
+                    <td>
+                        <div style="font-weight:700; color:#2c3e50;"><?= htmlspecialchars($p['prenom'] . ' ' . $p['nom']) ?></div>
+                        <span class="role-tag"><?= htmlspecialchars($p['role']) ?></span>
+                    </td>
+                    <td>
+                        <div style="font-size:0.85rem; font-weight:600;">📍 <?= htmlspecialchars($p['site_nom'] ?? 'N/A') ?></div>
+                        <div style="font-size:0.75rem; color:#95a5a6;"><?= date('d/m/Y', strtotime($p['date_pointage'])) ?></div>
+                    </td>
+                    <td>
+                        <?php if ($p['type'] === 'ABSENCE'): ?>
+                            <span class="badge badge-absence">📁 Absence</span>
+                        <?php elseif ($p['type'] === 'URGENCE'): ?>
+                            <span class="badge badge-urgence">🚨 Urgence Courte</span>
+                        <?php elseif ($p['est_en_retard'] == 1): ?>
+                            <span class="badge badge-retard">⏰ En retard</span>
+                        <?php else: ?>
+                            <span class="badge badge-normal">✅ Normal</span>
+                        <?php endif; ?>
+                    </td>
+                    <td>
+                        <?php if ($is_grouped): ?>
+                            <div style="color:var(--p-purple); font-weight:bold; font-size:0.85rem;">
+                                Du <?= $abs[1] ?> au <?= $abs[2] ?>
+                            </div>
+                        <?php else: ?>
+                            <div style="font-family:monospace; font-size:0.85rem;">
+                                <span style="color:var(--p-green)">In: <?= $p['heure_arrivee'] ? substr($p['heure_arrivee'], 0, 5) : '--:--' ?></span> | 
+                                <span style="color:var(--p-red)">Out: <?= $p['heure_depart'] ? substr($p['heure_depart'], 0, 5) : '--:--' ?></span>
+                            </div>
+                        <?php endif; ?>
+                    </td>
+                    <td style="font-weight:700;">
+                        <?php 
+                        if ($is_grouped) {
+                            echo $abs[3] . ' Jours';
+                        } elseif ($p['heure_arrivee'] && $p['heure_depart']) {
+                            $d1 = new DateTime($p['heure_arrivee']); $d2 = new DateTime($p['heure_depart']);
+                            $diff = $d1->diff($d2); echo $diff->h . 'h ' . $diff->i . 'm';
+                        } else { echo '-'; }
+                        ?>
+                    </td>
+                    <td>
+                        <?php $note = $p['motif_urgence'] ?: ($is_grouped ? ($abs[4] ?? '') : ''); ?>
+                        <?php if($note): ?>
+                            <button onclick="alert('Note: <?= addslashes($note) ?>')" style="background:none; border:1px solid #ddd; padding:5px 10px; border-radius:5px; cursor:pointer; font-size:0.7rem;">Détails</button>
+                        <?php endif; ?>
+                    </td>
+                </tr>
+            <?php endforeach; ?>
+        </tbody>
+    </table>
+</div>
+</div>
+
+<script>
+function exportExcel() {
+    const form = document.getElementById('filterForm');
+    const params = new URLSearchParams(new FormData(form)).toString();
+    window.location.href = 'export_pointages_excel.php?' + params;
+}
+</script>
 
 <?php include_once __DIR__ . '/../includes/footer.php'; ?>
