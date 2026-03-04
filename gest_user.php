@@ -1,10 +1,6 @@
 <?php
 require_once __DIR__ . '/config/database.php';
 
-if ($_SESSION['role'] !== 'ADMIN') {
-    die("Accès refusé.");
-}
-
 // Liste complète extraite de l'image
 $liste_produits = [
     ['nom' => 'Papier Hygiénique', 'unite' => 'Paquet de 10', 'min_prix' => 2500, 'max_prix' => 3500],
