@@ -63,6 +63,11 @@ $where_clauses = [];
 $params = [];
 if (isset($_GET['f_produit']) && $_GET['f_produit'] !== '') { $where_clauses[] = "m.id_produit_admin = ?"; $params[] = (int)$_GET['f_produit']; }
 if (isset($_GET['f_action']) && $_GET['f_action'] !== '') { $where_clauses[] = "m.type_mouvement = ?"; $params[] = $_GET['f_action']; }
+// NOUVEAU : Filtre par Destination (Site)
+if (isset($_GET['f_destination']) && $_GET['f_destination'] !== '') { 
+    $where_clauses[] = "m.id_site_destination = ?"; 
+    $params[] = (int)$_GET['f_destination']; 
+}
 if (!empty($_GET['f_date_debut']) && !empty($_GET['f_date_fin'])) {
     $where_clauses[] = "DATE(m.date_mouvement) BETWEEN ? AND ?";
     $params[] = $_GET['f_date_debut']; $params[] = $_GET['f_date_fin'];
@@ -75,7 +80,7 @@ $sql_flux = "SELECT m.*, p.nom_produit, p.unite_mesure, s.nom_site, u.nom as sup
              LEFT JOIN sites s ON m.id_site_destination = s.id_site
              LEFT JOIN users u ON s.id_site = u.id_site AND u.role = 'SUPERVISEUR'";
 if (!empty($where_clauses)) { $sql_flux .= " WHERE " . implode(" AND ", $where_clauses); }
-$sql_flux .= " ORDER BY m.date_mouvement DESC LIMIT 30";
+$sql_flux .= " ORDER BY m.date_mouvement DESC LIMIT 50";
 $stmt_flux = $pdo->prepare($sql_flux);
 $stmt_flux->execute($params);
 $flux = $stmt_flux->fetchAll(PDO::FETCH_ASSOC);
@@ -262,8 +267,16 @@ foreach ($flux as &$f) {
                         <option value="ENTREE" <?= (isset($_GET['f_action']) && $_GET['f_action'] === 'ENTREE') ? 'selected' : '' ?>>Entrées uniquement</option>
                         <option value="SORTIE" <?= (isset($_GET['f_action']) && $_GET['f_action'] === 'SORTIE') ? 'selected' : '' ?>>Sorties uniquement</option>
                     </select>
+                    <select name="f_destination" class="filter-input" style="border: 1px solid #FF9800;">
+                        <option value="">-- Toutes destinations --</option>
+                        <?php foreach($sites as $st): ?>
+                            <option value="<?= $st['id_site'] ?>" <?= (isset($_GET['f_destination']) && $_GET['f_destination'] == $st['id_site']) ? 'selected' : '' ?>>
+                                📍 <?= htmlspecialchars($st['nom_site']) ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
                     <button type="submit" style="background:#FF9800; color:white; border:none; padding:10px 20px; border-radius:8px; cursor:pointer;">Filtrer</button>
-                    <button type="button" onclick="window.location.href='gest_stock.php'" style="background:#64748b; color:white; border:none; padding:10px 20px; border-radius:8px; cursor:pointer;">Réinitialiser</button> 
+                    <button type="button" onclick="window.location.href='gest_stock.php'" style="background:#64748b; color:white; border:none; padding:10px 20px; border-radius:8px; cursor:pointer;">Effacer</button> 
                     <button type="button" onclick="exportExcel()" style="background:#27ae60; color:white; border:none; padding:10px 20px; border-radius:8px; cursor:pointer; font-weight:bold;">
                         📥 Exporter Excel
                     </button>
@@ -327,9 +340,10 @@ function exportExcel() {
     const debut = document.querySelector('input[name="f_date_debut"]').value;
     const fin = document.querySelector('input[name="f_date_fin"]').value;
     const action = document.querySelector('select[name="f_action"]').value;
+    const destination = document.querySelector('select[name="f_destination"]').value; // Nouveau
     
     // On redirige vers la page d'export avec les paramètres
-    window.location.href = `export_inventaire2.php?f_date_debut=${debut}&f_date_fin=${fin}&f_action=${action}`;
+    window.location.href = `export_inventaire2.php?f_date_debut=${debut}&f_date_fin=${fin}&f_action=${action}&f_destination=${destination}`;
 }
 
 function toggleSiteSelection() {

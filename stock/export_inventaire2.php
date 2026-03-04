@@ -20,6 +20,12 @@ if (!empty($_GET['f_date_debut']) && !empty($_GET['f_date_fin'])) {
     $params[] = $_GET['f_date_fin'];
 }
 
+// Dans export_inventaire2.php
+if (!empty($_GET['f_destination'])) {
+    $where_clauses[] = "m.id_site_destination = ?";
+    $params[] = (int)$_GET['f_destination'];
+}
+
 // 2. Requête SQL (Jointures avec Sites, Users et inclusion du commentaire)
 $sql = "SELECT m.*, p.nom_produit, p.unite_mesure, s.nom_site, u.nom as sup_nom, u.prenom as sup_prenom 
         FROM mouvements_stock_admin m 
