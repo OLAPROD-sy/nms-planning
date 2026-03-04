@@ -229,7 +229,7 @@ $urgence_types = ['Absence justifiée', 'Congé maladie', 'Congé personnel', 'T
     </div>
 
     <div style="background: #fff5f5; border: 1px solid #fecaca; border-radius: 20px; padding: 25px; margin-bottom: 30px;">
-        <h3 style="color: #991b1b; margin-bottom: 20px; font-size: 16px;">🚨 Signaler une Absence / Sortie Exceptionnelle</h3>
+        <h3 style="color: #991b1b; margin-bottom: 20px; font-size: 16px;">🚨 Signaler une Absence / Sortie</h3>
         <form method="post">
             <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(generate_csrf_token()) ?>">
             <input type="hidden" name="action" value="urgence">
