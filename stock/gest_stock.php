@@ -170,7 +170,7 @@ foreach ($flux as &$f) {
                     <input type="hidden" name="action" value="creer_produit">
                     <input type="text" name="nom_produit" placeholder="Nom du produit" required class="filter-input" style="flex: 2;">
                     <select name="unite_mesure" class="filter-input">
-                        <option value="U">Unité (U)</option>
+                        <option value="Unité">Unité (U)</option>
                         <option value="Carton">Carton</option>
                         <option value="Paquet">Paquet</option>
                         <option value="Flacon de 1L">Flacon de 1L</option>
