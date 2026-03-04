@@ -37,8 +37,19 @@ $stmt = $pdo->prepare($sql);
 $stmt->execute($params);
 $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+try {
+    // On tente 'nom', si ça échoue on tente 'nom_site'
+    $stmtS = $pdo->prepare("SELECT nom_site FROM sites WHERE id_site = ?");
+    $stmtS->execute([$id_site]);
+    $site_name = $stmtS->fetchColumn();
+} catch (Exception $e) {
+    $site_name = "Site_" . $id_site;
+}
+
+$site_name = $site_name ?: "Site_" . $id_site;
+
 // 3. Configuration des headers pour forcer le téléchargement Excel
-$filename = "historique_stock_site_" . $id_site . "_" . date('Ymd') . ".xls";
+$filename = "historique_stock_site_" . str_replace(' ', '_', $site_name) . "_" . date('Ymd_Hi') . ".xls";
 header("Content-Type: application/vnd.ms-excel; charset=utf-8");
 header("Content-Disposition: attachment; filename=\"$filename\"");
 
