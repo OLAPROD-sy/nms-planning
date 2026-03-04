@@ -8,6 +8,50 @@ if ($_SESSION['role'] !== 'ADMIN') {
     header('Location: /'); exit;
 }
 
+/**
+ * AUTOMATISATION DES ABSENCES
+ * Si l'heure est passée (ex: 18h) et qu'on est sur la date du jour,
+ * on génère les absences pour ceux qui n'ont rien fait.
+ */
+$heure_cloture = "18:00:00"; 
+$aujourdhui = date('Y-m-d');
+
+if (date('H:i:s') > $heure_cloture && $date_debut === $aujourdhui) {
+    
+    // 1. Trouver les agents qui n'ont aucun pointage aujourd'hui
+    $sql_absents = "SELECT u.id_user, u.id_site 
+                    FROM users u 
+                    WHERE u.role != 'ADMIN' 
+                    AND u.id_user NOT IN (
+                        SELECT id_user FROM pointages WHERE date_pointage = ?
+                    )";
+    
+    $stmt_absents = $pdo->prepare($sql_absents);
+    $stmt_absents->execute([$aujourdhui]);
+    $agents_manquants = $stmt_absents->fetchAll();
+
+    if ($agents_manquants) {
+        $pdo->beginTransaction();
+        try {
+            $ins = $pdo->prepare("INSERT INTO pointages (id_user, date_pointage, type, id_site, motif_urgence, commentaire) 
+                                 VALUES (?, ?, 'ABSENCE', ?, 'Automatique', 'Système : Aucune activité détectée')");
+            
+            foreach ($agents_manquants as $agent) {
+                $ins->execute([$agent['id_user'], $aujourdhui, $agent['id_site']]);
+                
+                // Optionnel : Envoyer une notification à l'agent pour le prévenir
+                $msg = "Absence automatique enregistrée pour le " . date('d/m/Y');
+                $notif = $pdo->prepare("INSERT INTO notifications (id_user, type, message) VALUES (?, 'urgence', ?)");
+                $notif->execute([$agent['id_user'], $msg]);
+            }
+            $pdo->commit();
+        } catch (Exception $e) {
+            $pdo->rollBack();
+            error_log("Erreur auto-absence : " . $e->getMessage());
+        }
+    }
+}
+
 // 1. Récupération des filtres
 $date_debut = $_GET['date_debut'] ?? date('Y-m-01');
 $date_fin = $_GET['date_fin'] ?? date('Y-m-d');
