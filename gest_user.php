@@ -1,6 +1,5 @@
 <?php
-require_once __DIR__ . '/../config/database.php';
-
+require_once __DIR__ . '/config/database.php';
 
 if ($_SESSION['role'] !== 'ADMIN') {
     die("Accès refusé.");
