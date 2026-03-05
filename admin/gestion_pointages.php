@@ -2,9 +2,6 @@
 require_once __DIR__ . '/../includes/auth_check.php';
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../includes/csrf.php';
-// Au début de admin/gestion_pointages.php
-require_once __DIR__ . '/../admin/auto_absences.php';
-genererAbsencesAutomatiques($pdo);
 
 if ($_SESSION['role'] !== 'ADMIN') {
     $_SESSION['flash_error'] = 'Accès réservé aux administrateurs.';
