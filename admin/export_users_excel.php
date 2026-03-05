@@ -109,14 +109,12 @@ header('Expires: 0');
 <table border="1" class="users-table">
     <thead>
         <tr>
-            <th>ID</th>
             <th>Nom</th>
             <th>Prénom</th>
             <th>Username</th>
             <th>Email</th>
             <th>Rôle</th>
             <th>Contact</th>
-            <th>ID Site</th>
             <th>Site</th>
             <th>Date embauche</th>
             <th>Créé le</th>
@@ -139,14 +137,12 @@ header('Expires: 0');
             }
             ?>
             <tr>
-                <td class="ta-center"><?= (int) $u['id_user'] ?></td>
                 <td><?= htmlspecialchars($u['nom'] ?? '') ?></td>
                 <td><?= htmlspecialchars($u['prenom'] ?? '') ?></td>
                 <td><?= htmlspecialchars($u['username'] ?? '') ?></td>
                 <td><?= htmlspecialchars($u['email'] ?? '') ?></td>
                 <td class="<?= $role_class ?> ta-center"><?= htmlspecialchars($u['role'] ?? '') ?></td>
                 <td><?= htmlspecialchars((string) ($u['contact'] ?? '')) ?></td>
-                <td class="ta-center"><?= $u['id_site'] !== null ? (int) $u['id_site'] : '-' ?></td>
                 <td><?= htmlspecialchars($u['nom_site'] ?? 'Non assigné') ?></td>
                 <td class="ta-center">
                     <?= !empty($u['date_embauche']) ? date('d/m/Y', strtotime($u['date_embauche'])) : '-' ?>
