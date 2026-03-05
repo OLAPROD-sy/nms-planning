@@ -37,9 +37,9 @@ $all_users = $stmt->fetchAll(PDO::FETCH_ASSOC);
 $grouped_users = [];
 foreach ($all_users as $u) {
     if ($u['role'] === 'ADMIN') {
-        $section_name = "⭐ DIRECTION / RESPONSABLES";
+        $section_name = "DIRECTION / RESPONSABLES";
     } else {
-        $section_name = "📍 " . ($u['nom_site'] ?? 'SANS SITE ASSIGNÉ');
+        $section_name = ($u['nom_site'] ?? 'SANS SITE ASSIGNE');
     }
     $grouped_users[$section_name][] = $u;
 }
@@ -66,18 +66,18 @@ $users = $pdo->query('
         </div>
         <div class="header-actions">
             <a href="/admin/export_users_excel.php" class="btn-export-modern">
-                <span class="icon">📥</span>
+                <span class="icon"><i class="bi bi-file-earmark-excel"></i></span>
                 <span class="text">Exporter Excel</span>
             </a>
             <a href="/admin/add_users.php" class="btn-add-modern">
-                <span class="icon">➕</span>
+                <span class="icon"><i class="bi bi-plus-circle"></i></span>
                 <span class="text">Ajouter</span>
             </a>
         </div>
     </div>
 
     <div class="search-wrapper">
-        <span class="search-icon">🔍</span>
+        <span class="search-icon"><i class="bi bi-search"></i></span>
         <input type="text" id="userSearch" placeholder="Rechercher un nom, un site ou un rôle...">
     </div>
 </div>
@@ -87,7 +87,14 @@ $users = $pdo->query('
         <?php foreach ($grouped_users as $section => $members): ?>
             <div class="site-section-wrapper" data-section-name="<?= htmlspecialchars($section) ?>">
                 <div class="site-section-title">
-                    <h2 style="font-size: 1.2rem; color: #444;"><?= $section ?></h2>
+                    <h2 style="font-size: 1.2rem; color: #444;">
+                        <?php if ($section === 'DIRECTION / RESPONSABLES'): ?>
+                            <i class="bi bi-star-fill"></i>
+                        <?php else: ?>
+                            <i class="bi bi-geo-alt"></i>
+                        <?php endif; ?>
+                        <?= htmlspecialchars($section) ?>
+                    </h2>
                     <span style="background: #ddd; padding: 2px 8px; border-radius: 10px; font-size: 12px;"><?= count($members) ?> membre(s)</span>
                 </div>
 
@@ -109,8 +116,8 @@ $users = $pdo->query('
                                 <div class="role-badge role-<?= strtolower($u['role']) ?>"><?= $u['role'] ?></div>
                                 
                                 <div class="user-details">
-                                    <div class="detail-item"><span>📍</span> <?= htmlspecialchars($u['nom_site'] ?? 'Non assigné') ?></div>
-                                    <div class="detail-item"><span>📞</span> <?= htmlspecialchars($u['contact'] ?? 'N/A') ?></div>
+                                    <div class="detail-item"><span><i class="bi bi-geo-alt"></i></span> <?= htmlspecialchars($u['nom_site'] ?? 'Non assigné') ?></div>
+                                    <div class="detail-item"><span><i class="bi bi-telephone"></i></span> <?= htmlspecialchars($u['contact'] ?? 'N/A') ?></div>
                                 </div>
 
                                 <?php $isActive = ((int)$u['actif'] === 1); ?>
@@ -121,8 +128,8 @@ $users = $pdo->query('
 
                             <div class="user-actions-container">
                                 <div class="action-group">
-                                    <a href="edit_users.php?id=<?= $u['id_user'] ?>" class="btn-action btn-edit">✏️</a>
-                                    <a href="delete_user.php?id=<?= $u['id_user'] ?>" class="btn-action btn-delete" onclick="return confirm('Supprimer ?')">🗑️</a>
+                                    <a href="edit_users.php?id=<?= $u['id_user'] ?>" class="btn-action btn-edit" title="Modifier"><i class="bi bi-pencil-square"></i></a>
+                                    <a href="delete_user.php?id=<?= $u['id_user'] ?>" class="btn-action btn-delete" onclick="return confirm('Supprimer ?')" title="Supprimer"><i class="bi bi-trash3"></i></a>
                                 </div>
                                 <form method="POST">
                                     <input type="hidden" name="id_user" value="<?= $u['id_user'] ?>">

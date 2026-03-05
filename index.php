@@ -56,86 +56,90 @@ if ($_SESSION['role'] === 'ADMIN') {
         <p>Heureux de vous revoir sur votre espace NMS Planning.</p>
         <div class="user-badge">
             <?php
-                $badges = ['ADMIN' => '🔴 Administrateur', 'SUPERVISEUR' => '🟠 Superviseur', 'AGENT' => '🟢 Agent'];
-                echo $badges[$_SESSION['role']] ?? '👤 Utilisateur';
+                $badges = [
+                    'ADMIN' => '<i class="bi bi-shield-check"></i> Administrateur',
+                    'SUPERVISEUR' => '<i class="bi bi-person-badge"></i> Superviseur',
+                    'AGENT' => '<i class="bi bi-person-workspace"></i> Agent'
+                ];
+                echo $badges[$_SESSION['role']] ?? '<i class="bi bi-person"></i> Utilisateur';
             ?>
         </div>
     </div>
 
-    <div class="section-title">⚡ Accès Rapide</div>
+    <div class="section-title"><i class="bi bi-lightning-charge"></i> Accès Rapide</div>
     <div class="quick-actions-grid">
         <?php if ($_SESSION['role'] === 'AGENT'): ?>
-            <a href="/admin/pointage.php" class="action-tile"><i>📍</i><span>Présence</span></a>
-            <a href="/planning/agent_schedule.php" class="action-tile"><i>📅</i><span>Mon Planning</span></a>
+            <a href="/admin/pointage.php" class="action-tile"><i class="bi bi-geo-alt"></i><span>Présence</span></a>
+            <a href="/planning/agent_schedule.php" class="action-tile"><i class="bi bi-calendar3"></i><span>Mon Planning</span></a>
         <?php endif; ?>
 
         <?php if ($_SESSION['role'] === 'SUPERVISEUR'): ?>
-            <a href="/admin/postes.php" class="action-tile"><i>👔</i><span>Gérer les Postes</span></a>
-            <a href="/admin/pointage.php" class="action-tile"><i>📍</i><span>Présence</span></a>
-            <a href="/planning/planning_superviseur.php" class="action-tile"><i>📅</i><span>Planning</span></a>
-            <a href="/stock/manage_stock.php" class="action-tile"><i>📦</i><span>Stocks</span></a>
+            <a href="/admin/postes.php" class="action-tile"><i class="bi bi-briefcase"></i><span>Gérer les Postes</span></a>
+            <a href="/admin/pointage.php" class="action-tile"><i class="bi bi-geo-alt"></i><span>Présence</span></a>
+            <a href="/planning/planning_superviseur.php" class="action-tile"><i class="bi bi-calendar3"></i><span>Planning</span></a>
+            <a href="/stock/manage_stock.php" class="action-tile"><i class="bi bi-box-seam"></i><span>Stocks</span></a>
         <?php endif; ?>
 
         <?php if ($_SESSION['role'] === 'ADMIN'): ?>
-            <a href="/admin/sites.php" class="action-tile"><i>🏢</i><span>Gérer les Sites</span></a>
-            <a href="/admin/users.php" class="action-tile"><i>👥</i><span>Utilisateurs</span></a>
-            <a href="/admin/gestion_pointages.php" class="action-tile"><i>📍</i><span>Pointages</span></a>
-            <a href="/stock/gest_stock.php" class="action-tile"><i>📦</i><span>Stocks</span></a>
-            <a href="/stock/alerts.php" class="action-tile"><i>⚠️</i><span>Alertes</span></a>
-            <a href="/reports/inventory.php" class="action-tile"><i>📊</i><span>Rapports</span></a>
+            <a href="/admin/sites.php" class="action-tile"><i class="bi bi-buildings"></i><span>Gérer les Sites</span></a>
+            <a href="/admin/users.php" class="action-tile"><i class="bi bi-people"></i><span>Utilisateurs</span></a>
+            <a href="/admin/gestion_pointages.php" class="action-tile"><i class="bi bi-geo-alt"></i><span>Pointages</span></a>
+            <a href="/stock/gest_stock.php" class="action-tile"><i class="bi bi-box-seam"></i><span>Stocks</span></a>
+            <a href="/stock/alerts.php" class="action-tile"><i class="bi bi-exclamation-triangle"></i><span>Alertes</span></a>
+            <a href="/reports/inventory.php" class="action-tile"><i class="bi bi-bar-chart"></i><span>Rapports</span></a>
         <?php endif; ?>
         
-        <a href="/admin/view_profile.php" class="action-tile"><i>👤</i><span>Mon Profil</span></a>
+        <a href="/admin/view_profile.php" class="action-tile"><i class="bi bi-person-circle"></i><span>Mon Profil</span></a>
     </div>
 
-    <div class="section-title">📊 Vos Statistiques</div>
+    <div class="section-title"><i class="bi bi-graph-up"></i> Vos Statistiques</div>
     <div class="stats-grid">
         <?php if ($_SESSION['role'] === 'ADMIN'): ?>
             <div class="stat-card">
-                <div class="stat-icon-box bg-orange">👥</div>
+                <div class="stat-icon-box bg-orange"><i class="bi bi-people"></i></div>
                 <div class="stat-info"><p>Agents actifs</p><h3><?= $totalAgents ?></h3></div>
             </div>
             <div class="stat-card">
-                <div class="stat-icon-box bg-orange">👥</div>
+                <div class="stat-icon-box bg-orange"><i class="bi bi-person-badge"></i></div>
                 <div class="stat-info"><p>Superviseurs actifs</p><h3><?= $totalSupervisors ?></h3></div>
             </div>
             <div class="stat-card">
-                <div class="stat-icon-box bg-blue">🏢</div>
+                <div class="stat-icon-box bg-blue"><i class="bi bi-buildings"></i></div>
                 <div class="stat-info"><p>Sites</p><h3><?= $totalSites ?></h3></div>
             </div>
             <div class="stat-card">
-                <div class="stat-icon-box bg-red">⚠️</div>
+                <div class="stat-icon-box bg-red"><i class="bi bi-exclamation-triangle"></i></div>
                 <div class="stat-info"><p>Alertes</p><h3><?= $produits_alertes ?></h3></div>
             </div>
             <div class="stat-card">
-                <div class="stat-icon-box bg-green">✅</div>
+                <div class="stat-icon-box bg-green"><i class="bi bi-check-circle"></i></div>
                 <div class="stat-info"><p>Pointages</p><h3><?= $pointages_count ?></h3></div>
             </div>
 
         <?php elseif ($_SESSION['role'] === 'SUPERVISEUR'): ?>
             <div class="stat-card">
-                <div class="stat-icon-box bg-orange">👥</div>
+                <div class="stat-icon-box bg-orange"><i class="bi bi-people"></i></div>
                 <div class="stat-info"><p>Mes Agents actifs</p><h3><?= $agents_site_count ?></h3></div>
             </div>
             <div class="stat-card">
-                <div class="stat-icon-box bg-blue">📅</div>
+                <div class="stat-icon-box bg-blue"><i class="bi bi-calendar3"></i></div>
                 <div class="stat-info"><p>Plannings/Sem.</p><h3><?= $plannings_count ?></h3></div>
             </div>
 
         <?php else: ?>
             <div class="stat-card">
-                <div class="stat-icon-box bg-blue">📅</div>
+                <div class="stat-icon-box bg-blue"><i class="bi bi-calendar3"></i></div>
                 <div class="stat-info"><p>Mes Missions</p><h3><?= $mes_plannings ?></h3></div>
             </div>
             <div class="stat-card">
-                <div class="stat-icon-box bg-green">🕐</div>
+                <div class="stat-icon-box bg-green"><i class="bi bi-clock"></i></div>
                 <div class="stat-info"><p>Pointages</p><h3><?= $pointages_count ?></h3></div>
             </div>
         <?php endif; ?>
     </div>
 
     <div class="btn-back-container">
-        <a href="javascript:history.back()" class="btn-back">⬅️ Retour en arrière</a>
+        <a href="javascript:history.back()" class="btn-back"><i class="bi bi-arrow-left"></i> Retour en arrière</a>
     </div>
 </div>
 

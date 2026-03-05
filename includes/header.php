@@ -61,6 +61,7 @@ try {
     
     <link rel="alternate icon" href="/assets/images/logo_nms.png">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="/assets/css/layout/header.css">
     <?php if ($pageCssHref): ?>
     <link rel="stylesheet" href="<?= htmlspecialchars($pageCssHref, ENT_QUOTES, 'UTF-8') ?>">
@@ -73,12 +74,12 @@ try {
             <div class="nav-brand"><a href="/"> <img src="/assets/images/logo_nms.png" alt="NMS Planning"> </a></div>
             
             <div class="nav-center">
-                <a href="/">🏠 Accueil</a>
+                <a href="/"><i class="bi bi-house-door nav-link-icon"></i><span>Accueil</span></a>
                 <?php if ($role === 'ADMIN'): ?>
-                    <a href="/admin/gestion_pointages.php">📍 Pointages</a>
-                    <a href="/stock/gest_stock.php">📦 Stock</a>
+                    <a href="/admin/gestion_pointages.php"><i class="bi bi-geo-alt nav-link-icon"></i><span>Pointages</span></a>
+                    <a href="/stock/gest_stock.php"><i class="bi bi-box-seam nav-link-icon"></i><span>Stock</span></a>
                 <?php else: ?>
-                    <a href="/admin/pointage.php">📍 Présence</a>
+                    <a href="/admin/pointage.php"><i class="bi bi-geo-alt nav-link-icon"></i><span>Présence</span></a>
                 <?php endif; ?>
             </div>
 
@@ -86,7 +87,7 @@ try {
                 <?php if ($role !== 'AGENT'): ?>
                 <div style="position: relative;">
                     <div class="bell-container" id="notifBell">
-                        🔔 <?php if ($notifications_count > 0): ?><span class="notif-badge"><?= $notifications_count ?></span><?php endif; ?>
+                        <i class="bi bi-bell-fill bell-icon"></i><?php if ($notifications_count > 0): ?><span class="notif-badge"><?= $notifications_count ?></span><?php endif; ?>
                     </div>
                     <div class="notif-dropdown" id="notifDropdown">
                         <div class="notif-header">Notifications</div>
@@ -119,22 +120,22 @@ try {
                 </div>
                 <?php endif; ?>
 
-                <a href="/admin/view_profile.php" class="user-profile-btn">👤 <span class="desktop-text"><?= htmlspecialchars($prenom) ?></span></a>
-                <a href="/admin/logout.php" class="logout-desktop-btn">🚪Déconnexion</a>
+                <a href="/admin/view_profile.php" class="user-profile-btn"><i class="bi bi-person-circle"></i> <span class="desktop-text"><?= htmlspecialchars($prenom) ?></span></a>
+                <a href="/admin/logout.php" class="logout-desktop-btn"><i class="bi bi-box-arrow-right"></i> Déconnexion</a>
                 <div class="hamburger" id="hamburger"><span></span><span></span><span></span></div>
             </div>
         </nav>
 
         <div class="nav-mobile" id="navMobile">
-    <a href="/">🏠 Accueil</a>
+    <a href="/"><i class="bi bi-house-door nav-link-icon"></i><span>Accueil</span></a>
     <?php if ($role === 'ADMIN'): ?>
-        <a href="/admin/gestion_pointages.php">📍 Pointages</a>
-        <a href="/admin/gest_stock.php">📦 Stock</a>
+        <a href="/admin/gestion_pointages.php"><i class="bi bi-geo-alt nav-link-icon"></i><span>Pointages</span></a>
+        <a href="/admin/gest_stock.php"><i class="bi bi-box-seam nav-link-icon"></i><span>Stock</span></a>
     <?php else: ?>
-        <a href="/admin/pointage.php">📍 Présence</a>
+        <a href="/admin/pointage.php"><i class="bi bi-geo-alt nav-link-icon"></i><span>Présence</span></a>
     <?php endif; ?>
-    <a href="/admin/view_profile.php">👤 Mon Profil</a>
-    <a href="/admin/logout.php" style="color: var(--danger);">🚪 Déconnexion</a>
+    <a href="/admin/view_profile.php"><i class="bi bi-person-circle nav-link-icon"></i><span>Mon Profil</span></a>
+    <a href="/admin/logout.php" style="color: var(--danger);"><i class="bi bi-box-arrow-right nav-link-icon"></i><span>Déconnexion</span></a>
 </div>
     </header>
 

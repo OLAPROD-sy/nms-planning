@@ -35,6 +35,7 @@
      /* NOTIFICATIONS DROPDOWN */
 
 .bell-container { position: relative; cursor: pointer; font-size: 20px; padding: 8px; background: rgba(255,255,255,0.2); border-radius: 12px; }
+.bell-icon { font-size: 18px; color: #334155; }
 
 .notif-badge { position: absolute; top: -5px; right: -5px; background: var(--danger); color: white; font-size: 10px; padding: 2px 6px; border-radius: 20px; border: 2px solid var(--primary); }
 
@@ -114,6 +115,9 @@ body.notif-open {
         border-radius: 8px; 
         font-size: 13px; 
         font-weight: 700; 
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
     }
     .nav-center a:hover { background: white; color: var(--primary); }
 
@@ -141,6 +145,9 @@ body.notif-open {
         text-decoration: none; 
         font-weight: 700; 
         font-size: 13px; 
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
     }
 
     .hamburger { 
@@ -192,7 +199,15 @@ body.notif-open {
         color: var(--text-main); 
         font-weight: 600; 
         border-bottom: 1px solid #f1f5f9; 
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
     }
+
+.nav-link-icon {
+    font-size: 14px;
+    line-height: 1;
+}
 
     /* Style pour les notifications non lues */
 .notif-item.unread {

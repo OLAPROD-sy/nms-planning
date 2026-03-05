@@ -36,7 +36,7 @@
     }
 
     .search-box::before {
-        content: '🔍';
+        content: '';
         position: absolute;
         left: 15px;
         top: 50%;
@@ -240,6 +240,7 @@
 
     .search-wrapper { position: relative; width: 100%; }
     .search-icon { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); opacity: 0.4; }
+    .search-icon i { font-size: 14px; }
     #userSearch {
         width: 100%; padding: 15px 15px 15px 45px;
         border-radius: 16px; border: 1px solid #EEE;
@@ -260,6 +261,7 @@
         font-size: 13px;
         color: #666;
     }
+    .detail-item i { font-size: 13px; }
 
 
 
@@ -349,3 +351,5 @@
         background: #f0f0f0; border: none; padding: 6px 12px;
         border-radius: 8px; font-size: 11px; font-weight: 600; cursor: pointer;
     }
+    .btn-action i { font-size: 14px; line-height: 1; }
+    .site-section-title h2 i { color: #f57c00; margin-right: 6px; }

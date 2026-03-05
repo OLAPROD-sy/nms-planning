@@ -52,6 +52,7 @@
         font-size: 14px;
         border: 1px solid rgba(255, 255, 255, 0.3);
     }
+    .user-badge i { font-size: 14px; }
 
     /* Grilles */
     .section-title {
@@ -63,6 +64,7 @@
         align-items: center;
         gap: 10px;
     }
+    .section-title i { color: #64748b; }
 
     .stats-grid {
         display: grid;
@@ -130,6 +132,7 @@
     .action-tile i {
         font-size: 30px;
         transition: transform 0.3s;
+        line-height: 1;
     }
 
     .action-tile:hover {
