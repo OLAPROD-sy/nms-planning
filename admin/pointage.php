@@ -144,6 +144,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 } catch (Exception $e) { $pdo->rollBack(); $_SESSION['flash_error'] = "Erreur technique."; }
             }
         }
+        // --- AJOUT : TRAITEMENT DE LA JUSTIFICATION ---
+        elseif ($action === 'justifier_auto') {
+            $justif = trim($_POST['justification'] ?? '');
+            $date_cible = $_POST['date_concernee'] ?? $today;
+            if (!empty($justif)) {
+                $sql = "UPDATE pointages 
+                        SET commentaire = CONCAT('JUSTIFIÉ : ', ?), type = 'URGENCE' 
+                        WHERE id_user = ? AND date_pointage = ? AND motif_urgence = 'ABSENCE AUTOMATIQUE'";
+                $stmt = $pdo->prepare($sql);
+                $stmt->execute([$justif, $id_user, $date_cible]);
+                notify_supervisors_if_possible($pdo, $id_user, "Justification reçue de $nom $prenom : $justif", 'info');
+                $_SESSION['flash_success'] = "✓ Justification transmise.";
+                header('Location: pointage.php'); exit;
+            }
+        }
+        // --- FIN AJOUT ---
     }
     header('Location: pointage.php'); exit;
 }
@@ -161,6 +177,12 @@ foreach ($historique as $p) {
     }
 }
 $urgence_types = ['Absence justifiée', 'Congé maladie', 'Congé personnel', 'Télétravail', 'Formation', 'Réunion externe', 'Autre'];
+
+// --- AJOUT : RÉCUPÉRATION DES ALERTES ---
+$stmtNotif = $pdo->prepare("SELECT id_notification, message, created_at FROM notifications WHERE id_user = ? ORDER BY created_at DESC LIMIT 3");
+$stmtNotif->execute([$id_user]);
+$mes_notifs = $stmtNotif->fetchAll();
+// --- FIN AJOUT ---
 ?>
 
 <?php include_once __DIR__ . '/../includes/header.php'; ?>
@@ -196,6 +218,24 @@ $urgence_types = ['Absence justifiée', 'Congé maladie', 'Congé personnel', 'T
     <?php if (isset($_SESSION['flash_error'])): ?>
         <div style="background:#fee2e2; color:#ef4444; padding:15px; border-radius:12px; margin-bottom:20px; font-weight:600;"><?= $_SESSION['flash_error']; unset($_SESSION['flash_error']); ?></div>
     <?php endif; ?>
+    <?php foreach ($mes_notifs as $n): ?>
+        <div style="background: #fff5f5; border-left: 5px solid #ef4444; padding: 15px; border-radius: 12px; margin-bottom: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+            <div style="display: flex; justify-content: space-between;">
+                <strong style="color: #ef4444; font-size: 11px; text-transform: uppercase;">🚨 Absence Automatique</strong>
+                <span style="font-size: 10px; color: #94a3b8;"><?= date('H:i', strtotime($n['created_at'])) ?></span>
+            </div>
+            <p style="margin: 5px 0; font-size: 13px; color: #1e293b;"><?= htmlspecialchars($n['message']) ?></p>
+            
+            <form method="post" style="margin-top: 10px; display: flex; gap: 8px;">
+                <input type="hidden" name="csrf_token" value="<?= generate_csrf_token() ?>">
+                <input type="hidden" name="action" value="justifier_auto">
+                <input type="hidden" name="date_concernee" value="<?= date('Y-m-d', strtotime($n['created_at'])) ?>">
+                <input type="text" name="justification" placeholder="Justifiez votre absence ici..." required 
+                       style="flex: 1; padding: 8px; border: 1px solid #fecaca; border-radius: 8px; font-size: 12px;">
+                <button type="submit" style="background: #ef4444; color: white; border: none; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 11px;">Envoyer</button>
+            </form>
+        </div>
+    <?php endforeach; ?>
 
     <div class="clock-card">
         <div id="date-actuelle" style="color: #64748b; font-weight: 600;">--/--/----</div>
