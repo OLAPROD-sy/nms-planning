@@ -45,25 +45,26 @@ function formatDateLongue($date) {
     return $jours[$dateObj->format('w')] . ' ' . $dateObj->format('d') . ' ' . $mois[$dateObj->format('n')] . ' ' . $dateObj->format('Y');
 }
 
-function notify_supervisors_if_possible($pdo, $from_user, $message, $type) {
-    try {
-        $stmtSite = $pdo->prepare("SELECT id_site FROM users WHERE id_user = ?");
-        $stmtSite->execute([$from_user]);
-        $agentSiteId = $stmtSite->fetchColumn();
+if (!function_exists('notify_supervisors_if_possible')) {
+    function notify_supervisors_if_possible($pdo, $from_user, $message, $type) {
+        try {
+            $stmtSite = $pdo->prepare("SELECT id_site FROM users WHERE id_user = ?");
+            $stmtSite->execute([$from_user]);
+            $agentSiteId = $stmtSite->fetchColumn();
 
-        $sqlTargets = "SELECT id_user FROM users WHERE role = 'ADMIN' OR (role = 'SUPERVISEUR' AND id_site = ?)";
-        $stmtTargets = $pdo->prepare($sqlTargets);
-        $stmtTargets->execute([$agentSiteId]);
-        $targets = $stmtTargets->fetchAll(PDO::FETCH_COLUMN);
+            $sqlTargets = "SELECT id_user FROM users WHERE role = 'ADMIN' OR (role = 'SUPERVISEUR' AND id_site = ?)";
+            $stmtTargets = $pdo->prepare($sqlTargets);
+            $stmtTargets->execute([$agentSiteId]);
+            $targets = $stmtTargets->fetchAll(PDO::FETCH_COLUMN);
 
-        $sqlInsert = "INSERT INTO notifications (id_user, from_user, type, message, created_at) VALUES (?, ?, ?, ?, ?)";
-        $ins = $pdo->prepare($sqlInsert);
-        foreach ($targets as $t) { 
-            $ins->execute([$t, $from_user, $type, $message, date('Y-m-d H:i:s')]); 
-        }
-    } catch (Exception $e) { error_log('Erreur notification : ' . $e->getMessage()); }
+            $sqlInsert = "INSERT INTO notifications (id_user, from_user, type, message, created_at) VALUES (?, ?, ?, ?, ?)";
+            $ins = $pdo->prepare($sqlInsert);
+            foreach ($targets as $t) { 
+                $ins->execute([$t, $from_user, $type, $message, date('Y-m-d H:i:s')]); 
+            }
+        } catch (Exception $e) { error_log('Erreur notification : ' . $e->getMessage()); }
+    }
 }
-
 // 3. TRAITEMENT DES ACTIONS (POST)
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!verify_csrf_token($_POST['csrf_token'] ?? '')) {
