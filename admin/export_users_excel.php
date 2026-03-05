@@ -151,8 +151,8 @@ header('Expires: 0');
                     <?= !empty($u['created_at']) ? date('d/m/Y H:i', strtotime($u['created_at'])) : '-' ?>
                 </td>
                 <td class="<?= $status_class ?> ta-center"><?= $status_label ?></td>
-                <td><?= !empty($u['photo']) ? 'Oui (' . htmlspecialchars($u['photo']) . ')' : 'Non' ?></td>
-                <td><?= !empty($u['cv']) ? 'Oui (' . htmlspecialchars($u['cv']) . ')' : 'Non' ?></td>
+                <td><?= !empty($u['photo']) ? 'Oui' : 'Non' ?></td>
+                <td><?= !empty($u['cv']) ? 'Oui' : 'Non' ?></td>
             </tr>
         <?php endforeach; ?>
     </tbody>
