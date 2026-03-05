@@ -4,7 +4,7 @@ require_once __DIR__ . '/config/database.php';
 
 try {
     // Requête pour ajouter la colonne jours_repos si elle n'existe pas
-    $sql = "ALTER TABLE users ADD COLUMN IF NOT EXISTS jours_repos VARCHAR(50) DEFAULT '7'";
+    $sql = "ALTER TABLE users ADD COLUMN  jours_repos VARCHAR(50) DEFAULT '7'";
     
     $pdo->exec($sql);
     
