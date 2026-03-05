@@ -1,11 +1,6 @@
 <?php
 require_once __DIR__ . '/config/database.php';
-require_once __DIR__ . '/includes/auth_check.php';
 
-// Sécurité : Seul l'admin peut modifier la structure
-if ($_SESSION['role'] !== 'ADMIN') {
-    die("Accès refusé.");
-}
 
 try {
     // Requête pour ajouter la colonne jours_repos si elle n'existe pas
