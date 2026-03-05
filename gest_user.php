@@ -1,21 +1,40 @@
 <?php
+// nettoyage.php
 require_once __DIR__ . '/config/database.php';
 
+// Optionnel : Ajoute une sécurité pour que toi seul puisses l'ouvrir
+// if ($_GET['key'] !== 'ton_code_secret') die('Accès refusé');
 
 try {
-    // Requête pour ajouter la colonne jours_repos si elle n'existe pas
-    $sql = "ALTER TABLE users ADD COLUMN  jours_repos VARCHAR(50) DEFAULT '7'";
-    
-    $pdo->exec($sql);
-    
-    echo "<div style='color:green; font-weight:bold; padding:20px; border:2px solid green; border-radius:10px; text-align:center;'>
-            ✅ La colonne 'jours_repos' a été ajoutée avec succès !<br>
-            Par défaut, le repos est fixé au Dimanche (7).
-          </div>";
-          
+    // On désactive les contraintes de clés étrangères pour éviter les blocages
+    $pdo->exec("SET FOREIGN_KEY_CHECKS = 0;");
+
+    // Liste des tables à VIDER (garde la structure mais efface le contenu)
+    $tablesToEmpty = [
+        'mouvements_stock',
+        'mouvements_stock_admin',
+        'notifications',
+        'pointages',
+        'programmations',
+        'semaines'
+    ];
+
+    foreach ($tablesToEmpty as $table) {
+        // On utilise TRUNCATE pour remettre les compteurs (ID) à zéro
+        $pdo->exec("TRUNCATE TABLE `$table` ");
+        echo "✅ Table '$table' vidée.<br>";
+    }
+
+    // SUPPRIMER définitivement la table utilisateurs
+    $pdo->exec("DROP TABLE IF EXISTS `users` "); // Adapte le nom si ta table s'appelle 'utilisateurs'
+    echo "🗑️ Table 'users' supprimée définitivement.<br>";
+
+    // On réactive les clés étrangères
+    $pdo->exec("SET FOREIGN_KEY_CHECKS = 1;");
+
+    echo "---<br>✨ Nettoyage terminé avec succès !";
+
 } catch (PDOException $e) {
-    echo "<div style='color:red; font-weight:bold; padding:20px; border:2px solid red; border-radius:10px;'>
-            ❌ Erreur lors de la modification : " . $e->getMessage() . "
-          </div>";
+    die("❌ Erreur lors du nettoyage : " . $e->getMessage());
 }
 ?>
