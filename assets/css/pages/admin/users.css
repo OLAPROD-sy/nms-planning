@@ -217,6 +217,27 @@
     }
     .btn-add-modern:active { transform: scale(0.95); }
 
+    .header-actions {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .btn-export-modern {
+        background: #059669;
+        color: #fff;
+        text-decoration: none;
+        padding: 12px 18px;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 700;
+        box-shadow: 0 4px 15px rgba(5, 150, 105, 0.25);
+        transition: 0.3s;
+    }
+    .btn-export-modern:active { transform: scale(0.95); }
+
     .search-wrapper { position: relative; width: 100%; }
     .search-icon { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); opacity: 0.4; }
     #userSearch {
@@ -273,6 +294,16 @@
 
     /* Responsivité Mobile */
     @media (max-width: 480px) {
+        .header-actions {
+            width: 100%;
+            justify-content: flex-end;
+        }
+        .btn-export-modern,
+        .btn-add-modern {
+            padding: 10px 12px;
+            border-radius: 10px;
+            font-size: 12px;
+        }
         .user-card {
             flex-direction: column; /* On empile les éléments sur petit écran */
             align-items: center;

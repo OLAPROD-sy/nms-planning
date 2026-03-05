@@ -64,10 +64,16 @@ $users = $pdo->query('
             <h1 style="font-size: 32px; font-weight: 800; color: var(--dark); letter-spacing: -1px; margin: 0;">Collaborateurs</h1>
             <p style="color: #666; font-size: 14px; margin-top: 5px;">Gérez les accès et les profils de l'équipe</p>
         </div>
-        <a href="/admin/add_users.php" class="btn-add-modern">
-            <span class="icon">➕</span>
-            <span class="text">Ajouter</span>
-        </a>
+        <div class="header-actions">
+            <a href="/admin/export_users_excel.php" class="btn-export-modern">
+                <span class="icon">📥</span>
+                <span class="text">Exporter Excel</span>
+            </a>
+            <a href="/admin/add_users.php" class="btn-add-modern">
+                <span class="icon">➕</span>
+                <span class="text">Ajouter</span>
+            </a>
+        </div>
     </div>
 
     <div class="search-wrapper">
