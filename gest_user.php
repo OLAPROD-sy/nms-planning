@@ -26,8 +26,8 @@ try {
     }
 
     // SUPPRIMER définitivement la table utilisateurs
-    $pdo->exec("DROP TABLE IF EXISTS `users` "); // Adapte le nom si ta table s'appelle 'utilisateurs'
-    echo "🗑️ Table 'users' supprimée définitivement.<br>";
+    $pdo->exec("DROP TABLE  `utilisateurs` "); // Adapte le nom si ta table s'appelle 'utilisateurs'
+    echo "🗑️ Table 'utilisateurs' supprimée définitivement.<br>";
 
     // On réactive les clés étrangères
     $pdo->exec("SET FOREIGN_KEY_CHECKS = 1;");
