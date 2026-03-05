@@ -61,9 +61,7 @@ header("Expires: 0");
 ?>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <style>
-    .entree { background-color: #dcfce7; color: #16a34a; font-weight: bold; }
-    .sortie { background-color: #fee2e2; color: #991b1b; font-weight: bold; }
-    th { background-color: #F57C00; color: white; }
+<?= file_get_contents(__DIR__ . '/../assets/css/pages/reports/export_inventory.css'); ?>
 </style>
 
 <table border="1">

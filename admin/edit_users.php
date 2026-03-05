@@ -102,28 +102,6 @@ $sites = $pdo->query('SELECT id_site, nom_site FROM sites ORDER BY nom_site')->f
 include_once __DIR__ . '/../includes/header.php';
 ?>
 
-<style>
-    :root { --primary: #FF9800; }
-    .form-container { max-width: 700px; margin: 30px auto; padding: 0 20px; }
-    .form-header { background: linear-gradient(135deg, #FF9800 0%, #F57C00 100%); color: white; padding: 30px; border-radius: 12px 12px 0 0; }
-    .form-wrapper { background: white; border-radius: 0 0 12px 12px; padding: 30px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); border: 1px solid #FFE0B2; }
-    .form-group { margin-bottom: 22px; }
-    .form-group label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 14px; }
-    .form-group input, .form-group select { width: 100%; padding: 12px; border: 2px solid #E0E0E0; border-radius: 8px; }
-    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-    .step-section { display: none; animation: fadeIn 0.4s ease; }
-    .step-section.active { display: block; }
-    .progress-container { margin-bottom: 30px; background: #f0f0f0; height: 8px; border-radius: 10px; position: relative; }
-    .progress-bar { background: var(--primary); height: 100%; width: 25%; border-radius: 10px; transition: width 0.4s ease; }
-    .steps-indicators { display: flex; justify-content: space-between; position: absolute; width: 100%; top: -12px; }
-    .step-dot { width: 30px; height: 30px; background: white; border: 2px solid #ddd; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; }
-    .step-dot.active { border-color: var(--primary); color: var(--primary); }
-    .btn-primary { background: var(--primary); color: white; padding: 12px 25px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; }
-    .btn-secondary { background: #E0E0E0; color: #333; padding: 12px 25px; border-radius: 8px; text-decoration: none; font-weight: 600; }
-    .form-actions { display: flex; gap: 15px; margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-    .photo-thumb { width: 60px; height: 60px; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary); }
-</style>
 
 <div class="form-container">
     <div class="form-header">

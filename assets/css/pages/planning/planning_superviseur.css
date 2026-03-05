@@ -1,0 +1,36 @@
+.admin-grid { display: grid; grid-template-columns: 1fr 2fr; gap: 20px; padding: 20px; max-width: 1400px; margin: auto; }
+    .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); margin-bottom: 20px; }
+    .card h3 { margin-top: 0; color: orange; border-bottom: 2px solid #f0f0f0; padding-bottom: 10px; margin-bottom: 15px; }
+    
+    .week-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 8px; margin: 15px 0; }
+    .day-option { border: 1px solid #ddd; border-radius: 8px; padding: 8px; text-align: center; cursor: pointer; font-size: 0.85em; }
+    .day-option.selected { background: #e8f5e9; border-color: #4caf50; font-weight: bold; }
+    .day-option input { display: none; }
+
+    .form-group { margin-bottom: 15px; }
+    .form-group label { display: block; margin-bottom: 5px; font-weight: 600; font-size: 0.9em; }
+    .form-control { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; }
+
+    .btn-main { width: 100%; padding: 12px; border: 0.5px solid #72ea09; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.3s; }
+    .btn-save { background: #46c755; color: white; }
+    .btn-week { background: #46c755; color: white; margin-top: 10px; }
+
+    /* Tableau soigné */
+    .table-container { overflow-x: auto; }
+    .styled-table { width: 100%; border-collapse: collapse; font-size: 0.9em; }
+    .styled-table th { background: #f8f9fa; padding: 12px; text-align: left; border-bottom: 2px solid #eee; }
+    .styled-table td { padding: 12px; border-bottom: 1px solid #f0f0f0; }
+    .badge-date { background: #eee; padding: 3px 8px; border-radius: 4px; font-family: monospace; }
+
+    .side-col {display: flex; flex-direction: column; gap: 20px;overflow: auto;}
+    .main-col {display: flex; flex-direction: column; gap: 20px;overflow: auto;}
+
+    @media (max-width: 800px) {
+        .admin-grid { grid-template-columns: 1fr; }
+        .schedule-header { flex-direction: column; align-items: flex-start; }
+        .filter-box { width: 100%; justify-content: space-between; }
+    }
+
+    
+    
+    @media (max-width: 1000px) { .admin-grid { grid-template-columns: 1fr; } }

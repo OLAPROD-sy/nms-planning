@@ -1,0 +1,21 @@
+:root { --primary-green: #4CAF50; --primary-orange: #FF9800; --danger: #ef4444; --bg-soft: #f8fafc; }
+    body { background-color: var(--bg-soft); font-family: 'Plus Jakarta Sans', sans-serif; }
+    .pointage-container { max-width: 850px; margin: 0 auto; padding: 20px; }
+    .clock-card { background: white; border-radius: 20px; padding: 30px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.05); margin-bottom: 25px; position: relative; overflow: hidden; }
+    .clock-card::after { content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 4px; background: linear-gradient(90deg, var(--primary-green), var(--primary-orange)); }
+    #heure-actuelle { font-size: 56px; font-weight: 800; color: #1e293b; letter-spacing: -2px; }
+    .status-badge { display: inline-block; padding: 6px 16px; border-radius: 50px; font-size: 12px; font-weight: 700; text-transform: uppercase; margin-top: 10px; }
+    .status-waiting { background: #fee2e2; color: #ef4444; }
+    .status-working { background: #dcfce7; color: #16a34a; }
+    .pointage-display { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px; }
+    .time-tile { background: white; border-radius: 18px; padding: 20px; text-align: center; border: 1px solid #e2e8f0; }
+    .time-tile.active { border-color: var(--primary-green); box-shadow: 0 8px 20px rgba(74, 175, 80, 0.1); }
+    .action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 30px; }
+    .btn-pointage { border: none; border-radius: 16px; padding: 20px; color: white; font-weight: 700; cursor: pointer; transition: 0.3s; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+    .btn-arrivee { background: linear-gradient(135deg, #4CAF50, #2E7D32); }
+    .btn-depart { background: linear-gradient(135deg, #FF9800, #EF6C00); }
+    .btn-pointage:disabled { opacity: 0.4; cursor: not-allowed; filter: grayscale(1); }
+    .history-card { background: white; border-radius: 18px; padding: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); }
+    .history-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+    .history-table th { text-align: left; padding: 12px; font-size: 11px; color: #94a3b8; text-transform: uppercase; border-bottom: 1px solid #f1f5f9; }
+    .history-table td { padding: 15px 12px; font-size: 14px; border-bottom: 1px solid #f1f5f9; }

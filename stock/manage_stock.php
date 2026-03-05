@@ -89,35 +89,6 @@ $historique = $stmtH->fetchAll(PDO::FETCH_ASSOC);
 
 <?php include_once __DIR__ . '/../includes/header.php'; ?>
 
-<style>
-    :root { --p-green: #2ecc71; --p-red: #e74c3c; --p-blue: #3498db; --p-orange: #f39c12; }
-    .stock-wrapper { width: 100%; max-width: 1400px; margin: 0 auto; padding: 15px; box-sizing: border-box; }
-    
-    /* Layout */
-    .stock-grid { display: flex; flex-direction: column; gap: 20px; }
-    @media (min-width: 1024px) { .stock-grid { display: grid; grid-template-columns: 350px 1fr; } }
-
-    /* Cards avec Liserés (Comme Planning) */
-    .card { background: white; border-radius: 10px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 20px; border: 1px solid #eee; }
-    .border-success { border-left: 6px solid var(--p-green) !important; }
-    .border-info { border-left: 6px solid var(--p-blue) !important; }
-    .border-warning { border-left: 6px solid var(--p-orange) !important; }
-    .border-danger { border-left: 6px solid var(--p-red) !important; }
-
-    .card h3 { margin-top: 0; font-size: 1.1em; color: #333; padding-bottom: 10px; border-bottom: 1px solid #f5f5f5; }
-    .form-control { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; margin-bottom: 12px; font-size: 15px; }
-    .btn-main { width: 100%; padding: 12px; border: none; border-radius: 6px; color: white; font-weight: bold; cursor: pointer; }
-    
-    /* Tableau */
-    .table-container { width: 100%; overflow-x: auto; border-radius: 8px; }
-    .table-mvt { width: 100%; border-collapse: collapse; min-width: 600px; }
-    .table-mvt th { background: #f8f9fa; padding: 12px; text-align: left; font-size: 0.8em; color: #888; }
-    .table-mvt td { padding: 12px; border-bottom: 1px solid #f9f9f9; font-size: 0.9em; }
-    
-    .badge { padding: 3px 8px; border-radius: 4px; font-weight: bold; font-size: 0.75em; }
-    .bg-e { background: #e8f5e9; color: #2e7d32; }
-    .bg-s { background: #ffebee; color: #c62828; }
-</style>
 
 <div class="stock-wrapper">
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px;">

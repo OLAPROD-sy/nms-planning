@@ -1,0 +1,38 @@
+:root { --accent-gradient: linear-gradient(135deg, #FF9800 0%, #F57C00 100%); --shadow: 0 8px 30px rgba(0,0,0,0.08); }
+    
+    /* RESET CRITIQUE POUR MOBILE */
+    * { box-sizing: border-box; }
+    body, html { overflow-x: auto; width: 100%; margin: 0; padding: 0; }
+    
+    /* Adaptabilité Globale */
+    .admin-container { max-width: 1400px; margin: 20px auto; padding: 0 15px; box-sizing: border-box; }
+    .header-section { background: var(--accent-gradient); padding: 30px 20px; border-radius: 20px; color: white; margin-bottom: 25px; text-align: center; box-shadow: 0 10px 20px rgba(255, 152, 0, 0.2); }
+    
+    /* Grille Responsive */
+    .grid-admin { display: grid; grid-template-columns: 1fr; gap: 20px; }
+    @media (min-width: 1024px) { .grid-admin { grid-template-columns: 350px 1fr; } }
+
+    /* Cartes */
+    .stock-card { background: white; border-radius: 18px; padding: 20px; box-shadow: var(--shadow); border: 1px solid #edf2f7; box-sizing: border-box; }
+    
+    /* Formulaires Responsifs (Flex-Wrap) */
+    .responsive-form { display: flex; flex-wrap: wrap; gap: 10px; width: 100%; }
+    .filter-input { flex: 1; min-width: 140px; padding: 12px; border-radius: 8px; border: 1px solid #ddd; font-size: 16px; box-sizing: border-box; }
+    
+    /* Tableaux Responsifs (Scroll) */
+    .table-responsive { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; margin-top: 10px; }
+    .table-nms { width: 100%; border-collapse: collapse; min-width: 600px; }
+    .table-nms th { text-align: left; padding: 12px; color: #94a3b8; font-size: 11px; text-transform: uppercase; border-bottom: 1px solid #eee; }
+    .table-nms td { padding: 12px; border-bottom: 1px solid #f8fafc; }
+
+    /* Widgets */
+    .stats-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; margin-bottom: 25px; }
+    .status-pill { padding: 4px 10px; border-radius: 50px; font-size: 10px; font-weight: 800; }
+    .status-pill.ok { background: #dcfce7; color: #16a34a; }
+    .status-pill.low { background: #fff1f2; color: #e11d48; }
+    .user_profile_btn { background: var(--accent-gradient); color: white; border: none; padding: 14px; border-radius: 10px; font-weight: 700; cursor: pointer; width: 100%; }
+
+    /* Barre de recherche */
+    .search-bar-container { position: relative; margin-bottom: 15px; }
+    .search-bar-container input { width: 100%; padding: 10px 40px 10px 15px; border-radius: 10px; border: 1px solid #e2e8f0; outline: none; transition: 0.3s; }
+    .search-bar-container input:focus { border-color: #F57C00; box-shadow: 0 0 0 3px rgba(245, 124, 0, 0.1); }
