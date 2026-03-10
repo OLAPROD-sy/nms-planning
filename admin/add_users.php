@@ -282,48 +282,4 @@ $sites = $pdo->query('SELECT id_site, nom_site FROM sites ORDER BY nom_site')->f
         </form>
     </div>
 </div>
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const steps = document.querySelectorAll('.step-section');
-    const dots = document.querySelectorAll('.step-dot');
-    const progressBar = document.getElementById('progressBar');
-    let currentStep = 1;
-
-    // Fonction pour changer d'étape
-    function updateStep(stepNumber) {
-        steps.forEach(step => step.classList.remove('active'));
-        dots.forEach((dot, index) => {
-            dot.classList.toggle('active', index < stepNumber);
-        });
-        
-        document.querySelector(`.step-section[data-step="${stepNumber}"]`).classList.add('active');
-        
-        // Update progress bar
-        const progress = (stepNumber / steps.length) * 100;
-        progressBar.style.width = `${progress}%`;
-    }
-
-    // Boutons "Suivant"
-    document.querySelectorAll('.next-step').forEach(btn => {
-        btn.addEventListener('click', () => {
-            // Optionnel: Ajoutez ici une validation JS pour vérifier si les champs requis sont remplis
-            if (currentStep < steps.length) {
-                currentStep++;
-                updateStep(currentStep);
-            }
-        });
-    });
-
-    // Boutons "Précédent"
-    document.querySelectorAll('.prev-step').forEach(btn => {
-        btn.addEventListener('click', () => {
-            if (currentStep > 1) {
-                currentStep--;
-                updateStep(currentStep);
-            }
-        });
-    });
-});
-</script>
-
 <?php include_once __DIR__ . '/../includes/footer.php'; ?>

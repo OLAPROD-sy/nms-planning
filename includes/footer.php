@@ -49,6 +49,25 @@
     </div>
 </footer>
 
+<?php
+// Chargement automatique du JS de la page courante (assets/js/pages/{route}.js)
+$scriptPath = trim(parse_url($_SERVER['SCRIPT_NAME'] ?? '', PHP_URL_PATH), '/');
+$scriptFilename = basename($_SERVER['SCRIPT_FILENAME'] ?? '');
+if ($scriptPath === '' && $scriptFilename !== '') {
+    $scriptPath = $scriptFilename;
+}
+$pageJsSrc = '';
+if ($scriptPath !== '') {
+    $pageJsPath = preg_replace('/\.php$/', '.js', $scriptPath);
+    $pageJsFile = __DIR__ . '/../assets/js/pages/' . $pageJsPath;
+    if (is_file($pageJsFile)) {
+        $pageJsSrc = '/assets/js/pages/' . $pageJsPath;
+    }
+}
+?>
+<?php if ($pageJsSrc): ?>
+<script src="<?= htmlspecialchars($pageJsSrc, ENT_QUOTES, 'UTF-8') ?>"></script>
+<?php endif; ?>
 <script src="/assets/js/main.js"></script>
 </body>
 </html>

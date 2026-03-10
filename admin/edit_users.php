@@ -225,28 +225,4 @@ include_once __DIR__ . '/../includes/header.php';
     </div>
 </div>
 
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const steps = document.querySelectorAll('.step-section');
-    const dots = document.querySelectorAll('.step-dot');
-    const progressBar = document.getElementById('progressBar');
-    let currentStep = 1;
-
-    function updateStep(stepNumber) {
-        steps.forEach(s => s.classList.remove('active'));
-        dots.forEach((d, i) => d.classList.toggle('active', i < stepNumber));
-        document.querySelector(`.step-section[data-step="${stepNumber}"]`).classList.add('active');
-        progressBar.style.width = `${(stepNumber / steps.length) * 100}%`;
-    }
-
-    document.querySelectorAll('.next-step').forEach(btn => {
-        btn.addEventListener('click', () => { if(currentStep < 4) { currentStep++; updateStep(currentStep); } });
-    });
-
-    document.querySelectorAll('.prev-step').forEach(btn => {
-        btn.addEventListener('click', () => { if(currentStep > 1) { currentStep--; updateStep(currentStep); } });
-    });
-});
-</script>
-
 <?php include_once __DIR__ . '/../includes/footer.php'; ?>

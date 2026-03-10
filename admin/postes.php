@@ -77,10 +77,6 @@ $postes = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 <div class="page-wrapper">
     
-    <?php if(isset($_SESSION['flash_success'])): ?>
-        <div class="alert-toast" id="toast"><i class="bi bi-check-circle"></i> <?= $_SESSION['flash_success']; unset($_SESSION['flash_success']); ?></div>
-    <?php endif; ?>
-
     <div class="hero-admin">
         <h1 style="margin:0; font-weight: 850;">Gestion des Postes</h1>
         <p style="opacity: 0.7;">Définissez les rôles et positions de votre structure.</p>
@@ -142,26 +138,5 @@ $postes = $stmt->fetchAll(PDO::FETCH_ASSOC);
         <?php endforeach; ?>
     </div>
 </div>
-
-<script>
-    // Recherche en temps réel
-    document.getElementById('searchInput').addEventListener('input', function(e) {
-        const val = e.target.value.toLowerCase();
-        document.querySelectorAll('.poste-item').forEach(item => {
-            const name = item.getAttribute('data-name');
-            item.style.display = name.includes(val) ? 'flex' : 'none';
-        });
-    });
-
-    // Auto-suppression alerte
-    const toast = document.getElementById('toast');
-    if(toast) {
-        setTimeout(() => {
-            toast.style.opacity = '0';
-            toast.style.transition = '0.5s';
-            setTimeout(() => toast.remove(), 500);
-        }, 4000);
-    }
-</script>
 
 <?php include_once __DIR__ . '/../includes/footer.php'; ?>

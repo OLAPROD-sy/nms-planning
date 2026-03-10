@@ -46,5 +46,43 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     });
   });
-});
 
+  // Notifications + menu mobile (header)
+  const bell = document.getElementById('notifBell');
+  const dropdown = document.getElementById('notifDropdown');
+  const hamburger = document.getElementById('hamburger');
+  const navMobile = document.getElementById('navMobile');
+
+  if (bell && dropdown) {
+    bell.addEventListener('click', function(e) {
+      e.stopPropagation();
+      const isActive = dropdown.classList.toggle('active');
+
+      if (isActive) {
+        if (navMobile) navMobile.classList.remove('active');
+        fetch('/admin/mark_notification_read.php')
+          .then(response => response.json())
+          .then(() => {
+            const badge = document.querySelector('.notif-badge');
+            if (badge) badge.style.display = 'none';
+          })
+          .catch(err => console.error('Erreur SQL:', err));
+      }
+    });
+  }
+
+  if (hamburger && navMobile) {
+    hamburger.addEventListener('click', function(e) {
+      e.stopPropagation();
+      navMobile.classList.toggle('active');
+      if (dropdown) dropdown.classList.remove('active');
+    });
+  }
+
+  document.addEventListener('click', function(e) {
+    if (dropdown && !dropdown.contains(e.target)) dropdown.classList.remove('active');
+    if (navMobile && !navMobile.contains(e.target) && !hamburger.contains(e.target)) {
+      navMobile.classList.remove('active');
+    }
+  });
+});

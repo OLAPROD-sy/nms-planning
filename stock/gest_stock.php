@@ -288,45 +288,4 @@ foreach ($flux as &$f) {
     </div>
 </div>
 
-<script>
-// Fonction de recherche instantanée
-function searchTable() {
-    let input = document.getElementById("searchInput");
-    let filter = input.value.toUpperCase();
-    let table = document.getElementById("stockTable");
-    let tr = table.getElementsByTagName("tr");
-
-    for (let i = 1; i < tr.length; i++) {
-        let td = tr[i].getElementsByTagName("td")[0];
-        if (td) {
-            let textValue = td.textContent || td.innerText;
-            tr[i].style.display = textValue.toUpperCase().indexOf(filter) > -1 ? "" : "none";
-        }
-    }
-}
-function exportExcel() {
-    // On récupère les valeurs actuelles des filtres
-    const debut = document.querySelector('input[name="f_date_debut"]').value;
-    const fin = document.querySelector('input[name="f_date_fin"]').value;
-    const action = document.querySelector('select[name="f_action"]').value;
-    const destination = document.querySelector('select[name="f_destination"]').value; // Nouveau
-    
-    // On redirige vers la page d'export avec les paramètres
-    window.location.href = `export_inventaire2.php?f_date_debut=${debut}&f_date_fin=${fin}&f_action=${action}&f_destination=${destination}`;
-}
-
-function toggleSiteSelection() {
-    const type = document.getElementById('typeMouvement').value;
-    const siteSelect = document.getElementById('siteSelection');
-    
-    if (type === 'SORTIE') {
-        siteSelect.style.display = 'block';
-        siteSelect.setAttribute('required', 'required');
-    } else {
-        siteSelect.style.display = 'none';
-        siteSelect.removeAttribute('required');
-    }
-}
-</script>
-
 <?php include_once __DIR__ . '/../includes/footer.php'; ?>

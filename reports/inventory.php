@@ -320,25 +320,4 @@ include_once __DIR__ . '/../includes/header.php';
         </p>
     </div>
 </div>
-<script>
-    // Force la soumission du formulaire si une date manuelle est changée
-    document.querySelectorAll('input[type="date"]').forEach(input => {
-        input.addEventListener('change', () => {
-            document.querySelector('.filter-grid').submit();
-        });
-    });
-
-    function exportToExcel() {
-    const start = document.querySelector('input[name="date_start"]').value;
-    const end = document.querySelector('input[name="date_end"]').value;
-    const site = document.querySelector('select[name="id_site"]').value;
-    const type = document.querySelector('select[name="f_type"]').value; // Nouveau
-    
-    let url = `export_inventory.php?date_start=${start}&date_end=${end}`;
-    if (site) url += `&id_site=${site}`;
-    if (type) url += `&f_type=${type}`; // Nouveau
-    
-    window.location.href = url;
-}
-</script>
 <?php include_once __DIR__ . '/../includes/footer.php'; ?>

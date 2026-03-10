@@ -97,42 +97,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
     </div>
 
-    <script>
-        // Micro-interaction : Focus visuel
-        const inputs = document.querySelectorAll('input');
-        inputs.forEach(input => {
-            input.addEventListener('focus', () => {
-                input.parentElement.querySelector('label').style.color = 'var(--secondary)';
-            });
-            input.addEventListener('blur', () => {
-                input.parentElement.querySelector('label').style.color = 'var(--dark)';
-            });
-        });
-
-        // Toggle visibilité du mot de passe
-
-        const togglePassword = document.querySelector('#togglePassword');
-        const password = document.querySelector('#password');
-        const togglePasswordIcon = document.querySelector('#togglePasswordIcon');
-
-        togglePassword.addEventListener('click', function (e) {
-            // On bascule le type entre password et text
-            const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
-            password.setAttribute('type', type);
-            
-            // On change l'icône (Œil ouvert / Œil barré)
-            if (togglePasswordIcon) {
-                togglePasswordIcon.classList.toggle('bi-eye', type === 'password');
-                togglePasswordIcon.classList.toggle('bi-eye-slash', type !== 'password');
-            }
-            
-            // Animation de retour visuel
-            this.style.transform = 'translateY(-50%) scale(1.2)';
-            setTimeout(() => {
-                this.style.transform = 'translateY(-50%) scale(1)';
-            }, 150);
-        });
-
-    </script>
+    <script src="/assets/js/pages/auth/login.js"></script>
 </body>
 </html>

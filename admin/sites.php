@@ -214,32 +214,4 @@ $sites = $stmt->fetchAll(PDO::FETCH_ASSOC);
         <?php endforeach; ?>
     </div>
 </div>
-<script>
-    // --- RECHERCHE TEMPS RÉEL ---
-   document.getElementById('siteSearch').addEventListener('input', function(e) {
-    const term = e.target.value.trim().toLowerCase();
-    const cards = document.querySelectorAll('.site-card');
-    
-    cards.forEach(card => {
-        // On récupère le contenu directement dans le texte de la carte si l'attribut fail
-        const cardText = card.innerText.toLowerCase();
-        const searchableAttr = card.getAttribute('data-searchable') || "";
-        
-        if (cardText.includes(term) || searchableAttr.includes(term)) {
-            // Au lieu de forcer 'flex', on retire juste le masquage
-            card.style.display = ''; 
-            card.style.opacity = '1';
-        } else {
-            card.style.display = 'none';
-            card.style.opacity = '0';
-        }
-    });
-});
-    // Animation de toast (si présent)
-    const toast = document.querySelector('.alert-toast');
-    if(toast) {
-        setTimeout(() => toast.remove(), 4000);
-    }
-</script>
-
 <?php include_once __DIR__ . '/../includes/footer.php'; ?>

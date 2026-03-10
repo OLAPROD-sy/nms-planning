@@ -138,54 +138,15 @@ try {
     <a href="/admin/logout.php" style="color: var(--danger);"><i class="bi bi-box-arrow-right nav-link-icon"></i><span>Déconnexion</span></a>
 </div>
     </header>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const bell = document.getElementById('notifBell');
-            const dropdown = document.getElementById('notifDropdown');
-            const hamburger = document.getElementById('hamburger');
-            const navMobile = document.getElementById('navMobile');
-
-            // Toggle Notifications
-            // Toggle Notifications
-            if (bell && dropdown) {
-                bell.addEventListener('click', function(e) {
-                    e.stopPropagation();
-                    const isActive = dropdown.classList.toggle('active');
-                    
-                    // Si on vient d'ouvrir le menu
-                    if (isActive) {
-                        if(navMobile) navMobile.classList.remove('active');
-
-                        // Appel AJAX pour marquer comme lu sur le serveur
-                        fetch('/admin/mark_notification_read.php')
-                            .then(response => response.json())
-                            .then(data => {
-                                // On fait disparaître le badge rouge visuellement
-                                const badge = document.querySelector('.notif-badge');
-                                if (badge) badge.style.display = 'none';
-                            })
-                            .catch(err => console.error('Erreur SQL:', err));
-                    }
-                });
-            }
-            // Toggle Hamburger
-            if (hamburger && navMobile) {
-                hamburger.addEventListener('click', function(e) {
-                    e.stopPropagation();
-                    navMobile.classList.toggle('active');
-                    if(dropdown) dropdown.classList.remove('active');
-                });
-            }
-
-            // Fermer si clic ailleurs
-            document.addEventListener('click', function(e) {
-                if (dropdown && !dropdown.contains(e.target)) dropdown.classList.remove('active');
-                if (navMobile && !navMobile.contains(e.target) && !hamburger.contains(e.target)) {
-                    navMobile.classList.remove('active');
-                }
-            });
-        });
-    </script>
+    <?php if ($flash_success || $flash_error): ?>
+        <div class="flash-container">
+            <?php if ($flash_success): ?>
+                <div class="flash-message flash-success"><i class="bi bi-check-circle"></i><span><?= htmlspecialchars($flash_success, ENT_QUOTES, 'UTF-8') ?></span></div>
+            <?php endif; ?>
+            <?php if ($flash_error): ?>
+                <div class="flash-message flash-error"><i class="bi bi-exclamation-triangle"></i><span><?= htmlspecialchars($flash_error, ENT_QUOTES, 'UTF-8') ?></span></div>
+            <?php endif; ?>
+        </div>
+    <?php endif; ?>
 </body>
 </html>

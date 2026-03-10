@@ -78,7 +78,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($userInfo['latitude'] != 0) {
                 $dist = getDistance($u_lat, $u_lng, $userInfo['latitude'], $userInfo['longitude']);
                 if ($dist > 150000) { // 150km de test
-                    $_SESSION['flash_error'] = "<i class=\"bi bi-x-circle\"></i> Trop loin du site (".round($dist)."m).";
+                    $_SESSION['flash_error'] = "Trop loin du site (".round($dist)."m).";
                     header('Location: pointage.php'); exit;
                 }
             }
@@ -86,12 +86,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmtCheck = $pdo->prepare('SELECT id_pointage FROM pointages WHERE id_user = ? AND date_pointage = ? AND type = "NORMAL"');
             $stmtCheck->execute([$id_user, $today]);
             if ($stmtCheck->fetch()) {
-                $_SESSION['flash_error'] = '<i class="bi bi-exclamation-triangle"></i> Arrivée déjà enregistrée.';
+                $_SESSION['flash_error'] = 'Arrivée déjà enregistrée.';
             } else {
                 $est_en_retard = (!empty($userInfo['heure_debut_service']) && strtotime($heure_actuelle) > strtotime($userInfo['heure_debut_service'])) ? 1 : 0;
                 $sql = "INSERT INTO pointages (id_user, date_pointage, heure_arrivee, type, id_site, est_en_retard) VALUES (?, ?, ?, 'NORMAL', ?, ?)";
                 $pdo->prepare($sql)->execute([$id_user, $today, $heure_actuelle, $userInfo['id_site'], $est_en_retard]);
-                $_SESSION['flash_success'] = "<i class=\"bi bi-check-circle\"></i> Arrivée enregistrée " . ($est_en_retard ? "(Retard)" : "");
+                $_SESSION['flash_success'] = "Arrivée enregistrée " . ($est_en_retard ? "(Retard)" : "");
                 notify_supervisors_if_possible($pdo, $id_user, "$nom $prenom est arrivé" . ($est_en_retard ? " avec RETARD" : ""), 'arrivee');
             }
         } 
@@ -101,7 +101,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $pointage = $stmt->fetch();
             if ($pointage) {
                 $pdo->prepare("UPDATE pointages SET heure_depart = ? WHERE id_pointage = ?")->execute([$heure_actuelle, $pointage['id_pointage']]);
-                $_SESSION['flash_success'] = "<i class=\"bi bi-check-circle\"></i> Départ enregistré.";
+                $_SESSION['flash_success'] = "Départ enregistré.";
                 notify_supervisors_if_possible($pdo, $id_user, "$nom $prenom a quitté le site.", 'depart');
             }
         } 
@@ -140,7 +140,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         $msg_notif = "ABSENCE COURTE : $nom $prenom le $date_debut [Sortie: $h_dep | Retour: $h_arr] - $raison";
                     }
                     notify_supervisors_if_possible($pdo, $id_user, $msg_notif, 'urgence');
-                    $_SESSION['flash_success'] = "<i class=\"bi bi-check-circle\"></i> Absence enregistrée.";
+                    $_SESSION['flash_success'] = "Absence enregistrée.";
                 } catch (Exception $e) { $pdo->rollBack(); $_SESSION['flash_error'] = "Erreur technique."; }
             }
         }
@@ -167,13 +167,7 @@ $urgence_types = ['Absence justifiée', 'Congé maladie', 'Congé personnel', 'T
 
 
 <div class="pointage-container">
-    <?php if (isset($_SESSION['flash_success'])): ?>
-        <div style="background:#dcfce7; color:#16a34a; padding:15px; border-radius:12px; margin-bottom:20px; font-weight:600;"><?= $_SESSION['flash_success']; unset($_SESSION['flash_success']); ?></div>
-    <?php endif; ?>
-    <?php if (isset($_SESSION['flash_error'])): ?>
-        <div style="background:#fee2e2; color:#ef4444; padding:15px; border-radius:12px; margin-bottom:20px; font-weight:600;"><?= $_SESSION['flash_error']; unset($_SESSION['flash_error']); ?></div>
-    <?php endif; ?>
-
+    <div id="pointage-config" data-site-lat="<?= htmlspecialchars($userInfo['latitude'] ?? 0, ENT_QUOTES, 'UTF-8') ?>" data-site-lng="<?= htmlspecialchars($userInfo['longitude'] ?? 0, ENT_QUOTES, 'UTF-8') ?>" data-has-arrived="<?= $heure_arrivee ? '1' : '0' ?>" style="display:none;"></div>
     <div class="clock-card">
         <div id="date-actuelle" style="color: #64748b; font-weight: 600;">--/--/----</div>
         <div id="heure-actuelle">00:00:00</div>
@@ -301,51 +295,5 @@ $urgence_types = ['Absence justifiée', 'Congé maladie', 'Congé personnel', 'T
         </div>
     </div>
 </div>
-
-<script>
-    const siteLat = <?= $userInfo['latitude'] ?? 0 ?>;
-    const siteLng = <?= $userInfo['longitude'] ?? 0 ?>;
-    const hasArrived = <?= $heure_arrivee ? 'true' : 'false' ?>;
-
-    function calculateDistance(lat1, lon1, lat2, lon2) {
-        const R = 6371e3;
-        const p1 = lat1 * Math.PI/180; const p2 = lat2 * Math.PI/180;
-        const dp = (lat2-lat1) * Math.PI/180; const dl = (lon2-lon1) * Math.PI/180;
-        const a = Math.sin(dp/2)**2 + Math.cos(p1) * Math.cos(p2) * Math.sin(dl/2)**2;
-        return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-    }
-
-    // GPS & Heure
-    function init() {
-        setInterval(() => {
-            const now = new Date();
-            document.getElementById('heure-actuelle').textContent = now.toLocaleTimeString('fr-FR');
-            document.getElementById('date-actuelle').textContent = now.toLocaleDateString('fr-FR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-        }, 1000);
-
-        if (navigator.geolocation) {
-            navigator.geolocation.watchPosition(pos => {
-                const uLat = pos.coords.latitude; const uLng = pos.coords.longitude;
-                document.querySelectorAll('.lat_input').forEach(i => i.value = uLat);
-                document.querySelectorAll('.lng_input').forEach(i => i.value = uLng);
-                
-                const dist = calculateDistance(uLat, uLng, siteLat, siteLng);
-                const badge = document.getElementById('geo-status');
-                if (dist < 150000) { // 150m
-                    badge.className = "status-badge status-working"; badge.innerHTML = "<i class=\"bi bi-geo-alt\"></i> Sur site";
-                    if(!hasArrived) document.getElementById('btn-arrivee').disabled = false;
-                } else {
-                    badge.className = "status-badge status-waiting"; badge.innerHTML = "<i class=\"bi bi-geo-alt\"></i> Trop loin";
-                }
-            });
-        }
-    }
-
-    document.getElementById('date_debut').addEventListener('change', function() {
-        document.getElementById('date_fin').value = this.value;
-    });
-
-    init();
-</script>
 
 <?php include_once __DIR__ . '/../includes/footer.php'; ?>

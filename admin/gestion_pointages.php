@@ -174,11 +174,4 @@ foreach ($pointages as $p) {
     </div>
 </div>
 
-<script>
-function exportExcel() {
-    const params = new URLSearchParams(new FormData(document.getElementById('filterForm'))).toString();
-    window.location.href = 'export_pointages_excel.php?' + params;
-}
-</script>
-
 <?php include_once __DIR__ . '/../includes/footer.php'; ?>

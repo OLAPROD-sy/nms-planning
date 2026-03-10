@@ -90,7 +90,7 @@ $historique = $stmtH->fetchAll(PDO::FETCH_ASSOC);
 <?php include_once __DIR__ . '/../includes/header.php'; ?>
 
 
-<div class="stock-wrapper">
+<div class="stock-wrapper" data-site-id="<?= htmlspecialchars($id_site, ENT_QUOTES, 'UTF-8') ?>">
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px;">
         <div class="card border-info" style="margin:0; display:flex; align-items:center; justify-content:space-between; padding: 15px;">
             <div>
@@ -159,12 +159,12 @@ $historique = $stmtH->fetchAll(PDO::FETCH_ASSOC);
                     <button onclick="exportStockActuel()" style="background:#f1c40f; border:none; padding:5px 10px; border-radius:5px; color:white; cursor:pointer; font-size:0.8em"><i class="bi bi-file-earmark-excel"></i> Excel</button>
                 </div>
                 <input type="text" id="searchStock" class="form-control" placeholder="Rechercher un produit..." onkeyup="filterStock()">
-                <div style="max-height: 400px; overflow-y: auto;">
+                <div id="stockList" style="max-height: 400px; overflow-y: auto;">
                     <?php foreach($liste_produits as $p): 
                         $is_low = $p['quantite_actuelle'] <= $p['quantite_alerte'];
                     ?>
-                    <div style="display:flex; justify-content:space-between; padding:8px; border-radius:5px; margin-bottom:5px; background: <?= $is_low ? '#fff5f5':'#fafafa' ?>; border-left: 4px solid <?= $is_low ? 'var(--p-red)':'var(--p-green)' ?>;">
-                        <span style="font-size:0.9em"><?= htmlspecialchars($p['nom_produit']) ?></span>
+                    <div class="product-item" style="display:flex; justify-content:space-between; padding:8px; border-radius:5px; margin-bottom:5px; background: <?= $is_low ? '#fff5f5':'#fafafa' ?>; border-left: 4px solid <?= $is_low ? 'var(--p-red)':'var(--p-green)' ?>;">
+                        <span class="product-name" style="font-size:0.9em"><?= htmlspecialchars($p['nom_produit']) ?></span>
                         <strong><?= $p['quantite_actuelle'] ?></strong>
                     </div>
                     <?php endforeach; ?>
@@ -232,42 +232,4 @@ $historique = $stmtH->fetchAll(PDO::FETCH_ASSOC);
         </div>
     </div>
 </div>
-<script>
-function exportHistorique() {
-    // On récupère les filtres du formulaire
-    const dateStart = document.querySelector('input[name="date_start"]').value;
-    const dateEnd = document.querySelector('input[name="date_end"]').value;
-    const fType = document.querySelector('select[name="f_type"]').value;
-    const idSite = "<?= $id_site ?>"; // L'ID du site injecté par PHP
-
-    // On construit l'URL manuellement pour être sûr que id_site est présent
-    let url = `export_inventaire.php?id_site=${idSite}`;
-    if(dateStart) url += `&date_start=${dateStart}`;
-    if(dateEnd) url += `&date_end=${dateEnd}`;
-    if(fType) url += `&f_type=${fType}`;
-
-    window.location.href = url;
-}
-
-function exportStockActuel() {
-    const idSite = "<?= $id_site ?>";
-    window.location.href = `export_current_history.php?id_site=${idSite}`;
-}
-
-function filterStock() {
-    let input = document.getElementById('searchStock');
-    let filter = input.value.toLowerCase();
-    let container = document.getElementById('stockList');
-    let items = container.getElementsByClassName('product-item');
-
-    for (let i = 0; i < items.length; i++) {
-        let name = items[i].querySelector('.product-name').innerText.toLowerCase();
-        if (name.indexOf(filter) > -1) {
-            items[i].style.display = "";
-        } else {
-            items[i].style.display = "none";
-        }
-    }
-}
-</script>
 <?php include_once __DIR__ . '/../includes/footer.php'; ?>
