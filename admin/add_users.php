@@ -146,13 +146,13 @@ $sites = $pdo->query('SELECT id_site, nom_site FROM sites ORDER BY nom_site')->f
 
 <div class="form-container">
     <div class="form-header">
-        <h2>👤 Ajouter un utilisateur</h2>
+        <h2><i class="bi bi-person-plus"></i> Ajouter un utilisateur</h2>
         <p>Complétez le formulaire pour créer un nouveau compte</p>
     </div>
 
     <div class="form-wrapper">
         <?php if ($error): ?>
-            <div class="alert-error"><?= htmlspecialchars($error) ?></div>
+            <div class="alert-error"><i class="bi bi-exclamation-triangle"></i> <?= htmlspecialchars($error) ?></div>
         <?php endif; ?>
 
         <form method="post" enctype="multipart/form-data" id="multiStepForm">
@@ -169,7 +169,7 @@ $sites = $pdo->query('SELECT id_site, nom_site FROM sites ORDER BY nom_site')->f
             </div>
                     <!-- Section Informations Personnelles -->
             <div class="step-section active" data-step="1"> 
-                <div class="form-divider">👤 Informations Personnelles</div>        
+                <div class="form-divider"><i class="bi bi-person"></i> Informations Personnelles</div>        
                 <div class="form-row">
                     <div class="form-group">
                         <label>Nom <span class="required">*</span></label>
@@ -196,20 +196,20 @@ $sites = $pdo->query('SELECT id_site, nom_site FROM sites ORDER BY nom_site')->f
                 </div>
 
                 <div class="form-actions">
-                    <button type="button" class="btn-primary next-step">Suivant ➡️</button>
+                    <button type="button" class="btn-primary next-step">Suivant <i class="bi bi-arrow-right"></i></button>
                 </div>
             </div>    
 
             <div class="step-section" data-step="2">
-                <div class="form-divider">👤 Fonction dans l'entreprise</div>
+                <div class="form-divider"><i class="bi bi-briefcase"></i> Fonction dans l'entreprise</div>
                 <div class="form-row">
                     <div class="form-group">
                         <label>Rôle <span class="required">*</span></label>
                         <select name="role" required>
                             <option value="">-- Sélectionner un rôle --</option>
-                            <option value="ADMIN" <?= ($_POST['role'] ?? '') === 'ADMIN' ? 'selected' : '' ?>>🔴 Admin</option>
-                            <option value="SUPERVISEUR" <?= ($_POST['role'] ?? '') === 'SUPERVISEUR' ? 'selected' : '' ?>>🟠 Superviseur</option>
-                            <option value="AGENT" <?= ($_POST['role'] ?? '') === 'AGENT' ? 'selected' : '' ?>>🟢 Agent</option>
+                            <option value="ADMIN" <?= ($_POST['role'] ?? '') === 'ADMIN' ? 'selected' : '' ?>>Admin</option>
+                            <option value="SUPERVISEUR" <?= ($_POST['role'] ?? '') === 'SUPERVISEUR' ? 'selected' : '' ?>>Superviseur</option>
+                            <option value="AGENT" <?= ($_POST['role'] ?? '') === 'AGENT' ? 'selected' : '' ?>>Agent</option>
                         </select>
                     </div>
                     <div class="form-group">
@@ -218,7 +218,7 @@ $sites = $pdo->query('SELECT id_site, nom_site FROM sites ORDER BY nom_site')->f
                             <option value="">-- Aucun site --</option>
                             <?php foreach ($sites as $site): ?>
                                 <option value="<?= (int)$site['id_site'] ?>" <?= ($_POST['id_site'] ?? '') === (string)$site['id_site'] ? 'selected' : '' ?>>
-                                    📍 <?= htmlspecialchars($site['nom_site']) ?>
+                                    <?= htmlspecialchars($site['nom_site']) ?>
                                 </option>
                             <?php endforeach; ?>
                         </select>
@@ -230,14 +230,14 @@ $sites = $pdo->query('SELECT id_site, nom_site FROM sites ORDER BY nom_site')->f
                     <input type="date" name="date_embauche" value="<?= htmlspecialchars($_POST['date_embauche'] ?? '') ?>">
                 </div>
                 <div class="form-actions">
-                    <button type="button" class="btn-secondary prev-step">⬅️ Précédent</button>
-                    <button type="button" class="btn-primary next-step">Suivant ➡️</button>
+                    <button type="button" class="btn-secondary prev-step"><i class="bi bi-arrow-left"></i> Précédent</button>
+                    <button type="button" class="btn-primary next-step">Suivant <i class="bi bi-arrow-right"></i></button>
                 </div>
             </div>
 
             <!-- Section Documents -->
             <div class="step-section" data-step="3">
-                <div class="form-divider">📸 Pièces Jointes</div>
+                <div class="form-divider"><i class="bi bi-paperclip"></i> Pièces Jointes</div>
 
                 <div class="form-row">
                     <div class="form-group">
@@ -253,13 +253,13 @@ $sites = $pdo->query('SELECT id_site, nom_site FROM sites ORDER BY nom_site')->f
                 </div>
 
                 <div class="form-actions">
-                    <button type="button" class="btn-secondary prev-step">⬅️ Précédent</button>
-                    <button type="button" class="btn-primary next-step">Suivant ➡️</button>
+                    <button type="button" class="btn-secondary prev-step"><i class="bi bi-arrow-left"></i> Précédent</button>
+                    <button type="button" class="btn-primary next-step">Suivant <i class="bi bi-arrow-right"></i></button>
                 </div>
             </div>    
             <!-- Section Mot de Passe -->
             <div class="step-section" data-step="4">
-                <div class="form-divider">🔐 Sécurité</div>
+                <div class="form-divider"><i class="bi bi-lock"></i> Sécurité</div>
 
                 <div class="form-row">
                     <div class="form-group">
@@ -273,8 +273,8 @@ $sites = $pdo->query('SELECT id_site, nom_site FROM sites ORDER BY nom_site')->f
                 </div>
 
                 <div class="form-actions">
-                    <button type="button" class="btn-secondary prev-step">⬅️ Précédent</button>
-                    <button type="submit" class="btn-primary">✅ Créer l'utilisateur</button>
+                    <button type="button" class="btn-secondary prev-step"><i class="bi bi-arrow-left"></i> Précédent</button>
+                    <button type="submit" class="btn-primary"><i class="bi bi-check-circle"></i> Créer l'utilisateur</button>
                 </div>
 
             </div>

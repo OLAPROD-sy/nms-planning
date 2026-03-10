@@ -40,10 +40,11 @@
         margin-bottom: 25px;
         font-weight: 500;
     }
+    .alert-error i { margin-right: 8px; }
 
     .alert-error::before {
-        content: '⚠️ ';
-        margin-right: 8px;
+        content: '';
+        display: none;
     }
 
     .form-group {
@@ -208,14 +209,11 @@
         margin: 30px 0 25px;
         padding-top: 25px;
     }
+    .form-divider i { margin-right: 8px; }
 
     .form-divider::before {
-        content: '🔐 Sécurité';
-        display: block;
-        color: #666;
-        font-weight: 600;
-        font-size: 14px;
-        margin-bottom: 15px;
+        content: '';
+        display: none;
     }
 
     .form-actions {

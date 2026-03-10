@@ -39,7 +39,7 @@ function genererAbsencesAutomatiques($pdo) {
                                      VALUES (?, ?, 'URGENCE', ?, 'ABSENCE AUTOMATIQUE', 'Système : Aucun pointage détecté.')");
                 $insP->execute([$agent['id_user'], $today, $agent['id_site']]);
 
-                $msg = "⚠️ Absence automatique enregistrée pour le " . date('d/m/Y') . ". Justifiez-vous.";
+                $msg = "Absence automatique enregistrée pour le " . date('d/m/Y') . ". Justifiez-vous.";
                 $insN = $pdo->prepare("INSERT INTO notifications (id_user, from_user, type, message, created_at) 
                                      VALUES (?, NULL, 'urgence', ?, NOW())");
                 $insN->execute([$agent['id_user'], $msg]);

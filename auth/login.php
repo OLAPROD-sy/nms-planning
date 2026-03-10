@@ -49,21 +49,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
     <link rel="alternate icon" href="/assets/images/logo_nms.png">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="/assets/css/pages/auth/login.css">
     
 </head>
 <body>
     <div class="login-card">
         <div class="login-header">
-            <span class="logo-icon">🏢</span>
+            <span class="logo-icon"><i class="bi bi-buildings"></i></span>
             <h1>NMS Planning</h1>
             <p>Heureux de vous revoir !</p>
         </div>
         
-        <div class="info-pill">🔑 Accès sécurisé à votre espace</div>
+        <div class="info-pill"><i class="bi bi-key"></i> Accès sécurisé à votre espace</div>
 
         <?php if ($error): ?>
-            <div class="error-msg">⚠️ <?= htmlspecialchars($error) ?></div>
+            <div class="error-msg"><i class="bi bi-exclamation-triangle"></i> <?= htmlspecialchars($error) ?></div>
         <?php endif; ?>
 
         <form method="post">
@@ -83,7 +84,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         placeholder="••••••••" required
                     >
                     <span id="togglePassword" style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); cursor: pointer; font-size: 18px; opacity: 0.6; transition: 0.3s;">
-                        👁️
+                        <i class="bi bi-eye" id="togglePasswordIcon"></i>
                     </span>
                 </div>
             </div>
@@ -112,14 +113,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         const togglePassword = document.querySelector('#togglePassword');
         const password = document.querySelector('#password');
+        const togglePasswordIcon = document.querySelector('#togglePasswordIcon');
 
         togglePassword.addEventListener('click', function (e) {
             // On bascule le type entre password et text
             const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
             password.setAttribute('type', type);
             
-            // On change l'icône (Œil ouvert / Œil barré ou différent)
-            this.textContent = type === 'password' ? '👁️' : '🔒'; 
+            // On change l'icône (Œil ouvert / Œil barré)
+            if (togglePasswordIcon) {
+                togglePasswordIcon.classList.toggle('bi-eye', type === 'password');
+                togglePasswordIcon.classList.toggle('bi-eye-slash', type !== 'password');
+            }
             
             // Animation de retour visuel
             this.style.transform = 'translateY(-50%) scale(1.2)';

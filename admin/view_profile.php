@@ -61,7 +61,7 @@ if ($user['id_site']) {
             <?php if ($user['photo']): ?>
                 <img src="/<?= htmlspecialchars($user['photo']) ?>" class="profile-photo" alt="Photo">
             <?php else: ?>
-                <div class="profile-photo" style="display:flex;align-items:center;justify-content:center;font-size:50px;background:#555;">👤</div>
+                <div class="profile-photo" style="display:flex;align-items:center;justify-content:center;font-size:50px;background:#555;"><i class="bi bi-person"></i></div>
             <?php endif; ?>
         </div>
         <br>
@@ -75,25 +75,25 @@ if ($user['id_site']) {
 
         <div class="info-grid">
             <div class="info-tile">
-                <span class="tile-icon">📧</span>
+                <span class="tile-icon"><i class="bi bi-envelope"></i></span>
                 <span class="tile-label">Adresse Email</span>
                 <span class="tile-value"><?= htmlspecialchars($user['email']) ?></span>
             </div>
 
             <div class="info-tile">
-                <span class="tile-icon">🏢</span>
+                <span class="tile-icon"><i class="bi bi-buildings"></i></span>
                 <span class="tile-label">Site Affecté</span>
                 <span class="tile-value"><?= $site_name ?></span>
             </div>
 
             <div class="info-tile">
-                <span class="tile-icon">📅</span>
+                <span class="tile-icon"><i class="bi bi-calendar3"></i></span>
                 <span class="tile-label">Membre depuis</span>
                 <span class="tile-value"><?= $user['date_embauche'] ? date('d M Y', strtotime($user['date_embauche'])) : '—' ?></span>
             </div>
 
             <div class="info-tile" style="border-left: 4px solid var(--profile-primary);">
-                <span class="tile-icon">⏱️</span>
+                <span class="tile-icon"><i class="bi bi-clock"></i></span>
                 <span class="tile-label">Expérience</span>
                 <span class="tile-value"><?= $experience ?></span>
             </div>
@@ -101,7 +101,7 @@ if ($user['id_site']) {
 
         <div class="cv-card">
             <div class="cv-info">
-                <div class="cv-icon">📄</div>
+                <div class="cv-icon"><i class="bi bi-file-earmark-text"></i></div>
                 <div>
                     <h4 style="margin:0; color: #855b00;">Document Professionnel</h4>
                     <p style="margin:0; font-size:12px; color: #b38d42;">
@@ -111,14 +111,14 @@ if ($user['id_site']) {
             </div>
             <?php if ($user['cv']): ?>
                 <a href="/<?= htmlspecialchars($user['cv']) ?>" target="_blank" class="btn-download">
-                    👁️ Consulter le CV
+                    <i class="bi bi-eye"></i> Consulter le CV
                 </a>
             <?php endif; ?>
         </div>
 
         <div style="text-align: center;">
             <a href="javascript:history.back()" class="btn-return">
-                <span>←</span> Retour au panneau de contrôle
+                <span><i class="bi bi-arrow-left"></i></span> Retour au panneau de contrôle
             </a>
         </div>
     </div>

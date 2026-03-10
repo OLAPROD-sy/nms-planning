@@ -55,7 +55,7 @@ header("Content-Disposition: attachment; filename=\"$filename\"");
             <td align="center"><?= $row['seuil_alerte'] ?></td>
             <td align="center" style="font-weight: bold;">
                 <?= $row['quantite_globale'] ?>
-                <?= $is_low ? ' (⚠️)' : '' ?>
+                <?= $is_low ? ' (ALERTE)' : '' ?>
             </td>
             <td align="right"><?= number_format($row['prix_unitaire'], 0, '', ' ') ?></td>
             <td align="right" style="font-weight: bold;">

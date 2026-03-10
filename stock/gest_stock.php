@@ -107,7 +107,7 @@ foreach ($flux as &$f) {
 
 <div class="admin-container">
     <div class="header-section">
-        <h1 style="margin:0;">🛡️ Réserve Admin Intelligence</h1>
+    <h1 style="margin:0;"><i class="bi bi-shield-check"></i> Réserve Admin Intelligence</h1>
         <p style="margin:5px 0 0; opacity: 0.9;">Gestion financière et matérielle</p>
     </div>
 
@@ -130,7 +130,7 @@ foreach ($flux as &$f) {
     <div class="grid-admin">
         <div style="display: flex; flex-direction: column; gap: 20px;overflow: auto;">
             <div class="stock-card">
-                <h3>✨ Nouveau Produit</h3>
+                <h3><i class="bi bi-box-seam"></i> Nouveau Produit</h3>
                 <form method="post" class="responsive-form">
                     <input type="hidden" name="action" value="creer_produit">
                     <input type="text" name="nom_produit" placeholder="Nom du produit" required class="filter-input" style="flex: 2;">
@@ -151,7 +151,7 @@ foreach ($flux as &$f) {
             </div>
 
             <div class="stock-card">
-                <h3>🔄 Mouvement Stock</h3>
+                <h3><i class="bi bi-arrow-left-right"></i> Mouvement Stock</h3>
                 <form method="post" class="responsive-form" id="mouvementForm">
                     <input type="hidden" name="action" value="mouvement">
                     
@@ -185,14 +185,14 @@ foreach ($flux as &$f) {
         <div style="display: flex; flex-direction: column; gap: 20px; overflow: auto;">
             <div class="stock-card">
                 <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 15px;">
-                    <h3 style="margin:0;">📊 État du Stock</h3>
+                    <h3 style="margin:0;"><i class="bi bi-bar-chart"></i> État du Stock</h3>
 
                     <button type="button" onclick="window.location.href='export_stock.php'" style="background:#059669; color:white; border:none; padding:8px 15px; border-radius:8px; cursor:pointer; font-weight:bold; font-size: 13px;">
-                        📥 Exporter État Actuel
+                        <i class="bi bi-file-earmark-excel"></i> Exporter État Actuel
                     </button>
 
                     <div class="search-bar-container">
-                        <input type="text" id="searchInput" onkeyup="searchTable()" placeholder="🔍 Rechercher un produit...">
+                        <input type="text" id="searchInput" onkeyup="searchTable()" placeholder="Rechercher un produit...">
                     </div>
                 </div>
                 
@@ -217,7 +217,7 @@ foreach ($flux as &$f) {
                                 <td><?= number_format($i['prix_unitaire'], 0, '.', ' ') ?></td>
                                 <td><span style="font-weight:800; background:#f1f5f9; padding:4px 8px; border-radius:5px;"><?= $i['quantite_globale'] ?></span></td>
                                 <td style="font-weight:800;"><?= number_format($val, 0, '.', ' ') ?></td>
-                                <td><span class="status-pill <?= $is_low ? 'low' : 'ok' ?>"><?= $is_low ? '⚠️ BAS' : '✅ OK' ?></span></td>
+                                <td><span class="status-pill <?= $is_low ? 'low' : 'ok' ?>"><?= $is_low ? '<i class="bi bi-exclamation-triangle"></i> BAS' : '<i class="bi bi-check-circle"></i> OK' ?></span></td>
                             </tr>
                             <?php endforeach; ?>
                         </tbody>
@@ -226,7 +226,7 @@ foreach ($flux as &$f) {
             </div>
 
             <div class="stock-card">
-                <h3>📜 Historique des flux</h3>
+                <h3><i class="bi bi-journal-text"></i> Historique des flux</h3>
                 <form method="GET" class="responsive-form" style="background: #f8fafc; padding: 15px; border-radius: 12px; margin-bottom: 15px;">
                     <input type="date" name="f_date_debut" class="filter-input" value="<?= $_GET['f_date_debut'] ?? '' ?>">
                     <input type="date" name="f_date_fin" class="filter-input" value="<?= $_GET['f_date_fin'] ?? '' ?>">
@@ -240,14 +240,14 @@ foreach ($flux as &$f) {
                         <option value="">-- Toutes destinations --</option>
                         <?php foreach($sites as $st): ?>
                             <option value="<?= $st['id_site'] ?>" <?= (isset($_GET['f_destination']) && $_GET['f_destination'] == $st['id_site']) ? 'selected' : '' ?>>
-                                📍 <?= htmlspecialchars($st['nom_site']) ?>
+                                <?= htmlspecialchars($st['nom_site']) ?>
                             </option>
                         <?php endforeach; ?>
                     </select>
                     <button type="submit" style="background:#FF9800; color:white; border:none; padding:10px 20px; border-radius:8px; cursor:pointer;">Filtrer</button>
                     <button type="button" onclick="window.location.href='gest_stock.php'" style="background:#64748b; color:white; border:none; padding:10px 20px; border-radius:8px; cursor:pointer;">Effacer</button> 
                     <button type="button" onclick="exportExcel()" style="background:#27ae60; color:white; border:none; padding:10px 20px; border-radius:8px; cursor:pointer; font-weight:bold;">
-                        📥 Exporter Excel
+                        <i class="bi bi-file-earmark-excel"></i> Exporter Excel
                     </button>
                 </form>
 
@@ -270,8 +270,8 @@ foreach ($flux as &$f) {
                                 
                                 <td>
                                     <?php if($f['type_mouvement'] === 'SORTIE' && $f['nom_site']): ?>
-                                        <div style="font-size: 12px; font-weight: bold; color: #F57C00;">📍 <?= htmlspecialchars($f['nom_site']) ?></div>
-                                        <div style="font-size: 10px; color: #64748b;">👤 Sup: <?= htmlspecialchars($f['sup_nom'] . ' ' . $f['sup_prenom']) ?></div>
+                                        <div style="font-size: 12px; font-weight: bold; color: #F57C00;"><i class="bi bi-geo-alt"></i> <?= htmlspecialchars($f['nom_site']) ?></div>
+                                        <div style="font-size: 10px; color: #64748b;"><i class="bi bi-person-badge"></i> Sup: <?= htmlspecialchars($f['sup_nom'] . ' ' . $f['sup_prenom']) ?></div>
                                     <?php else: ?>
                                         <span style="color: #cbd5e1;">---</span>
                                     <?php endif; ?>

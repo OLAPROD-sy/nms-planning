@@ -68,8 +68,8 @@ foreach ($pointages as $p) {
 
 <div class="page-wrapper">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:25px;">
-        <h1 style="font-weight:800; color:#2c3e50; margin:0;">📊 Suivi Présence Admin</h1>
-        <button onclick="exportExcel()" style="background:#27ae60; color:white; padding:10px 18px; border-radius:8px; border:none; cursor:pointer; font-weight:bold; font-size:0.85rem;">📥 Exporter Excel</button>
+        <h1 style="font-weight:800; color:#2c3e50; margin:0;"><i class="bi bi-bar-chart"></i> Suivi Présence Admin</h1>
+        <button onclick="exportExcel()" style="background:#27ae60; color:white; padding:10px 18px; border-radius:8px; border:none; cursor:pointer; font-weight:bold; font-size:0.85rem;"><i class="bi bi-file-earmark-excel"></i> Exporter Excel</button>
     </div>
 
     <div class="stats-row">
@@ -87,7 +87,7 @@ foreach ($pointages as $p) {
                 <select name="f_type" class="custom-input">
                     <option value="">Tout afficher</option>
                     <option value="NORMAL" <?= $filtre_type == 'NORMAL' ? 'selected' : '' ?>>Ponctuel (Normal)</option>
-                    <option value="RETARD" <?= $filtre_type == 'RETARD' ? 'selected' : '' ?>>En Retard ⏰</option>
+                    <option value="RETARD" <?= $filtre_type == 'RETARD' ? 'selected' : '' ?>>En Retard</option>
                     <option value="URGENCE" <?= $filtre_type == 'URGENCE' ? 'selected' : '' ?>>Urgence/Permission</option>
                     <option value="ABSENCE" <?= $filtre_type == 'ABSENCE' ? 'selected' : '' ?>>Absence Longue</option>
                 </select>
@@ -128,18 +128,18 @@ foreach ($pointages as $p) {
                         <span style="font-size:0.7rem; color:#94a3b8;"><?= htmlspecialchars($p['role']) ?></span>
                     </td>
                     <td>
-                        <div style="font-weight:600; color:var(--p-blue);">📍 <?= htmlspecialchars($p['site_nom']) ?></div>
+                        <div style="font-weight:600; color:var(--p-blue);"><i class="bi bi-geo-alt"></i> <?= htmlspecialchars($p['site_nom']) ?></div>
                         <div style="font-size:0.75rem; color:#94a3b8;"><?= date('d/m/Y', strtotime($p['date_pointage'])) ?></div>
                     </td>
                     <td>
                         <?php if ($is_grouped || $p['type'] === 'ABSENCE'): ?>
-                            <span class="badge b-absence">📁 ABSENCE</span>
+                            <span class="badge b-absence"><i class="bi bi-folder"></i> ABSENCE</span>
                         <?php elseif ($p['est_en_retard'] == 1): ?>
-                            <span class="badge b-retard">⏰ EN RETARD</span>
+                            <span class="badge b-retard"><i class="bi bi-alarm"></i> EN RETARD</span>
                         <?php elseif ($p['type'] === 'URGENCE'): ?>
-                            <span class="badge b-urgence">🚨 URGENCE</span>
+                            <span class="badge b-urgence"><i class="bi bi-exclamation-diamond"></i> URGENCE</span>
                         <?php else: ?>
-                            <span class="badge b-normal">✅ NORMAL</span>
+                            <span class="badge b-normal"><i class="bi bi-check-circle"></i> NORMAL</span>
                         <?php endif; ?>
                     </td>
                     <td>
@@ -164,7 +164,7 @@ foreach ($pointages as $p) {
                     <td>
                         <?php $note = $p['motif_urgence'] ?: ($is_grouped ? ($abs_data[4] ?? '') : ''); ?>
                         <?php if(!empty($note)): ?>
-                            <button onclick="alert('Note: <?= addslashes($note) ?>')" style="border:1px solid #ddd; background:white; border-radius:4px; cursor:pointer;">👁️</button>
+                            <button onclick="alert('Note: <?= addslashes($note) ?>')" style="border:1px solid #ddd; background:white; border-radius:4px; cursor:pointer;"><i class="bi bi-eye"></i></button>
                         <?php endif; ?>
                     </td>
                 </tr>

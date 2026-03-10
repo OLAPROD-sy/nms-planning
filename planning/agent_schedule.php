@@ -50,7 +50,7 @@ $jours_fr = [
 
 <div class="container-planning">
     <div class="schedule-header">
-        <h1>📅 Mon Planning</h1>
+        <h1><i class="bi bi-calendar3"></i> Mon Planning</h1>
         
         <form method="GET" class="filter-box">
             <label>Semaine du :</label>
@@ -82,17 +82,17 @@ $jours_fr = [
                         <span class="day-date"><?= date('d/m/Y', strtotime($date_p)) ?></span>
                     </div>
                     <div class="slot-info">
-                        <span class="poste-tag">📍 <?= htmlspecialchars($p['poste_nom'] ?? 'Poste standard') ?></span>
+                        <span class="poste-tag"><i class="bi bi-geo-alt"></i> <?= htmlspecialchars($p['poste_nom'] ?? 'Poste standard') ?></span>
                         <div class="time-row">
                             <span><?= substr($p['heure_debut'], 0, 5) ?></span>
-                            <span style="color:#ccc">➔</span>
+                            <span style="color:#ccc"><i class="bi bi-arrow-right"></i></span>
                             <span><?= substr($p['heure_fin'], 0, 5) ?></span>
                         </div>
                         <div class="duration-badge">
-                            ⏱️ Durée : <strong><?= calculerDuree($p['heure_debut'], $p['heure_fin']) ?></strong>
+                            <i class="bi bi-clock"></i> Durée : <strong><?= calculerDuree($p['heure_debut'], $p['heure_fin']) ?></strong>
                         </div>
                         <div style="margin-top:10px; font-size: 0.85em; color: #888;">
-                            🏢 Site : <?= htmlspecialchars($p['nom_site'] ?? 'Non spécifié') ?>
+                            <i class="bi bi-buildings"></i> Site : <?= htmlspecialchars($p['nom_site'] ?? 'Non spécifié') ?>
                         </div>
                     </div>
                 </div>

@@ -107,7 +107,7 @@ include_once __DIR__ . '/../includes/header.php';
     <div class="form-header">
         <div style="display: flex; justify-content: space-between; align-items: center;">
             <div>
-                <h2>✏️ Modifier l'utilisateur</h2>
+                <h2><i class="bi bi-pencil-square"></i> Modifier l'utilisateur</h2>
                 <p>Mise à jour de : <?= htmlspecialchars($user['prenom'] . ' ' . $user['nom']) ?></p>
             </div>
             <?php if($user['photo']): ?>
@@ -118,7 +118,7 @@ include_once __DIR__ . '/../includes/header.php';
 
     <div class="form-wrapper">
         <?php if ($error): ?>
-            <div style="background:#FFEBEE; color:#C62828; padding:15px; border-radius:8px; margin-bottom:20px;">⚠️ <?= htmlspecialchars($error) ?></div>
+            <div style="background:#FFEBEE; color:#C62828; padding:15px; border-radius:8px; margin-bottom:20px; display:flex; gap:8px; align-items:center;"><i class="bi bi-exclamation-triangle"></i> <?= htmlspecialchars($error) ?></div>
         <?php endif; ?>
 
         <form method="post" enctype="multipart/form-data" id="multiStepForm">
@@ -158,7 +158,7 @@ include_once __DIR__ . '/../includes/header.php';
                     <input type="email" name="email" required value="<?= htmlspecialchars($user['email']) ?>">
                 </div>
                 <div class="form-actions">
-                    <button type="button" class="btn-primary next-step">Suivant ➡️</button>
+                    <button type="button" class="btn-primary next-step">Suivant <i class="bi bi-arrow-right"></i></button>
                 </div>
             </div>
 
@@ -167,9 +167,9 @@ include_once __DIR__ . '/../includes/header.php';
                     <div class="form-group">
                         <label>Rôle</label>
                         <select name="role" required>
-                            <option value="ADMIN" <?= $user['role']==='ADMIN'?'selected':'' ?>>🔴 Admin</option>
-                            <option value="SUPERVISEUR" <?= $user['role']==='SUPERVISEUR'?'selected':'' ?>>🟠 Superviseur</option>
-                            <option value="AGENT" <?= $user['role']==='AGENT'?'selected':'' ?>>🟢 Agent</option>
+                            <option value="ADMIN" <?= $user['role']==='ADMIN'?'selected':'' ?>>Admin</option>
+                            <option value="SUPERVISEUR" <?= $user['role']==='SUPERVISEUR'?'selected':'' ?>>Superviseur</option>
+                            <option value="AGENT" <?= $user['role']==='AGENT'?'selected':'' ?>>Agent</option>
                         </select>
                     </div>
                     <div class="form-group">
@@ -177,7 +177,7 @@ include_once __DIR__ . '/../includes/header.php';
                         <select name="id_site">
                             <option value="">-- Aucun site --</option>
                             <?php foreach ($sites as $site): ?>
-                                <option value="<?= $site['id_site'] ?>" <?= $user['id_site']==$site['id_site']?'selected':'' ?>>📍 <?= htmlspecialchars($site['nom_site']) ?></option>
+                                <option value="<?= $site['id_site'] ?>" <?= $user['id_site']==$site['id_site']?'selected':'' ?>><?= htmlspecialchars($site['nom_site']) ?></option>
                             <?php endforeach; ?>
                         </select>
                     </div>
@@ -187,8 +187,8 @@ include_once __DIR__ . '/../includes/header.php';
                     <input type="date" name="date_embauche" value="<?= $user['date_embauche'] ?>">
                 </div>
                 <div class="form-actions">
-                    <button type="button" class="btn-secondary prev-step">⬅️ Précédent</button>
-                    <button type="button" class="btn-primary next-step">Suivant ➡️</button>
+                    <button type="button" class="btn-secondary prev-step"><i class="bi bi-arrow-left"></i> Précédent</button>
+                    <button type="button" class="btn-primary next-step">Suivant <i class="bi bi-arrow-right"></i></button>
                 </div>
             </div>
 
@@ -206,8 +206,8 @@ include_once __DIR__ . '/../includes/header.php';
                     </div>
                 </div>
                 <div class="form-actions">
-                    <button type="button" class="btn-secondary prev-step">⬅️ Précédent</button>
-                    <button type="button" class="btn-primary next-step">Suivant ➡️</button>
+                    <button type="button" class="btn-secondary prev-step"><i class="bi bi-arrow-left"></i> Précédent</button>
+                    <button type="button" class="btn-primary next-step">Suivant <i class="bi bi-arrow-right"></i></button>
                 </div>
             </div>
 
@@ -217,8 +217,8 @@ include_once __DIR__ . '/../includes/header.php';
                     <input type="password" name="password" placeholder="Laisser vide pour ne pas changer">
                 </div>
                 <div class="form-actions">
-                    <button type="button" class="btn-secondary prev-step">⬅️ Précédent</button>
-                    <button type="submit" class="btn-primary">✅ Enregistrer les modifications</button>
+                    <button type="button" class="btn-secondary prev-step"><i class="bi bi-arrow-left"></i> Précédent</button>
+                    <button type="submit" class="btn-primary"><i class="bi bi-check-circle"></i> Enregistrer les modifications</button>
                 </div>
             </div>
         </form>

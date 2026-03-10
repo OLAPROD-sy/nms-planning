@@ -95,9 +95,9 @@ $historique = $stmtH->fetchAll(PDO::FETCH_ASSOC);
         <div class="card border-info" style="margin:0; display:flex; align-items:center; justify-content:space-between; padding: 15px;">
             <div>
                 <h4 style="margin:0; color:#888; font-size:0.8em; text-transform:uppercase;">État du Site</h4>
-                <strong style="font-size:1.1em">📍 <?= htmlspecialchars($site_nom) ?></strong>
+                <strong style="font-size:1.1em"><i class="bi bi-geo-alt"></i> <?= htmlspecialchars($site_nom) ?></strong>
             </div>
-            <a href="manage_stock.php" style="text-decoration:none; font-size:1.5rem">🔄</a>
+            <a href="manage_stock.php" style="text-decoration:none; font-size:1.5rem"><i class="bi bi-arrow-clockwise"></i></a>
         </div>
 
         <div class="card <?= $nb_alertes > 0 ? 'border-danger' : 'border-success' ?>" style="margin:0; display:flex; align-items:center; justify-content:space-between; padding: 15px;">
@@ -105,7 +105,7 @@ $historique = $stmtH->fetchAll(PDO::FETCH_ASSOC);
                 <h4 style="margin:0; color:#888; font-size:0.8em; text-transform:uppercase;">Produits en Alerte</h4>
                 <strong style="font-size:1.8em; color: <?= $nb_alertes > 0 ? 'var(--p-red)' : 'var(--p-green)' ?>"><?= $nb_alertes ?></strong>
             </div>
-            <span style="font-size:2rem"><?= $nb_alertes > 0 ? '⚠️' : '✅' ?></span>
+            <span style="font-size:2rem"><?= $nb_alertes > 0 ? '<i class="bi bi-exclamation-triangle"></i>' : '<i class="bi bi-check-circle"></i>' ?></span>
         </div>
     </div>
 
@@ -113,7 +113,7 @@ $historique = $stmtH->fetchAll(PDO::FETCH_ASSOC);
         <div class="stock-sidebar">
 
             <div class="card border-success">
-                <h3>📦 Nouveau Produit</h3>
+                <h3><i class="bi bi-box-seam"></i> Nouveau Produit</h3>
                 <form method="post">
                     <input type="hidden" name="csrf_token" value="<?= generate_csrf_token() ?>">
                     <label style="font-size:0.8em">NOM DU PRODUIT</label>
@@ -134,7 +134,7 @@ $historique = $stmtH->fetchAll(PDO::FETCH_ASSOC);
             </div>
 
             <div class="card border-success">
-                <h3>🔄 Mouvement Stock</h3>
+                <h3><i class="bi bi-arrow-left-right"></i> Mouvement Stock</h3>
                 <form method="post">
                     <input type="hidden" name="csrf_token" value="<?= generate_csrf_token() ?>">
                     <select name="id_produit" class="form-control" required>
@@ -145,8 +145,8 @@ $historique = $stmtH->fetchAll(PDO::FETCH_ASSOC);
                     </select>
                     <div style="display:flex; gap:10px">
                         <select name="type_mouvement" class="form-control" style="flex:1">
-                            <option value="entree">⬆️ Entrée</option>
-                            <option value="sortie">⬇️ Sortie</option>
+                            <option value="entree">Entrée</option>
+                            <option value="sortie">Sortie</option>
                         </select>
                         <input type="number" name="quantite" class="form-control" style="flex:1" placeholder="Qté" min="1" required>
                     </div>
@@ -155,10 +155,10 @@ $historique = $stmtH->fetchAll(PDO::FETCH_ASSOC);
             </div>
             <div class="card border-warning">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px">
-                    <h3 style="border:none; margin:0">📊 État des Stocks</h3>
-                    <button onclick="exportStockActuel()" style="background:#f1c40f; border:none; padding:5px 10px; border-radius:5px; color:white; cursor:pointer; font-size:0.8em">📥 Excel</button>
+                    <h3 style="border:none; margin:0"><i class="bi bi-bar-chart"></i> État des Stocks</h3>
+                    <button onclick="exportStockActuel()" style="background:#f1c40f; border:none; padding:5px 10px; border-radius:5px; color:white; cursor:pointer; font-size:0.8em"><i class="bi bi-file-earmark-excel"></i> Excel</button>
                 </div>
-                <input type="text" id="searchStock" class="form-control" placeholder="🔍 Rechercher un produit..." onkeyup="filterStock()">
+                <input type="text" id="searchStock" class="form-control" placeholder="Rechercher un produit..." onkeyup="filterStock()">
                 <div style="max-height: 400px; overflow-y: auto;">
                     <?php foreach($liste_produits as $p): 
                         $is_low = $p['quantite_actuelle'] <= $p['quantite_alerte'];
@@ -175,7 +175,7 @@ $historique = $stmtH->fetchAll(PDO::FETCH_ASSOC);
         <div class="stock-main">
             <div class="card border-info">
                 <div style="margin-bottom:20px">
-                    <h3 style="border:none; margin-bottom:15px">📜 Historique des Flux</h3>
+                    <h3 style="border:none; margin-bottom:15px"><i class="bi bi-journal-text"></i> Historique des Flux</h3>
                     
                     <form method="GET" style="display:flex; flex-wrap:wrap; gap:10px; background:#f8f9fa; padding:15px; border-radius:8px">
                         <input type="hidden" name="id_site" value="<?= $id_site ?>">
@@ -197,7 +197,7 @@ $historique = $stmtH->fetchAll(PDO::FETCH_ASSOC);
                         </div>
                         <div style="display:flex; align-items:flex-end; gap:5px">
                             <button type="submit" class="btn-main" style="background:var(--p-blue); width:auto; padding:10px 20px">Filtrer</button>
-                            <button type="button" onclick="exportHistorique()" style="background:#27ae60; border:none; padding:10px 15px; border-radius:6px; color:white; cursor:pointer">📥 Excel</button>
+                            <button type="button" onclick="exportHistorique()" style="background:#27ae60; border:none; padding:10px 15px; border-radius:6px; color:white; cursor:pointer"><i class="bi bi-file-earmark-excel"></i> Excel</button>
                         </div>
                     </form>
                 </div>

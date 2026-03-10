@@ -36,7 +36,7 @@ $notifications = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <?php include_once __DIR__ . '/../includes/header.php'; ?>
 
 <div style="max-width:900px;margin:20px auto;padding:20px">
-    <h1 style="margin-bottom: 30px;">🔔 Notifications</h1>
+    <h1 style="margin-bottom: 30px;"><i class="bi bi-bell"></i> Notifications</h1>
 
     <?php if (empty($notifications)): ?>
         <div class="card" style="text-align:center;padding:40px">Aucune notification.</div>
@@ -46,9 +46,10 @@ $notifications = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 // Configuration selon le type
                 $type_clean = strtolower($n['type'] ?? '');
                 $config = [
-                    'arrivee' => ['icon' => '🟢', 'label' => 'Arrivée', 'color' => '#2e7d32', 'bg' => '#e8f5e9'],
-                    'depart'  => ['icon' => '🔵', 'label' => 'Départ',  'color' => '#1565c0', 'bg' => '#e3f2fd'],
-                    'urgence' => ['icon' => '🚨', 'label' => 'Urgence', 'color' => '#c62828', 'bg' => '#ffebee'],
+                    'arrivee' => ['icon' => 'bi-box-arrow-in-right', 'label' => 'Arrivée', 'color' => '#2e7d32', 'bg' => '#e8f5e9'],
+                    'depart'  => ['icon' => 'bi-box-arrow-right', 'label' => 'Départ',  'color' => '#1565c0', 'bg' => '#e3f2fd'],
+                    'urgence' => ['icon' => 'bi-exclamation-diamond', 'label' => 'Urgence', 'color' => '#c62828', 'bg' => '#ffebee'],
+                    'default' => ['icon' => 'bi-info-circle', 'label' => 'Info', 'color' => '#546e7a', 'bg' => '#eceff1'],
                 ];
                 $style = $config[$type_clean] ?? $config['default'];
             ?>
@@ -56,18 +57,18 @@ $notifications = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     <div style="display: flex; justify-content: space-between; align-items: flex-start;">
                         <div style="flex: 1;">
                             <div style="color: <?= $style['color'] ?>; font-weight: 800; text-transform: uppercase; font-size: 0.9em; margin-bottom: 8px; display: flex; align-items: center; gap: 8px;">
-                                <span><?= $style['icon'] ?></span> <?= $style['label'] ?>
+                                <span><i class="bi <?= $style['icon'] ?>"></i></span> <?= $style['label'] ?>
                                 <?php if (empty($n['is_read'])): ?>
                                     <span style="background: #ff5252; color: white; padding: 2px 6px; border-radius: 10px; font-size: 10px;">NOUVEAU</span>
                                 <?php endif; ?>
                             </div>
                             
                             <div style="color: #2c3e50; font-size: 1.05em; line-height: 1.4; margin-bottom: 10px;">
-                                <strong><?= $style['icon'] ?></strong> <?= nl2br(htmlspecialchars($n['message'] ?? '')) ?>
+                                <strong><i class="bi <?= $style['icon'] ?>"></i></strong> <?= nl2br(htmlspecialchars($n['message'] ?? '')) ?>
                             </div>
 
                             <div style="font-size: 12px; color: #95a5a6;">
-                                🕒 <?= date('d/m/Y à H:i', strtotime($n['created_at'])) ?>
+                                <i class="bi bi-clock"></i> <?= date('d/m/Y à H:i', strtotime($n['created_at'])) ?>
                             </div>
                         </div>
 
@@ -79,7 +80,7 @@ $notifications = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                         Marquer lu
                                     </button>
                                 <?php else: ?>
-                                    <span style="color: #4caf50; font-size: 18px;">✔</span>
+                                    <span style="color: #4caf50; font-size: 18px;"><i class="bi bi-check-circle"></i></span>
                                 <?php endif; ?>
                             </form>
                         </div>

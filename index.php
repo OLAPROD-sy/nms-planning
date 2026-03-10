@@ -52,6 +52,7 @@ if ($_SESSION['role'] === 'ADMIN') {
 <div class="dashboard-container">
     
     <div class="dashboard-header">
+        <i class="bi bi-buildings header-icon"></i>
         <h1>Bonjour, <?= htmlspecialchars($_SESSION['prenom']) ?> <?= htmlspecialchars($_SESSION['nom']) ?> !</h1>
         <p>Heureux de vous revoir sur votre espace NMS Planning.</p>
         <div class="user-badge">

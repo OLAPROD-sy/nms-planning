@@ -78,20 +78,20 @@ $postes = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <div class="page-wrapper">
     
     <?php if(isset($_SESSION['flash_success'])): ?>
-        <div class="alert-toast" id="toast">✅ <?= $_SESSION['flash_success']; unset($_SESSION['flash_success']); ?></div>
+        <div class="alert-toast" id="toast"><i class="bi bi-check-circle"></i> <?= $_SESSION['flash_success']; unset($_SESSION['flash_success']); ?></div>
     <?php endif; ?>
 
     <div class="hero-admin">
         <h1 style="margin:0; font-weight: 850;">Gestion des Postes</h1>
         <p style="opacity: 0.7;">Définissez les rôles et positions de votre structure.</p>
         <div class="search-box">
-            <span style="position:absolute; left:15px; top:12px; opacity:0.5;">🔍</span>
+            <span style="position:absolute; left:15px; top:12px; opacity:0.5;"><i class="bi bi-search"></i></span>
             <input type="text" id="searchInput" placeholder="Rechercher un poste...">
         </div>
     </div>
 
     <div class="action-card">
-        <h3 style="margin:0 0 20px 0;"><?= $editing ? '✍️ Modifier le poste' : '➕ Nouveau poste' ?></h3>
+        <h3 style="margin:0 0 20px 0;"><?= $editing ? '<i class="bi bi-pencil-square"></i> Modifier le poste' : '<i class="bi bi-plus-circle"></i> Nouveau poste' ?></h3>
         <form method="post">
             <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(generate_csrf_token()) ?>">
             <?php if($editing): ?>
@@ -130,12 +130,12 @@ $postes = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     <form method="post" style="margin:0">
                         <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(generate_csrf_token()) ?>">
                         <input type="hidden" name="edit_poste" value="<?= $id ?>">
-                        <button class="btn-icon" style="background: var(--primary-light); color: var(--primary);" title="Modifier">✏️</button>
+                        <button class="btn-icon" style="background: var(--primary-light); color: var(--primary);" title="Modifier"><i class="bi bi-pencil-square"></i></button>
                     </form>
                     <form method="post" style="margin:0" onsubmit="return confirm('Supprimer ce poste ?');">
                         <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(generate_csrf_token()) ?>">
                         <input type="hidden" name="delete_poste" value="<?= $id ?>">
-                        <button class="btn-icon" style="background: #fff1f2; color: var(--danger);" title="Supprimer">🗑️</button>
+                        <button class="btn-icon" style="background: #fff1f2; color: var(--danger);" title="Supprimer"><i class="bi bi-trash3"></i></button>
                     </form>
                 </div>
             </div>

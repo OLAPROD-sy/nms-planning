@@ -78,7 +78,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($userInfo['latitude'] != 0) {
                 $dist = getDistance($u_lat, $u_lng, $userInfo['latitude'], $userInfo['longitude']);
                 if ($dist > 150000) { // 150km de test
-                    $_SESSION['flash_error'] = "❌ Trop loin du site (".round($dist)."m).";
+                    $_SESSION['flash_error'] = "<i class=\"bi bi-x-circle\"></i> Trop loin du site (".round($dist)."m).";
                     header('Location: pointage.php'); exit;
                 }
             }
@@ -86,12 +86,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmtCheck = $pdo->prepare('SELECT id_pointage FROM pointages WHERE id_user = ? AND date_pointage = ? AND type = "NORMAL"');
             $stmtCheck->execute([$id_user, $today]);
             if ($stmtCheck->fetch()) {
-                $_SESSION['flash_error'] = '⚠️ Arrivée déjà enregistrée.';
+                $_SESSION['flash_error'] = '<i class="bi bi-exclamation-triangle"></i> Arrivée déjà enregistrée.';
             } else {
                 $est_en_retard = (!empty($userInfo['heure_debut_service']) && strtotime($heure_actuelle) > strtotime($userInfo['heure_debut_service'])) ? 1 : 0;
                 $sql = "INSERT INTO pointages (id_user, date_pointage, heure_arrivee, type, id_site, est_en_retard) VALUES (?, ?, ?, 'NORMAL', ?, ?)";
                 $pdo->prepare($sql)->execute([$id_user, $today, $heure_actuelle, $userInfo['id_site'], $est_en_retard]);
-                $_SESSION['flash_success'] = "✓ Arrivée enregistrée " . ($est_en_retard ? "(Retard)" : "");
+                $_SESSION['flash_success'] = "<i class=\"bi bi-check-circle\"></i> Arrivée enregistrée " . ($est_en_retard ? "(Retard)" : "");
                 notify_supervisors_if_possible($pdo, $id_user, "$nom $prenom est arrivé" . ($est_en_retard ? " avec RETARD" : ""), 'arrivee');
             }
         } 
@@ -101,7 +101,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $pointage = $stmt->fetch();
             if ($pointage) {
                 $pdo->prepare("UPDATE pointages SET heure_depart = ? WHERE id_pointage = ?")->execute([$heure_actuelle, $pointage['id_pointage']]);
-                $_SESSION['flash_success'] = "✓ Départ enregistré.";
+                $_SESSION['flash_success'] = "<i class=\"bi bi-check-circle\"></i> Départ enregistré.";
                 notify_supervisors_if_possible($pdo, $id_user, "$nom $prenom a quitté le site.", 'depart');
             }
         } 
@@ -135,12 +135,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $pdo->commit();
 
                     if($is_longue) {
-                        $msg_notif = "📅 LONGUE ABSENCE : $nom $prenom du $date_debut au $date_fin ($raison)";
+                        $msg_notif = "LONGUE ABSENCE : $nom $prenom du $date_debut au $date_fin ($raison)";
                     } else {
-                        $msg_notif = "🕒 ABSENCE COURTE : $nom $prenom le $date_debut [Sortie: $h_dep | Retour: $h_arr] - $raison";
+                        $msg_notif = "ABSENCE COURTE : $nom $prenom le $date_debut [Sortie: $h_dep | Retour: $h_arr] - $raison";
                     }
                     notify_supervisors_if_possible($pdo, $id_user, $msg_notif, 'urgence');
-                    $_SESSION['flash_success'] = "🚀 Absence enregistrée.";
+                    $_SESSION['flash_success'] = "<i class=\"bi bi-check-circle\"></i> Absence enregistrée.";
                 } catch (Exception $e) { $pdo->rollBack(); $_SESSION['flash_error'] = "Erreur technique."; }
             }
         }
@@ -196,17 +196,17 @@ $urgence_types = ['Absence justifiée', 'Congé maladie', 'Congé personnel', 'T
             <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(generate_csrf_token()) ?>">
             <input type="hidden" name="action" value="arrivee">
             <input type="hidden" name="user_lat" class="lat_input"><input type="hidden" name="user_lng" class="lng_input">
-            <button class="btn-pointage btn-arrivee" type="submit" disabled id="btn-arrivee">📍 Arrivée</button>
+            <button class="btn-pointage btn-arrivee" type="submit" disabled id="btn-arrivee"><i class="bi bi-box-arrow-in-right"></i> Arrivée</button>
         </form>
         <form method="post" style="display:contents;">
             <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(generate_csrf_token()) ?>">
             <input type="hidden" name="action" value="depart">
-            <button class="btn-pointage btn-depart" type="submit" <?= !$heure_arrivee || $heure_depart ? 'disabled' : '' ?>>🚶 Sortie</button>
+            <button class="btn-pointage btn-depart" type="submit" <?= !$heure_arrivee || $heure_depart ? 'disabled' : '' ?>><i class="bi bi-box-arrow-right"></i> Sortie</button>
         </form>
     </div>
 
     <div style="background: #fff5f5; border: 1px solid #fecaca; border-radius: 20px; padding: 25px; margin-bottom: 30px;">
-        <h3 style="color: #991b1b; margin-bottom: 20px; font-size: 16px;">🚨 Signaler une Absence / Sortie</h3>
+        <h3 style="color: #991b1b; margin-bottom: 20px; font-size: 16px;"><i class="bi bi-exclamation-diamond"></i> Signaler une Absence / Sortie</h3>
         <form method="post">
             <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(generate_csrf_token()) ?>">
             <input type="hidden" name="action" value="urgence">
@@ -240,12 +240,12 @@ $urgence_types = ['Absence justifiée', 'Congé maladie', 'Congé personnel', 'T
                 </div>
              </div>
             <textarea name="commentaire" placeholder="Plus de détails..." style="width:100%; padding:12px; border-radius:10px; border:1px solid #fecaca; min-height:60px; margin-bottom:15px;"></textarea>
-            <button type="submit" style="width:100%; background:#ef4444; color:white; border:none; padding:15px; border-radius:12px; font-weight:800; cursor:pointer;">💾 Enregistrer</button>
+            <button type="submit" style="width:100%; background:#ef4444; color:white; border:none; padding:15px; border-radius:12px; font-weight:800; cursor:pointer;"><i class="bi bi-check-circle"></i> Enregistrer</button>
         </form>
     </div>
 
     <div class="history-card">
-        <h3 style="font-size:16px;">📊 Activité récente (7 jours)</h3>
+        <h3 style="font-size:16px;"><i class="bi bi-bar-chart"></i> Activité récente (7 jours)</h3>
         <div style="overflow-x:auto;">
             <table class="history-table">
                 <thead>
@@ -274,10 +274,10 @@ $urgence_types = ['Absence justifiée', 'Congé maladie', 'Congé personnel', 'T
                         </td>
                         <td>
                             <?php if ($h['type'] === 'URGENCE'): ?>
-                                <span style="background:#fff5f5; color:#ef4444; padding:4px 8px; border-radius:6px; font-size:11px; font-weight:700;">🚨 <?= htmlspecialchars($h['motif_urgence']) ?></span>
+                                <span style="background:#fff5f5; color:#ef4444; padding:4px 8px; border-radius:6px; font-size:11px; font-weight:700;"><i class="bi bi-exclamation-diamond"></i> <?= htmlspecialchars($h['motif_urgence']) ?></span>
                             <?php else: ?>
-                                <span style="background:#f0fdf4; color:#16a34a; padding:4px 8px; border-radius:6px; font-size:11px; font-weight:700;">✅ NORMAL</span>
-                                <?= $h['est_en_retard'] ? '<span style="color:#ea580c; font-size:10px; margin-left:5px;">⚠️ RETARD</span>' : '' ?>
+                                <span style="background:#f0fdf4; color:#16a34a; padding:4px 8px; border-radius:6px; font-size:11px; font-weight:700;"><i class="bi bi-check-circle"></i> NORMAL</span>
+                                <?= $h['est_en_retard'] ? '<span style="color:#ea580c; font-size:10px; margin-left:5px;"><i class="bi bi-exclamation-triangle"></i> RETARD</span>' : '' ?>
                             <?php endif; ?>
                         </td>
                         <td>
@@ -332,10 +332,10 @@ $urgence_types = ['Absence justifiée', 'Congé maladie', 'Congé personnel', 'T
                 const dist = calculateDistance(uLat, uLng, siteLat, siteLng);
                 const badge = document.getElementById('geo-status');
                 if (dist < 150000) { // 150m
-                    badge.className = "status-badge status-working"; badge.textContent = "📍 Sur site";
+                    badge.className = "status-badge status-working"; badge.innerHTML = "<i class=\"bi bi-geo-alt\"></i> Sur site";
                     if(!hasArrived) document.getElementById('btn-arrivee').disabled = false;
                 } else {
-                    badge.className = "status-badge status-waiting"; badge.textContent = "🚶 Trop loin";
+                    badge.className = "status-badge status-waiting"; badge.innerHTML = "<i class=\"bi bi-geo-alt\"></i> Trop loin";
                 }
             });
         }

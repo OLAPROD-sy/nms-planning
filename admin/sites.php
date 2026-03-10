@@ -111,13 +111,13 @@ $sites = $stmt->fetchAll(PDO::FETCH_ASSOC);
         <p style="opacity: 0.7; font-size: 16px; margin-top: 10px;">Centralisez et organisez vos lieux d'activité.</p>
         
         <div class="search-container">
-            <span class="search-icon">🔍</span>
+            <span class="search-icon"><i class="bi bi-search"></i></span>
             <input type="text" id="siteSearch" class="search-input" placeholder="Rechercher un site, une ville...">
         </div>
     </div>
 
     <div class="action-card">
-        <h3 style="margin: 0 0 25px 0; font-size: 18px;"><?= $editing ? '✍️ Modifier le site' : '➕ Ajouter un site' ?></h3>
+        <h3 style="margin: 0 0 25px 0; font-size: 18px;"><?= $editing ? '<i class="bi bi-pencil-square"></i> Modifier le site' : '<i class="bi bi-plus-circle"></i> Ajouter un site' ?></h3>
         <form method="post">
             <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(generate_csrf_token()) ?>">
             <?php if($editing): ?><input type="hidden" name="id_site" value="<?= $edit_site['id_site'] ?>"><?php endif; ?>
@@ -177,11 +177,11 @@ $sites = $stmt->fetchAll(PDO::FETCH_ASSOC);
                             <div style="font-weight: 800; color: #0f172a; font-size: 18px; display: flex; justify-content: space-between; align-items: center;">
                                 <?= htmlspecialchars($s['nom_site']) ?>
                                 <span style="font-size: 12px; color: var(--primary); background: #eef2ff; padding: 2px 8px; border-radius: 5px; font-weight: 700;">
-                                    🕒 <?= substr($s['heure_debut_service'], 0, 5) ?>
+                                    <i class="bi bi-clock"></i> <?= substr($s['heure_debut_service'], 0, 5) ?>
                                 </span>
                             </div>
                             
-                            <div class="site-loc">📍 <?= htmlspecialchars($s['localisation'] ?? 'Non définie') ?></div>
+                            <div class="site-loc"><i class="bi bi-geo-alt"></i> <?= htmlspecialchars($s['localisation'] ?? 'Non définie') ?></div>
                             
                             <div style="margin-top: 8px; display: flex; gap: 5px; flex-wrap: wrap;">
                                 <span class="geo-badge">Lat: <?= htmlspecialchars($s['latitude'] ?? '0') ?></span>
@@ -198,7 +198,7 @@ $sites = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(generate_csrf_token()) ?>">
                         <input type="hidden" name="edit_site" value="<?= $id ?>">
                         <button type="submit" class="btn-icon" style="background: #eef2ff; color: var(--primary); border:none; width:100%; font-weight:600;" title="Modifier">
-                            ✏️ Modifier
+                            <i class="bi bi-pencil-square"></i> Modifier
                         </button>
                     </form>
 
@@ -206,7 +206,7 @@ $sites = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(generate_csrf_token()) ?>">
                         <input type="hidden" name="delete_site" value="<?= $id ?>">
                         <button type="submit" class="btn-icon" style="background: #fff1f2; color: #e11d48; border:none; width:100%;" title="Supprimer">
-                            🗑️ Effacer
+                            <i class="bi bi-trash3"></i> Effacer
                         </button>
                     </form>
                 </div>

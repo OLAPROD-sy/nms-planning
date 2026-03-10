@@ -112,28 +112,28 @@ $recent_plannings = $stmtPlan->fetchAll(PDO::FETCH_ASSOC);
 <div class="admin-grid">
     <div class="side-col">
         <div class="card">
-            <h3>🆕 Créer une Semaine</h3>
+            <h3><i class="bi bi-calendar-plus"></i> Créer une Semaine</h3>
             <form method="post">
                 <div class="form-group">
                     <label>Lundi de la semaine</label>
                     <input type="date" name="date_debut" class="form-control" required>
                 </div>
-                <button name="create_week" class="btn-main btn-week">➕ Ajouter la semaine</button>
+                <button name="create_week" class="btn-main btn-week"><i class="bi bi-plus-circle"></i> Ajouter la semaine</button>
             </form>
         </div>
 
         <div class="card">
-            <h3>🏢 Nouveau Poste</h3>
+            <h3><i class="bi bi-briefcase"></i> Nouveau Poste</h3>
             <form method="post">
                 <div class="form-group">
                     <input type="text" name="libelle_poste" class="form-control" placeholder="Nom du poste (ex: Accueil)" required>
                 </div>
-                <button name="add_poste" class="btn-main btn-week">➕ Ajouter le poste</button>
+                <button name="add_poste" class="btn-main btn-week"><i class="bi bi-plus-circle"></i> Ajouter le poste</button>
             </form>
         </div>
 
         <div class="card">
-            <h3>👥 Agents du site</h3>
+            <h3><i class="bi bi-people"></i> Agents du site</h3>
             <div style="max-height: 200px; overflow-y: auto;">
                 <?php foreach($agents as $a): ?>
                     <div style="padding: 5px 0; border-bottom: 1px solid #eee; font-size: 0.9em;">
@@ -146,7 +146,7 @@ $recent_plannings = $stmtPlan->fetchAll(PDO::FETCH_ASSOC);
 
     <div class="main-col">
         <div class="card">
-            <h3>📅 Programmer un Agent</h3>
+            <h3><i class="bi bi-calendar3"></i> Programmer un Agent</h3>
             <form method="post">
                 <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
                     <div class="form-group">
@@ -209,7 +209,7 @@ $recent_plannings = $stmtPlan->fetchAll(PDO::FETCH_ASSOC);
         
 
         <div class="card">
-            <h3>📋 Programmations Récentes</h3>
+            <h3><i class="bi bi-clipboard-data"></i> Programmations Récentes</h3>
             <div class="table-container">
                 <table class="styled-table">
                     <thead>

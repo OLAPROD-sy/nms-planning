@@ -117,7 +117,8 @@ include_once __DIR__ . '/../includes/header.php';
 <div class="inventory-container">
     <div class="dashboard-header">
     <img src="/assets/img/logo.png" class="logo-print" alt="Logo">
-    <h1>📊 Rapport d'Inventaire <?= !empty($selected_site) ? "- Site : " . htmlspecialchars($sites_map[$selected_site]) : "(Global)" ?></h1>
+    <i class="bi bi-buildings header-icon"></i>
+    <h1><i class="bi bi-bar-chart"></i> Rapport d'Inventaire <?= !empty($selected_site) ? "- Site : " . htmlspecialchars($sites_map[$selected_site]) : "(Global)" ?></h1>
     <p>Période du <?= date('d/m/Y', strtotime($date_start)) ?> au <?= date('d/m/Y', strtotime($date_end)) ?></p>
 </div>
 
@@ -154,14 +155,14 @@ include_once __DIR__ . '/../includes/header.php';
             <div class="filter-group">
                 <label>Type de Flux</label>
                 <select name="f_type" class="form-control" onchange="this.form.submit()">
-                    <option value="">🔄 Tous les flux</option>
-                    <option value="entree" <?= $filter_type === 'entree' ? 'selected' : '' ?>>⬆️ Entrées uniquement</option>
-                    <option value="sortie" <?= $filter_type === 'sortie' ? 'selected' : '' ?>>⬇️ Sorties uniquement</option>
+                    <option value="">Tous les flux</option>
+                    <option value="entree" <?= $filter_type === 'entree' ? 'selected' : '' ?>>Entrées uniquement</option>
+                    <option value="sortie" <?= $filter_type === 'sortie' ? 'selected' : '' ?>>Sorties uniquement</option>
                 </select>
             </div>
             <button type="submit" class="btn-main" style="background: var(--p-blue); color:white; padding: 10px 20px; border:none; border-radius:8px; cursor:pointer; height:41px;">Appliquer</button>
             <button type="button" onclick="exportToExcel()" class="btn-main" style="background: #27ae60; color:white; border:none; padding:10px 20px; border-radius:8px; cursor:pointer; font-weight: bold;">
-                📥 Exporter en Excel
+                <i class="bi bi-file-earmark-excel"></i> Exporter en Excel
             </button>  
         </form>
     </div>
@@ -188,7 +189,7 @@ include_once __DIR__ . '/../includes/header.php';
     </div>
 
     <div class="section-card">
-    <div class="section-title">📊 Part de consommation par site (Sorties)</div>
+    <div class="section-title"><i class="bi bi-pie-chart"></i> Part de consommation par site (Sorties)</div>
     <?php
         $max_out = $global_out > 0 ? $global_out : 1;
         // On regroupe les sorties par site pour le graphique
@@ -204,7 +205,7 @@ include_once __DIR__ . '/../includes/header.php';
         ?>
         <div style="margin-bottom: 15px;">
             <div style="display: flex; justify-content: space-between; font-size: 0.85em; margin-bottom: 5px;">
-                <span>📍 <?= htmlspecialchars($name) ?></span>
+                <span><i class="bi bi-geo-alt"></i> <?= htmlspecialchars($name) ?></span>
                 <strong><?= $val ?> unités sorties</strong>
             </div>
             <div style="background: #eee; border-radius: 10px; height: 12px; width: 100%; overflow: hidden;">
@@ -215,7 +216,7 @@ include_once __DIR__ . '/../includes/header.php';
     </div>
 
     <div class="section-card">
-        <div class="section-title">📈 Performance par Produit & Site</div>
+        <div class="section-title"><i class="bi bi-graph-up"></i> Performance par Produit & Site</div>
         <div style="overflow-x: auto;">
             <table class="custom-table">
                 <thead>
@@ -231,7 +232,7 @@ include_once __DIR__ . '/../includes/header.php';
                     <?php foreach ($resume as $r): ?>
                     <tr>
                         <td><strong><?= htmlspecialchars($r['nom_produit']) ?></strong></td>
-                        <td><span style="color:#7f8c8d;">📍 <?= htmlspecialchars($sites_map[$r['id_site']] ?? 'Global') ?></span></td>
+                        <td><span style="color:#7f8c8d;"><i class="bi bi-geo-alt"></i> <?= htmlspecialchars($sites_map[$r['id_site']] ?? 'Global') ?></span></td>
                         <td style="color: var(--p-green); font-weight:bold;">+ <?= $r['total_entrees'] ?></td>
                         <td style="color: var(--p-red); font-weight:bold;">- <?= $r['total_sorties'] ?></td>
                         <td>
@@ -253,7 +254,7 @@ include_once __DIR__ . '/../includes/header.php';
 
     <div class="section-card">
             <div class="section-title" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-                <span>📋 Journal Détaillé des Opérations</span>
+                <span><i class="bi bi-clipboard-data"></i> Journal Détaillé des Opérations</span>
                 <span style="background: var(--p-blue); color: white; padding: 4px 12px; border-radius: 20px; font-size: 0.7em;">
                     <?= count($mouvements) ?> résultat(s) trouvé(s)
                 </span>
@@ -285,11 +286,11 @@ include_once __DIR__ . '/../includes/header.php';
                             $type_brut = trim(strtolower($m['type_mouvement']));
                             if ($type_brut === 'entree'): ?>
                                 <span class="badge" style="background: #e8f5e9; color: #27ae60; padding: 4px 10px; border-radius: 20px; font-weight: bold; font-size: 0.75em; border: 1px solid #27ae60;">
-                                    ⬆️ ENTRÉE
+                                    <i class="bi bi-arrow-up"></i> ENTRÉE
                                 </span>
                             <?php else: ?>
                                 <span class="badge" style="background: #ffebee; color: #e74c3c; padding: 4px 10px; border-radius: 20px; font-weight: bold; font-size: 0.75em; border: 1px solid #e74c3c;">
-                                    ⬇️ SORTIE
+                                    <i class="bi bi-arrow-down"></i> SORTIE
                                 </span>
                             <?php endif; ?>
                         </td>

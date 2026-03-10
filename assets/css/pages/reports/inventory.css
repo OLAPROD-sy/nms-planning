@@ -19,6 +19,7 @@
         background: none !important;
         color: black !important;
     }
+    .dashboard-header .header-icon { display: none !important; }
 
     /* On cache tout sauf le contenu du rapport */
     nav, .sidebar, .btn-main, .filter-card, footer { display: none !important; }
@@ -132,13 +133,13 @@
         overflow: hidden;
     }
 
-    .dashboard-header::after {
-        content: '🏢';
+    .dashboard-header .header-icon {
         position: absolute;
         right: -10px;
         bottom: -20px;
         font-size: 150px;
         opacity: 0.1;
+        pointer-events: none;
     }
 
     .dashboard-header h1 {
