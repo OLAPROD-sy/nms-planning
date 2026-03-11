@@ -2,6 +2,7 @@
 require_once __DIR__ . '/../includes/csrf.php';
 require_once __DIR__ . '/../includes/auth_check.php';
 require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/../includes/superviseur_sites.php';
 
 if ($_SESSION['role'] !== 'ADMIN') {
     $_SESSION['flash_error'] = 'Accès refusé.';
@@ -33,13 +34,39 @@ $stmt = $pdo->query('
 ');
 $all_users = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+$supervisor_sites_map = [];
+if (superviseur_sites_table_exists($pdo)) {
+    $mapStmt = $pdo->query('
+        SELECT ss.id_user, s.nom_site
+        FROM superviseur_sites ss
+        JOIN sites s ON s.id_site = ss.id_site
+        WHERE (ss.date_debut IS NULL OR ss.date_debut <= CURDATE())
+          AND (ss.date_fin IS NULL OR ss.date_fin >= CURDATE())
+        ORDER BY s.nom_site ASC
+    ');
+    foreach ($mapStmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
+        $supervisor_sites_map[$row['id_user']][] = $row['nom_site'];
+    }
+}
+
+foreach ($all_users as &$u) {
+    if ($u['role'] === 'SUPERVISEUR' && !empty($supervisor_sites_map[$u['id_user']])) {
+        $u['sites_list'] = implode(', ', $supervisor_sites_map[$u['id_user']]);
+    } else {
+        $u['sites_list'] = $u['nom_site'] ?? null;
+    }
+}
+unset($u);
+
 // On groupe les utilisateurs par "Entête de section"
 $grouped_users = [];
 foreach ($all_users as $u) {
     if ($u['role'] === 'ADMIN') {
         $section_name = "DIRECTION / RESPONSABLES";
+    } elseif ($u['role'] === 'SUPERVISEUR' && !empty($u['sites_list']) && strpos($u['sites_list'], ',') !== false) {
+        $section_name = 'SITES MULTIPLES';
     } else {
-        $section_name = ($u['nom_site'] ?? 'SANS SITE ASSIGNE');
+        $section_name = ($u['sites_list'] ?? $u['nom_site'] ?? 'SANS SITE ASSIGNE');
     }
     $grouped_users[$section_name][] = $u;
 }
@@ -100,7 +127,7 @@ $users = $pdo->query('
 
                 <div class="users-grid">
                     <?php foreach ($members as $u): ?>
-                        <div class="user-card" data-search="<?= strtolower($u['prenom'].' '.$u['nom'].' '.$u['role'].' '.($u['nom_site']??'')) ?>">
+                        <div class="user-card" data-search="<?= strtolower($u['prenom'].' '.$u['nom'].' '.$u['role'].' '.($u['sites_list'] ?? $u['nom_site'] ?? '')) ?>">
                             <div class="avatar-zone">
                                 <?php if (!empty($u['photo'])): ?>
                                     <img src="/<?= htmlspecialchars($u['photo']) ?>" class="user-avatar">
@@ -116,7 +143,7 @@ $users = $pdo->query('
                                 <div class="role-badge role-<?= strtolower($u['role']) ?>"><?= $u['role'] ?></div>
                                 
                                 <div class="user-details">
-                                    <div class="detail-item"><span><i class="bi bi-geo-alt"></i></span> <?= htmlspecialchars($u['nom_site'] ?? 'Non assigné') ?></div>
+                                    <div class="detail-item"><span><i class="bi bi-geo-alt"></i></span> <?= htmlspecialchars($u['sites_list'] ?? $u['nom_site'] ?? 'Non assigné') ?></div>
                                     <div class="detail-item"><span><i class="bi bi-telephone"></i></span> <?= htmlspecialchars($u['contact'] ?? 'N/A') ?></div>
                                 </div>
 

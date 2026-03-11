@@ -299,6 +299,28 @@ CREATE TABLE `users` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Table structure for table `superviseur_sites`
+--
+
+DROP TABLE IF EXISTS `superviseur_sites`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `superviseur_sites` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `id_user` int NOT NULL,
+  `id_site` int NOT NULL,
+  `date_debut` date DEFAULT NULL,
+  `date_fin` date DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uniq_superviseur_site` (`id_user`,`id_site`),
+  KEY `idx_superviseur_site_site` (`id_site`),
+  CONSTRAINT `fk_superviseur_sites_site` FOREIGN KEY (`id_site`) REFERENCES `sites` (`id_site`) ON DELETE CASCADE,
+  CONSTRAINT `fk_superviseur_sites_user` FOREIGN KEY (`id_user`) REFERENCES `users` (`id_user`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
 -- Dumping data for table `users`
 --
 

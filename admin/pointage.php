@@ -5,6 +5,7 @@ date_default_timezone_set('Africa/Porto-Novo');
 require_once __DIR__ . '/../includes/auth_check.php';
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../includes/csrf.php';
+require_once __DIR__ . '/../includes/superviseur_sites.php';
 
 // Sécurité : Pas d'admin ici
 if ($_SESSION['role'] === 'ADMIN') {
@@ -16,13 +17,24 @@ $id_user = $_SESSION['id_user'];
 $today = date('Y-m-d');
 
 // 2. RÉCUPÉRATION DES INFOS UTILISATEUR ET DU SITE
-$stmtUser = $pdo->prepare("
-    SELECT u.nom, u.prenom, u.role, u.id_site, s.nom_site, s.latitude, s.longitude, s.heure_debut_service
-    FROM users u
-    LEFT JOIN sites s ON u.id_site = s.id_site
-    WHERE u.id_user = ?
-");
-$stmtUser->execute([$id_user]);
+$session_site_id = (int)($_SESSION['id_site'] ?? 0);
+if (($_SESSION['role'] ?? '') === 'SUPERVISEUR' && $session_site_id > 0) {
+    $stmtUser = $pdo->prepare("
+        SELECT u.nom, u.prenom, u.role, ? AS id_site, s.nom_site, s.latitude, s.longitude, s.heure_debut_service
+        FROM users u
+        LEFT JOIN sites s ON s.id_site = ?
+        WHERE u.id_user = ?
+    ");
+    $stmtUser->execute([$session_site_id, $session_site_id, $id_user]);
+} else {
+    $stmtUser = $pdo->prepare("
+        SELECT u.nom, u.prenom, u.role, u.id_site, s.nom_site, s.latitude, s.longitude, s.heure_debut_service
+        FROM users u
+        LEFT JOIN sites s ON u.id_site = s.id_site
+        WHERE u.id_user = ?
+    ");
+    $stmtUser->execute([$id_user]);
+}
 $userInfo = $stmtUser->fetch();
 
 $nom = ucfirst($userInfo['nom'] ?? '');
@@ -47,14 +59,24 @@ function formatDateLongue($date) {
 
 function notify_supervisors_if_possible($pdo, $from_user, $message, $type) {
     try {
-        $stmtSite = $pdo->prepare("SELECT id_site FROM users WHERE id_user = ?");
-        $stmtSite->execute([$from_user]);
-        $agentSiteId = $stmtSite->fetchColumn();
+        $agentSiteId = null;
+        if (($_SESSION['role'] ?? '') === 'SUPERVISEUR' && !empty($_SESSION['id_site'])) {
+            $agentSiteId = (int) $_SESSION['id_site'];
+        } else {
+            $stmtSite = $pdo->prepare("SELECT id_site FROM users WHERE id_user = ?");
+            $stmtSite->execute([$from_user]);
+            $agentSiteId = $stmtSite->fetchColumn();
+        }
 
-        $sqlTargets = "SELECT id_user FROM users WHERE role = 'ADMIN' OR (role = 'SUPERVISEUR' AND id_site = ?)";
-        $stmtTargets = $pdo->prepare($sqlTargets);
-        $stmtTargets->execute([$agentSiteId]);
-        $targets = $stmtTargets->fetchAll(PDO::FETCH_COLUMN);
+        $targets = [];
+        if ($agentSiteId) {
+            $targets = get_supervisor_ids_for_site($pdo, (int) $agentSiteId);
+        }
+
+        $stmtAdmins = $pdo->query("SELECT id_user FROM users WHERE role = 'ADMIN'");
+        $admin_ids = $stmtAdmins->fetchAll(PDO::FETCH_COLUMN);
+
+        $targets = array_unique(array_merge($targets, $admin_ids));
 
         $sqlInsert = "INSERT INTO notifications (id_user, from_user, type, message, created_at) VALUES (?, ?, ?, ?, ?)";
         $ins = $pdo->prepare($sqlInsert);

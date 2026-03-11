@@ -1,6 +1,11 @@
 <?php
 require_once __DIR__ . '/includes/auth_check.php';
 require_once __DIR__ . '/config/database.php';
+require_once __DIR__ . '/admin/auto_absences.php';
+
+if (in_array($_SESSION['role'], ['ADMIN', 'SUPERVISEUR'], true)) {
+    genererAbsencesAutomatiques($pdo);
+}
 
 // Récupérer les statistiques selon le rôle
 if ($_SESSION['role'] === 'ADMIN') {
@@ -77,6 +82,7 @@ if ($_SESSION['role'] === 'ADMIN') {
             <a href="/admin/postes.php" class="action-tile"><i class="bi bi-briefcase"></i><span>Gérer les Postes</span></a>
             <a href="/admin/pointage.php" class="action-tile"><i class="bi bi-geo-alt"></i><span>Présence</span></a>
             <a href="/planning/planning_superviseur.php" class="action-tile"><i class="bi bi-calendar3"></i><span>Planning</span></a>
+            <a href="/planning/choix_site_superviseur.php" class="action-tile"><i class="bi bi-arrow-repeat"></i><span>Changer de site</span></a>
             <a href="/stock/manage_stock.php" class="action-tile"><i class="bi bi-box-seam"></i><span>Stocks</span></a>
         <?php endif; ?>
 

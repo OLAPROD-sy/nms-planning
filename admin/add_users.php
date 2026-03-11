@@ -2,6 +2,7 @@
 require_once __DIR__ . '/../includes/csrf.php';
 require_once __DIR__ . '/../includes/auth_check.php';
 require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/../includes/superviseur_sites.php';
 
 // Vérifier que seul l'admin peut accéder
 if ($_SESSION['role'] !== 'ADMIN') {
@@ -32,6 +33,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $password_confirm = trim($_POST['password_confirm'] ?? '');
         $role = trim($_POST['role'] ?? '');
         $id_site = !empty($_POST['id_site']) ? (int)$_POST['id_site'] : null;
+        $site_ids = $_POST['site_ids'] ?? [];
+        $date_debut = $_POST['date_debut'] ?? [];
+        $date_fin = $_POST['date_fin'] ?? [];
         $date_embauche = trim($_POST['date_embauche'] ?? '');
 
         // Validations
@@ -44,6 +48,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } elseif (!in_array($role, ['ADMIN', 'SUPERVISEUR', 'AGENT'])) {
             $error = 'Rôle invalide.';
         } else {
+            $assignments = [];
+            if ($role === 'SUPERVISEUR') {
+                $count = max(count((array) $site_ids), count((array) $date_debut), count((array) $date_fin));
+                for ($i = 0; $i < $count; $i++) {
+                    $sid = (int) ($site_ids[$i] ?? 0);
+                    $start = trim((string) ($date_debut[$i] ?? ''));
+                    $end = trim((string) ($date_fin[$i] ?? ''));
+
+                    if ($sid > 0 && $start !== '') {
+                        if ($end !== '' && $end < $start) {
+                            $error = 'La date de fin doit être supérieure ou égale à la date de début.';
+                            break;
+                        }
+                        $assignments[] = [
+                            'id_site' => $sid,
+                            'date_debut' => $start,
+                            'date_fin' => $end !== '' ? $end : null,
+                        ];
+                    }
+                }
+
+                if ($error === '' && empty($assignments)) {
+                    $error = 'Veuillez sélectionner au moins un site avec une date de début pour le superviseur.';
+                }
+                if ($error === '') {
+                    $id_site = !empty($assignments) ? (int) $assignments[0]['id_site'] : null;
+                }
+            }
+
             // Vérifier si l'email existe déjà
             $check = $pdo->prepare('SELECT id_user FROM users WHERE email = ?');
             $check->execute([$email]);
@@ -125,6 +158,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             $photo,
                             $cv
                         ]);
+
+                        $new_user_id = (int) $pdo->lastInsertId();
+                        if ($role === 'SUPERVISEUR') {
+                            set_supervisor_sites($pdo, $new_user_id, $assignments ?? []);
+                        }
                         
                         $_SESSION['flash_success'] = 'Utilisateur ajouté avec succès !';
                         header('Location: /admin/users.php');
@@ -140,6 +178,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 // Récupérer les sites pour le formulaire
 $sites = $pdo->query('SELECT id_site, nom_site FROM sites ORDER BY nom_site')->fetchAll(PDO::FETCH_ASSOC);
+$assignment_rows = [];
+$posted_sites = $_POST['site_ids'] ?? [];
+$posted_starts = $_POST['date_debut'] ?? [];
+$posted_ends = $_POST['date_fin'] ?? [];
+if (is_array($posted_sites) && (count($posted_sites) || count($posted_starts) || count($posted_ends))) {
+    $count = max(count($posted_sites), count($posted_starts), count($posted_ends));
+    for ($i = 0; $i < $count; $i++) {
+        $assignment_rows[] = [
+            'id_site' => (int) ($posted_sites[$i] ?? 0),
+            'date_debut' => $posted_starts[$i] ?? '',
+            'date_fin' => $posted_ends[$i] ?? '',
+        ];
+    }
+}
+if (empty($assignment_rows)) {
+    $assignment_rows[] = ['id_site' => 0, 'date_debut' => '', 'date_fin' => ''];
+}
 ?>
 <?php include_once __DIR__ . '/../includes/header.php'; ?>
 
@@ -212,7 +267,7 @@ $sites = $pdo->query('SELECT id_site, nom_site FROM sites ORDER BY nom_site')->f
                             <option value="AGENT" <?= ($_POST['role'] ?? '') === 'AGENT' ? 'selected' : '' ?>>Agent</option>
                         </select>
                     </div>
-                    <div class="form-group">
+                    <div class="form-group" id="siteSingleGroup">
                         <label>Site</label>
                         <select name="id_site">
                             <option value="">-- Aucun site --</option>
@@ -222,6 +277,40 @@ $sites = $pdo->query('SELECT id_site, nom_site FROM sites ORDER BY nom_site')->f
                                 </option>
                             <?php endforeach; ?>
                         </select>
+                        <small>Pour les agents, choisissez un seul site.</small>
+                    </div>
+                    <div class="form-group" id="siteMultiGroup" style="display:none;">
+                        <label>Sites du superviseur</label>
+                        <div class="assignments-wrapper" id="assignmentsWrapper">
+                            <?php foreach ($assignment_rows as $idx => $row): ?>
+                                <div class="assignment-row">
+                                    <select name="site_ids[]">
+                                        <option value="">-- Sélectionner un site --</option>
+                                        <?php foreach ($sites as $site): ?>
+                                            <option value="<?= (int)$site['id_site'] ?>" <?= (int)$site['id_site'] === (int)$row['id_site'] ? 'selected' : '' ?>>
+                                                <?= htmlspecialchars($site['nom_site']) ?>
+                                            </option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                    <input type="date" name="date_debut[]" value="<?= htmlspecialchars($row['date_debut']) ?>">
+                                    <input type="date" name="date_fin[]" value="<?= htmlspecialchars($row['date_fin']) ?>" placeholder="Date fin (optionnel)">
+                                    <button type="button" class="btn-remove-assignment">Retirer</button>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+                        <div class="assignment-row assignment-template" id="assignmentTemplate" style="display:none;">
+                            <select name="site_ids[]">
+                                <option value="">-- Sélectionner un site --</option>
+                                <?php foreach ($sites as $site): ?>
+                                    <option value="<?= (int)$site['id_site'] ?>"><?= htmlspecialchars($site['nom_site']) ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                            <input type="date" name="date_debut[]">
+                            <input type="date" name="date_fin[]" placeholder="Date fin (optionnel)">
+                            <button type="button" class="btn-remove-assignment">Retirer</button>
+                        </div>
+                        <button type="button" class="btn-add-assignment" id="addAssignmentBtn"><i class="bi bi-plus-circle"></i> Ajouter un site</button>
+                        <small>La date de fin est optionnelle. Laissez vide si l'affectation est en cours.</small>
                     </div>
                 </div>
                 

@@ -31,4 +31,61 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   });
+
+  const roleSelect = document.querySelector('select[name="role"]');
+  const siteSingleGroup = document.getElementById('siteSingleGroup');
+  const siteMultiGroup = document.getElementById('siteMultiGroup');
+  const assignmentsWrapper = document.getElementById('assignmentsWrapper');
+  const addAssignmentBtn = document.getElementById('addAssignmentBtn');
+  const assignmentTemplate = document.getElementById('assignmentTemplate');
+
+  function bindRemoveButtons(scope) {
+    scope.querySelectorAll('.btn-remove-assignment').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const row = btn.closest('.assignment-row');
+        if (row && assignmentsWrapper && assignmentsWrapper.children.length > 1) {
+          row.remove();
+        }
+      });
+    });
+  }
+
+  function updateSiteFields() {
+    const isSupervisor = roleSelect && roleSelect.value === 'SUPERVISEUR';
+    if (siteSingleGroup) {
+      siteSingleGroup.style.display = isSupervisor ? 'none' : '';
+    }
+    if (siteMultiGroup) {
+      siteMultiGroup.style.display = isSupervisor ? '' : 'none';
+    }
+    if (assignmentsWrapper) {
+      assignmentsWrapper.querySelectorAll('select[name="site_ids[]"]').forEach(select => {
+        select.required = isSupervisor;
+      });
+      assignmentsWrapper.querySelectorAll('input[name="date_debut[]"]').forEach(input => {
+        input.required = isSupervisor;
+      });
+    }
+  }
+
+  if (roleSelect) {
+    roleSelect.addEventListener('change', updateSiteFields);
+  }
+  if (addAssignmentBtn && assignmentTemplate && assignmentsWrapper) {
+    addAssignmentBtn.addEventListener('click', () => {
+      const clone = assignmentTemplate.cloneNode(true);
+      clone.removeAttribute('id');
+      clone.style.display = '';
+      clone.classList.remove('assignment-template');
+      clone.querySelectorAll('input').forEach(input => { input.value = ''; });
+      clone.querySelectorAll('select').forEach(select => { select.value = ''; });
+      assignmentsWrapper.appendChild(clone);
+      bindRemoveButtons(clone);
+      updateSiteFields();
+    });
+  }
+  if (assignmentsWrapper) {
+    bindRemoveButtons(assignmentsWrapper);
+  }
+  updateSiteFields();
 });

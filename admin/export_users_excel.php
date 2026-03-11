@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../includes/auth_check.php';
+require_once __DIR__ . '/../includes/superviseur_sites.php';
 
 if (($_SESSION['role'] ?? '') !== 'ADMIN') {
     exit('Accès refusé');
@@ -37,6 +38,30 @@ $sql = "
 
 $stmt = $pdo->query($sql);
 $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+$supervisor_sites_map = [];
+if (superviseur_sites_table_exists($pdo)) {
+    $mapStmt = $pdo->query('
+        SELECT ss.id_user, s.nom_site
+        FROM superviseur_sites ss
+        JOIN sites s ON s.id_site = ss.id_site
+        WHERE (ss.date_debut IS NULL OR ss.date_debut <= CURDATE())
+          AND (ss.date_fin IS NULL OR ss.date_fin >= CURDATE())
+        ORDER BY s.nom_site ASC
+    ');
+    foreach ($mapStmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
+        $supervisor_sites_map[$row['id_user']][] = $row['nom_site'];
+    }
+}
+
+foreach ($users as &$u) {
+    if ($u['role'] === 'SUPERVISEUR' && !empty($supervisor_sites_map[$u['id_user']])) {
+        $u['sites_list'] = implode(', ', $supervisor_sites_map[$u['id_user']]);
+    } else {
+        $u['sites_list'] = $u['nom_site'] ?? null;
+    }
+}
+unset($u);
 
 $count_total = count($users);
 $count_admin = 0;
@@ -143,7 +168,7 @@ header('Expires: 0');
                 <td><?= htmlspecialchars($u['email'] ?? '') ?></td>
                 <td class="<?= $role_class ?> ta-center"><?= htmlspecialchars($u['role'] ?? '') ?></td>
                 <td><?= htmlspecialchars((string) ($u['contact'] ?? '')) ?></td>
-                <td><?= htmlspecialchars($u['nom_site'] ?? 'Non assigné') ?></td>
+                <td><?= htmlspecialchars($u['sites_list'] ?? $u['nom_site'] ?? 'Non assigné') ?></td>
                 <td class="ta-center">
                     <?= !empty($u['date_embauche']) ? date('d/m/Y', strtotime($u['date_embauche'])) : '-' ?>
                 </td>

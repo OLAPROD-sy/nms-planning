@@ -1,6 +1,7 @@
 <?php
 session_start();
 require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/../includes/superviseur_sites.php';
 
 // Si déjà connecté, rediriger
 if (isset($_SESSION['id_user'])) {
@@ -28,6 +29,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION['role'] = $user['role'];
             $_SESSION['id_site'] = $user['id_site'];
             $_SESSION['contact'] = $user['contact'];
+
+            if ($user['role'] === 'SUPERVISEUR') {
+                $sites_ids = get_supervisor_site_ids($pdo, (int) $user['id_user']);
+                if (count($sites_ids) === 1) {
+                    $_SESSION['id_site'] = (int) $sites_ids[0];
+                    header('Location: /index.php');
+                    exit;
+                }
+                unset($_SESSION['id_site']);
+                header('Location: /planning/choix_site_superviseur.php');
+                exit;
+            }
 
             header('Location: /index.php');
             exit;

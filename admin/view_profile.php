@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/../includes/auth_check.php';
 require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/../includes/superviseur_sites.php';
 
 $id_user = (int)($_GET['id'] ?? $_SESSION['id_user']);
 $current_user = $_SESSION['id_user'];
@@ -42,13 +43,24 @@ if (!empty($user['date_embauche'])) {
     }
 }
 
-// Récupérer le site
-$site_name = 'Responsable des sites';
-if ($user['id_site']) {
+// Récupérer le(s) site(s)
+$site_name = 'Non assigné';
+if ($user['role'] === 'SUPERVISEUR') {
+    $sites = get_supervisor_sites($pdo, (int) $user['id_user']);
+    if (!empty($sites)) {
+        $site_names = [];
+        foreach ($sites as $s) {
+            $site_names[] = htmlspecialchars($s['nom_site']);
+        }
+        $site_name = implode(', ', $site_names);
+    } else {
+        $site_name = 'Responsable des sites';
+    }
+} elseif ($user['id_site']) {
     $stmt = $pdo->prepare('SELECT nom_site FROM sites WHERE id_site = ?');
     $stmt->execute([$user['id_site']]);
     $site_result = $stmt->fetchColumn();
-    $site_name = $site_result ? htmlspecialchars($site_result) : 'Responsable des sites';
+    $site_name = $site_result ? htmlspecialchars($site_result) : 'Non assigné';
 }
 ?>
 <?php include_once __DIR__ . '/../includes/header.php'; ?>
@@ -82,7 +94,7 @@ if ($user['id_site']) {
 
             <div class="info-tile">
                 <span class="tile-icon"><i class="bi bi-buildings"></i></span>
-                <span class="tile-label">Site Affecté</span>
+                <span class="tile-label"><?= $user['role'] === 'SUPERVISEUR' ? 'Sites supervisés' : 'Site Affecté' ?></span>
                 <span class="tile-value"><?= $site_name ?></span>
             </div>
 

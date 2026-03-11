@@ -5,6 +5,13 @@
     .form-group { margin-bottom: 22px; }
     .form-group label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 14px; }
     .form-group input, .form-group select { width: 100%; padding: 12px; border: 2px solid #E0E0E0; border-radius: 8px; }
+    .form-group select[multiple] { min-height: 150px; }
+    .assignments-wrapper { display: flex; flex-direction: column; gap: 12px; margin-bottom: 10px; }
+    .assignment-row { display: grid; grid-template-columns: 1.4fr 1fr 1fr auto; gap: 10px; align-items: center; }
+    .assignment-row select, .assignment-row input { padding: 10px 12px; border: 2px solid #E0E0E0; border-radius: 8px; font-size: 14px; font-family: inherit; }
+    .btn-add-assignment, .btn-remove-assignment { border: none; background: #f97316; color: #fff; padding: 8px 14px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 12px; display: inline-flex; align-items: center; gap: 6px; }
+    .btn-remove-assignment { background: #e11d48; }
+    @media (max-width: 768px) { .assignment-row { grid-template-columns: 1fr; } .btn-add-assignment, .btn-remove-assignment { width: 100%; justify-content: center; } }
     .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
     .step-section { display: none; animation: fadeIn 0.4s ease; }
     .step-section.active { display: block; }
