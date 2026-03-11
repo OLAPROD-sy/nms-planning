@@ -78,6 +78,7 @@ if ($user['role'] === 'SUPERVISEUR') {
         </div>
         <br>
         <div class="role-tag"><?= htmlspecialchars($user['role']) ?></div>
+        <div></div>
     </div>
 
     <div class="divide"></div>

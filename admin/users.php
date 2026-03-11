@@ -64,7 +64,7 @@ foreach ($all_users as $u) {
     if ($u['role'] === 'ADMIN') {
         $section_name = "DIRECTION / RESPONSABLES";
     } elseif ($u['role'] === 'SUPERVISEUR' && !empty($u['sites_list']) && strpos($u['sites_list'], ',') !== false) {
-        $section_name = 'SITES MULTIPLES';
+        $section_name = 'SUPERVISEUR MULTI-SITES';
     } else {
         $section_name = ($u['sites_list'] ?? $u['nom_site'] ?? 'SANS SITE ASSIGNE');
     }
