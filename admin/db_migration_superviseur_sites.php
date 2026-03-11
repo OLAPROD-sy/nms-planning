@@ -1,5 +1,4 @@
 <?php
-
 require_once __DIR__ . '/../config/database.php';
 
 $messages = [];
@@ -72,7 +71,7 @@ try {
 </head>
 <body>
     <div class="card">
-        <h1>Migration superviseur_sites</h1>
+        <h1>Migration superviseur_sites (Good)</h1>
         <ul>
             <?php foreach ($messages as $msg): ?>
                 <li><?= htmlspecialchars($msg) ?></li>
