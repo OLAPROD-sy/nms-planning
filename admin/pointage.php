@@ -109,7 +109,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $u_lng = $_POST['user_lng'] ?? 0;
             if ($userInfo['latitude'] != 0) {
                 $dist = getDistance($u_lat, $u_lng, $userInfo['latitude'], $userInfo['longitude']);
-                if ($dist > 150000) { // 150km de test
+                if ($dist > 200000) { // 200km de test
                     $_SESSION['flash_error'] = "Trop loin du site (".round($dist)."m).";
                     header('Location: pointage.php'); exit;
                 }
