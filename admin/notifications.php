@@ -45,6 +45,13 @@ $notifications = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <?php foreach ($notifications as $n): 
                 // Configuration selon le type
                 $type_clean = strtolower($n['type'] ?? '');
+                $msg_raw = $n['message'] ?? '';
+                $role_tag = '';
+                if (stripos($msg_raw, "Le superviseur") === 0) {
+                    $role_tag = "Superviseur";
+                } elseif (stripos($msg_raw, "L'agent") === 0) {
+                    $role_tag = "Agent";
+                }
                 $config = [
                     'arrivee' => ['icon' => 'bi-box-arrow-in-right', 'label' => 'Arrivée', 'color' => '#2e7d32', 'bg' => '#e8f5e9'],
                     'depart'  => ['icon' => 'bi-box-arrow-right', 'label' => 'Départ',  'color' => '#1565c0', 'bg' => '#e3f2fd'],
@@ -56,8 +63,13 @@ $notifications = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 <div class="card" style="margin:0; border-left: 5px solid <?= $style['color'] ?>; background: white; padding: 15px; position: relative;">
                     <div style="display: flex; justify-content: space-between; align-items: flex-start;">
                         <div style="flex: 1;">
-                            <div style="color: <?= $style['color'] ?>; font-weight: 800; text-transform: uppercase; font-size: 0.9em; margin-bottom: 8px; display: flex; align-items: center; gap: 8px;">
+                            <div style="color: <?= $style['color'] ?>; font-weight: 800; text-transform: uppercase; font-size: 0.9em; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
                                 <span><i class="bi <?= $style['icon'] ?>"></i></span> <?= $style['label'] ?>
+                                <?php if (!empty($role_tag)): ?>
+                                    <span style="background: <?= $style['bg'] ?>; color: <?= $style['color'] ?>; border: 1px solid <?= $style['color'] ?>; padding: 2px 6px; border-radius: 10px; font-size: 10px; font-weight: 800;">
+                                        <?= htmlspecialchars($role_tag) ?>
+                                    </span>
+                                <?php endif; ?>
                                 <?php if (empty($n['is_read'])): ?>
                                     <span style="background: #ff5252; color: white; padding: 2px 6px; border-radius: 10px; font-size: 10px;">NOUVEAU</span>
                                 <?php endif; ?>

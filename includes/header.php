@@ -102,10 +102,44 @@ try {
                                 if (strpos($type, 'arrivee') !== false) $class = 'arrivee';
                                 elseif (strpos($type, 'depart') !== false) $class = 'depart';
                                 elseif (strpos($type, 'urgence') !== false) $class = 'urgence';
+                                $msg_raw = $notif['message'] ?? '';
+                                $type_label = 'Info';
+                                $type_color = '#475569';
+                                $type_bg = '#eef2f7';
+                                if ($class === 'arrivee') { $type_label = 'Arrivee'; $type_color = '#166534'; $type_bg = '#e8f5e9'; }
+                                elseif ($class === 'depart') { $type_label = 'Depart'; $type_color = '#1d4ed8'; $type_bg = '#e3f2fd'; }
+                                elseif ($class === 'urgence') { $type_label = 'Urgence'; $type_color = '#b91c1c'; $type_bg = '#ffebee'; }
+                                $role_tag = '';
+                                if (stripos($msg_raw, "Le superviseur") === 0) {
+                                    $role_tag = "Superviseur";
+                                } elseif (stripos($msg_raw, "L'agent") === 0) {
+                                    $role_tag = "Agent";
+                                }
                             ?>
-                                <a href="/admin/notification.php?id=<?= $notif['id'] ?>" class="notif-item <?= $class ?> <?= $is_unread ? 'unread' : '' ?>">
-                                    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-                                        <strong><?= htmlspecialchars($notif['message']) ?></strong>
+                                <a href="/admin/notifications.php" class="notif-item <?= $class ?> <?= $is_unread ? 'unread' : '' ?>">
+                                    <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 6px;">
+                                        <div>
+                                            <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap; margin-bottom:4px;">
+                                                <span style="display:inline-block; background:<?= $type_bg ?>; color:<?= $type_color ?>; border:1px solid <?= $type_color ?>; padding:2px 6px; border-radius:10px; font-size:10px; font-weight:800; text-transform:uppercase;">
+                                                    <?= htmlspecialchars($type_label) ?>
+                                                </span>
+                                            <?php if (!empty($role_tag)): ?>
+                                                <span style="display:inline-block; background:#eef2f7; color:#334155; border:1px solid #cbd5e1; padding:2px 6px; border-radius:10px; font-size:10px; font-weight:800;">
+                                                    <?= htmlspecialchars($role_tag) ?>
+                                                </span>
+                                            <?php endif; ?>
+                                            </div>
+                                            <strong>
+                                            <?php
+                                                $msg = $notif['message'] ?? '';
+                                                $limit = 120;
+                                                if (mb_strlen($msg) > $limit) {
+                                                    $msg = mb_substr($msg, 0, $limit - 1) . '...';
+                                                }
+                                            ?>
+                                            <?= htmlspecialchars($msg) ?>
+                                            </strong>
+                                        </div>
                                         <?php if ($is_unread): ?>
                                             <span class="unread-dot"></span>
                                         <?php endif; ?>

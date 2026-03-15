@@ -18,9 +18,9 @@ $sql = "SELECT p.*, u.prenom, u.nom, u.role, s.nom_site
 $params = [$date_debut, $date_fin];
 
 if ($filtre_type === 'ABSENCE') {
-    $sql .= " AND (p.type = 'ABSENCE' OR p.commentaire LIKE 'GROUPED:%')";
+    $sql .= " AND (p.type = 'ABSENCE' OR p.commentaire LIKE 'GROUPED:%' OR p.motif_urgence = 'ABSENCE AUTOMATIQUE')";
 } elseif ($filtre_type === 'URGENCE') {
-    $sql .= " AND p.type = 'URGENCE' AND (p.commentaire NOT LIKE 'GROUPED:%' OR p.commentaire IS NULL)";
+    $sql .= " AND p.type = 'URGENCE' AND p.motif_urgence <> 'ABSENCE AUTOMATIQUE' AND (p.commentaire NOT LIKE 'GROUPED:%' OR p.commentaire IS NULL)";
 } elseif ($filtre_type === 'RETARD') {
     $sql .= " AND p.est_en_retard = 1";
 } elseif ($filtre_type === 'NORMAL') {
@@ -63,22 +63,26 @@ header("Content-Disposition: attachment; filename=\"$filename\"");
 
     <?php foreach ($pointages as $p): 
         $is_grouped = (strpos($p['commentaire'] ?? '', 'GROUPED:') === 0);
+        $is_auto_absence = ($p['type'] === 'URGENCE' && ($p['motif_urgence'] ?? '') === 'ABSENCE AUTOMATIQUE');
         $abs_data = $is_grouped ? explode(':', $p['commentaire']) : [];
         
         $statut_texte = "NORMAL";
-        if ($is_grouped || $p['type'] === 'ABSENCE') {
+        if ($is_auto_absence) {
+            $statut_texte = "ABSENCE NON JUSTIFIEE";
+            $tot_absences++;
+        } elseif ($is_grouped || $p['type'] === 'ABSENCE') {
             $statut_texte = "ABSENCE";
             $tot_absences++;
         } elseif ($p['est_en_retard'] == 1) {
             $statut_texte = "RETARD";
             $tot_retards++;
-        } elseif ($p['type'] === 'URGENCE') {
+        } elseif ($p['type'] === 'URGENCE' && !$is_auto_absence) {
             $statut_texte = "URGENCE COURTE";
             $tot_urgences++;
         }
 
         // Calcul du temps de travail (hors absences groupées)
-        if (!$is_grouped && $p['heure_arrivee'] && $p['heure_depart']) {
+        if (!$is_grouped && !$is_auto_absence && $p['heure_arrivee'] && $p['heure_depart']) {
             $d1 = new DateTime($p['heure_arrivee']);
             $d2 = new DateTime($p['heure_depart']);
             $diff = $d1->diff($d2);
@@ -91,10 +95,21 @@ header("Content-Disposition: attachment; filename=\"$filename\"");
         <td><?= htmlspecialchars($p['nom_site'] ?? 'N/A') ?></td>
         <td><?= date('d/m/Y', strtotime($p['date_pointage'])) ?></td>
         <td style="font-weight: bold;"><?= $statut_texte ?></td>
-        <td><?= $is_grouped ? "Du ".$abs_data[1]." au ".$abs_data[2] : substr($p['heure_arrivee'], 0, 5)." - ".substr($p['heure_depart'], 0, 5) ?></td>
+        <td>
+            <?php
+                if ($is_auto_absence) {
+                    echo "Le " . date('d/m/Y', strtotime($p['date_pointage']));
+                } elseif ($is_grouped) {
+                    echo "Du " . $abs_data[1] . " au " . $abs_data[2];
+                } else {
+                    echo substr($p['heure_arrivee'], 0, 5) . " - " . substr($p['heure_depart'], 0, 5);
+                }
+            ?>
+        </td>
         <td>
             <?php 
-                if ($is_grouped) echo $abs_data[3] . " Jours";
+                if ($is_auto_absence) echo "1 Jour";
+                elseif ($is_grouped) echo $abs_data[3] . " Jours";
                 elseif ($p['heure_arrivee'] && $p['heure_depart']) {
                     $d1 = new DateTime($p['heure_arrivee']); $d2 = new DateTime($p['heure_depart']);
                     echo $d1->diff($d2)->format('%hh %im');

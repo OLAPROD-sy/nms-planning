@@ -10,7 +10,7 @@ function genererAbsencesAutomatiques($pdo) {
     $jour_semaine = date('N'); 
     $heure_actuelle = date('H:i:s');
 
-    $sql = "SELECT u.id_user, u.id_site, u.jours_repos, s.heure_debut_service 
+    $sql = "SELECT u.id_user, u.id_site, u.jours_repos, u.nom, u.prenom, u.role, s.nom_site, s.heure_debut_service 
         FROM users u
         LEFT JOIN sites s ON u.id_site = s.id_site
         WHERE u.role = 'AGENT' 
@@ -41,7 +41,12 @@ function genererAbsencesAutomatiques($pdo) {
                                      VALUES (?, ?, 'URGENCE', ?, 'ABSENCE AUTOMATIQUE', 'Système : Aucun pointage détecté.')");
                 $insP->execute([$agent['id_user'], $today, $agent['id_site']]);
 
-                $msg_agent = "Absence automatique enregistrée pour le " . date('d/m/Y') . ". Justifiez-vous.";
+                $role_label = (strtoupper($agent['role'] ?? '') === 'SUPERVISEUR') ? 'Le superviseur' : "L'agent";
+                $nom_agent = ucfirst($agent['nom'] ?? '');
+                $prenom_agent = ucfirst($agent['prenom'] ?? '');
+                $nom_site = ucfirst($agent['nom_site'] ?? 'Site inconnu');
+                $date_abs = date('d/m/Y', strtotime($today));
+                $msg_agent = "Absence automatique : " . $role_label . " " . $nom_agent . " " . $prenom_agent . " du site " . $nom_site . " n'a pas pointe le " . $date_abs . " donc absent.";
                 $insN = $pdo->prepare("INSERT INTO notifications (id_user, from_user, type, message, created_at) 
                                      VALUES (?, NULL, 'urgence', ?, NOW())");
                 $insN->execute([$agent['id_user'], $msg_agent]);
@@ -55,7 +60,7 @@ function genererAbsencesAutomatiques($pdo) {
                 $targets = array_unique(array_merge($targets, $admins));
 
                 if ($targets) {
-                    $msg_admin = "Absence automatique : un agent du site " . ($agent['id_site'] ?? '') . " n'a pas pointé le " . date('d/m/Y') . ".";
+                    $msg_admin = "Absence automatique : " . $role_label . " " . $nom_agent . " " . $prenom_agent . " du site " . $nom_site . " n'a pas pointe le " . $date_abs . " donc absent.";
                     foreach ($targets as $target_id) {
                         $insN->execute([$target_id, $msg_admin]);
                     }

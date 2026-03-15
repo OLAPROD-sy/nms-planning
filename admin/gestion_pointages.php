@@ -27,9 +27,9 @@ $params = [$date_debut, $date_fin];
 
 // --- LOGIQUE DE FILTRAGE ---
 if ($filtre_type === 'ABSENCE') {
-    $sql .= " AND (p.type = 'ABSENCE' OR p.commentaire LIKE 'GROUPED:%')";
+    $sql .= " AND (p.type = 'ABSENCE' OR p.commentaire LIKE 'GROUPED:%' OR p.motif_urgence = 'ABSENCE AUTOMATIQUE')";
 } elseif ($filtre_type === 'URGENCE') {
-    $sql .= " AND p.type = 'URGENCE' AND (p.commentaire NOT LIKE 'GROUPED:%' OR p.commentaire IS NULL)";
+    $sql .= " AND p.type = 'URGENCE' AND p.motif_urgence <> 'ABSENCE AUTOMATIQUE' AND (p.commentaire NOT LIKE 'GROUPED:%' OR p.commentaire IS NULL)";
 } elseif ($filtre_type === 'RETARD') {
     $sql .= " AND p.est_en_retard = 1";
 } elseif ($filtre_type === 'NORMAL') {
@@ -53,10 +53,11 @@ $sites = $pdo->query("SELECT id_site, nom_site FROM sites ORDER BY nom_site")->f
 $nb_retards = 0; $nb_absences = 0; $nb_urgences = 0; $total_minutes = 0;
 foreach ($pointages as $p) {
     $is_grouped = (strpos($p['commentaire'] ?? '', 'GROUPED:') === 0);
+    $is_auto_absence = ($p['type'] === 'URGENCE' && ($p['motif_urgence'] ?? '') === 'ABSENCE AUTOMATIQUE');
     if ($p['est_en_retard'] == 1) $nb_retards++;
-    if ($is_grouped || $p['type'] === 'ABSENCE') $nb_absences++;
-    if (!$is_grouped && $p['type'] === 'URGENCE') $nb_urgences++;
-    if ($p['heure_arrivee'] && $p['heure_depart'] && !$is_grouped) {
+    if ($is_grouped || $p['type'] === 'ABSENCE' || $is_auto_absence) $nb_absences++;
+    if (!$is_grouped && $p['type'] === 'URGENCE' && !$is_auto_absence) $nb_urgences++;
+    if ($p['heure_arrivee'] && $p['heure_depart'] && !$is_grouped && !$is_auto_absence) {
         $d = new DateTime($p['heure_arrivee']); $f = new DateTime($p['heure_depart']);
         $total_minutes += ($f->diff($d)->h * 60) + $f->diff($d)->i;
     }
@@ -120,6 +121,7 @@ foreach ($pointages as $p) {
             <tbody>
                 <?php foreach ($pointages as $p): 
                     $is_grouped = (strpos($p['commentaire'] ?? '', 'GROUPED:') === 0);
+                    $is_auto_absence = ($p['type'] === 'URGENCE' && ($p['motif_urgence'] ?? '') === 'ABSENCE AUTOMATIQUE');
                     $abs_data = $is_grouped ? explode(':', $p['commentaire']) : [];
                 ?>
                 <tr>
@@ -132,7 +134,9 @@ foreach ($pointages as $p) {
                         <div style="font-size:0.75rem; color:#94a3b8;"><?= date('d/m/Y', strtotime($p['date_pointage'])) ?></div>
                     </td>
                     <td>
-                        <?php if ($is_grouped || $p['type'] === 'ABSENCE'): ?>
+                        <?php if ($is_auto_absence): ?>
+                            <span class="badge b-absence" style="background:#0ea5e9; color:white;"><i class="bi bi-x-circle"></i> ABSENCE NON JUSTIFIEE</span>
+                        <?php elseif ($is_grouped || $p['type'] === 'ABSENCE'): ?>
                             <span class="badge b-absence"><i class="bi bi-folder"></i> ABSENCE</span>
                         <?php elseif ($p['est_en_retard'] == 1): ?>
                             <span class="badge b-retard"><i class="bi bi-alarm"></i> EN RETARD</span>
@@ -143,7 +147,9 @@ foreach ($pointages as $p) {
                         <?php endif; ?>
                     </td>
                     <td>
-                        <?php if ($is_grouped): ?>
+                        <?php if ($is_auto_absence): ?>
+                            <span style="color:#0ea5e9; font-weight:800;">Le <?= date('d/m/Y', strtotime($p['date_pointage'])) ?></span>
+                        <?php elseif ($is_grouped): ?>
                             <span style="color:var(--p-purple); font-weight:800;">Du <?= $abs_data[1] ?> au <?= $abs_data[2] ?></span>
                         <?php else: ?>
                             <div style="font-family:monospace; font-size:0.8rem;">
@@ -154,7 +160,8 @@ foreach ($pointages as $p) {
                     </td>
                     <td style="font-weight:700;">
                         <?php 
-                        if ($is_grouped) echo $abs_data[3] . ' Jours';
+                        if ($is_auto_absence) echo '1 Jour';
+                        elseif ($is_grouped) echo $abs_data[3] . ' Jours';
                         elseif ($p['heure_arrivee'] && $p['heure_depart']) {
                             $d1 = new DateTime($p['heure_arrivee']); $d2 = new DateTime($p['heure_depart']);
                             echo $d1->diff($d2)->format('%hh %im');

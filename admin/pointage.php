@@ -13,6 +13,15 @@ if ($_SESSION['role'] === 'ADMIN') {
     exit;
 }
 
+function format_retard_duration($minutes) {
+    $minutes = max(0, (int) $minutes);
+    $h = intdiv($minutes, 60);
+    $m = $minutes % 60;
+    if ($h > 0 && $m > 0) return $h . "h " . $m . "min";
+    if ($h > 0) return $h . "h";
+    return $m . "min";
+}
+
 $id_user = $_SESSION['id_user'];
 $today = date('Y-m-d');
 
@@ -40,6 +49,7 @@ $userInfo = $stmtUser->fetch();
 $nom = ucfirst($userInfo['nom'] ?? '');
 $prenom = ucfirst($userInfo['prenom'] ?? '');
 $site = ucfirst($userInfo['nom_site'] ?? 'Site inconnu');
+$role_label = (strtoupper($userInfo['role'] ?? '') === 'SUPERVISEUR') ? 'Le superviseur' : "L'agent";
 
 // FONCTIONS UTILES
 function getDistance($lat1, $lon1, $lat2, $lon2) {
@@ -114,7 +124,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $sql = "INSERT INTO pointages (id_user, date_pointage, heure_arrivee, type, id_site, est_en_retard) VALUES (?, ?, ?, 'NORMAL', ?, ?)";
                 $pdo->prepare($sql)->execute([$id_user, $today, $heure_actuelle, $userInfo['id_site'], $est_en_retard]);
                 $_SESSION['flash_success'] = "Arrivée enregistrée " . ($est_en_retard ? "(Retard)" : "");
-                notify_supervisors_if_possible($pdo, $id_user, "$nom $prenom est arrivé" . ($est_en_retard ? " avec RETARD" : ""), 'arrivee');
+                $msg = $role_label . " " . $nom . " " . $prenom . " est arrive sur le site " . $site . " a " . $heure_actuelle;
+                if ($est_en_retard && !empty($userInfo['heure_debut_service'])) {
+                    $d1 = new DateTime($userInfo['heure_debut_service']);
+                    $d2 = new DateTime($heure_actuelle);
+                    $diff = $d1->diff($d2);
+                    $retard_minutes = ($diff->h * 60) + $diff->i;
+                    $msg .= " et est en retard de " . format_retard_duration($retard_minutes);
+                }
+                notify_supervisors_if_possible($pdo, $id_user, $msg, 'arrivee');
             }
         } 
         elseif ($action === 'depart') {
@@ -124,7 +142,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($pointage) {
                 $pdo->prepare("UPDATE pointages SET heure_depart = ? WHERE id_pointage = ?")->execute([$heure_actuelle, $pointage['id_pointage']]);
                 $_SESSION['flash_success'] = "Départ enregistré.";
-                notify_supervisors_if_possible($pdo, $id_user, "$nom $prenom a quitté le site.", 'depart');
+                $msg = $role_label . " " . $nom . " " . $prenom . " a quitte le site de " . $site . " a " . $heure_actuelle;
+                notify_supervisors_if_possible($pdo, $id_user, $msg, 'depart');
             }
         } 
         elseif ($action === 'urgence') {
@@ -156,10 +175,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     }
                     $pdo->commit();
 
-                    if($is_longue) {
-                        $msg_notif = "LONGUE ABSENCE : $nom $prenom du $date_debut au $date_fin ($raison)";
+                    if ($is_longue) {
+                        $msg_notif = $role_label . " " . $nom . " " . $prenom . " sera absent pour duree " . $nb_jours . " jours, raison : " . $raison;
                     } else {
-                        $msg_notif = "ABSENCE COURTE : $nom $prenom le $date_debut [Sortie: $h_dep | Retour: $h_arr] - $raison";
+                        $msg_notif = $role_label . " " . $nom . " " . $prenom . " a demande une permission ; Raison : " . $raison;
                     }
                     notify_supervisors_if_possible($pdo, $id_user, $msg_notif, 'urgence');
                     $_SESSION['flash_success'] = "Absence enregistrée.";
