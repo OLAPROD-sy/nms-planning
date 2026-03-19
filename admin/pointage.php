@@ -210,18 +210,18 @@ $urgence_types = ['Absence justifiée', 'Congé maladie', 'Congé personnel', 'T
 <div class="pointage-container">
     <div id="pointage-config" data-site-lat="<?= htmlspecialchars($userInfo['latitude'] ?? 0, ENT_QUOTES, 'UTF-8') ?>" data-site-lng="<?= htmlspecialchars($userInfo['longitude'] ?? 0, ENT_QUOTES, 'UTF-8') ?>" data-has-arrived="<?= $heure_arrivee ? '1' : '0' ?>" style="display:none;"></div>
     <div class="clock-card">
-        <div id="date-actuelle" style="color: #64748b; font-weight: 600;">--/--/----</div>
+        <div id="date-actuelle" style="color: var(--brand-muted); font-weight: 600;">--/--/----</div>
         <div id="heure-actuelle">00:00:00</div>
         <span class="status-badge status-waiting" id="geo-status">Localisation...</span>
     </div>
 
     <div class="pointage-display">
         <div class="time-tile <?= $heure_arrivee ? 'active' : '' ?>">
-            <span style="font-size:11px; color:#94a3b8; font-weight:700;">ENTRÉE</span><br>
+            <span style="font-size:11px; color:var(--brand-muted); font-weight:700;">ENTRÉE</span><br>
             <span style="font-size:24px; font-weight:800;"><?= $heure_arrivee ? substr($heure_arrivee, 0, 5) : '--:--' ?></span>
         </div>
         <div class="time-tile <?= $heure_depart ? 'active' : '' ?>">
-            <span style="font-size:11px; color:#94a3b8; font-weight:700;">SORTIE</span><br>
+            <span style="font-size:11px; color:var(--brand-muted); font-weight:700;">SORTIE</span><br>
             <span style="font-size:24px; font-weight:800;"><?= $heure_depart ? substr($heure_depart, 0, 5) : '--:--' ?></span>
         </div>
     </div>
@@ -240,42 +240,42 @@ $urgence_types = ['Absence justifiée', 'Congé maladie', 'Congé personnel', 'T
         </form>
     </div>
 
-    <div style="background: #fff5f5; border: 1px solid #fecaca; border-radius: 20px; padding: 25px; margin-bottom: 30px;">
-        <h3 style="color: #991b1b; margin-bottom: 20px; font-size: 16px;"><i class="bi bi-exclamation-diamond"></i> Signaler une Absence / Sortie</h3>
+    <div style="background: var(--brand-orange-soft); border: 1px solid var(--brand-orange-border); border-radius: 20px; padding: 25px; margin-bottom: 30px;">
+        <h3 style="color: var(--brand-orange-dark); margin-bottom: 20px; font-size: 16px;"><i class="bi bi-exclamation-diamond"></i> Signaler une Absence / Sortie</h3>
         <form method="post">
             <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(generate_csrf_token()) ?>">
             <input type="hidden" name="action" value="urgence">
             
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
                 <div class="form-group">
-                    <label style="font-size:11px; font-weight:700; color:#991b1b;">DU (DÉBUT)</label>
-                    <input type="date" name="date_debut" id="date_debut" value="<?= $today ?>" required style="width:100%; padding:12px; border-radius:10px; border:1px solid #fecaca;">
+                    <label style="font-size:11px; font-weight:700; color:var(--brand-orange-dark);">DU (DÉBUT)</label>
+                    <input type="date" name="date_debut" id="date_debut" value="<?= $today ?>" required style="width:100%; padding:12px; border-radius:10px; border:1px solid var(--brand-orange-border);">
                 </div>
                 <div class="form-group">
-                    <label style="font-size:11px; font-weight:700; color:#991b1b;">AU (FIN)</label>
-                    <input type="date" name="date_fin" id="date_fin" value="<?= $today ?>" style="width:100%; padding:12px; border-radius:10px; border:1px solid #fecaca;">
+                    <label style="font-size:11px; font-weight:700; color:var(--brand-orange-dark);">AU (FIN)</label>
+                    <input type="date" name="date_fin" id="date_fin" value="<?= $today ?>" style="width:100%; padding:12px; border-radius:10px; border:1px solid var(--brand-orange-border);">
                 </div>
             </div>
 
             <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-bottom: 15px;">
                 <div class="form-group">
-                    <label style="font-size:11px; font-weight:700; color:#991b1b;">RAISON</label>
-                    <select name="raison" required style="width:100%; padding:12px; border-radius:10px; border:1px solid #fecaca;">
+                    <label style="font-size:11px; font-weight:700; color:var(--brand-orange-dark);">RAISON</label>
+                    <select name="raison" required style="width:100%; padding:12px; border-radius:10px; border:1px solid var(--brand-orange-border);">
                         <option value="">Motif...</option>
                         <?php foreach ($urgence_types as $t): ?><option value="<?= $t ?>"><?= $t ?></option><?php endforeach; ?>
                     </select>
                 </div>
                 <div class="form-group">
-                    <label style="font-size:11px; font-weight:700; color:#991b1b;">H. SORTIE</label>
-                    <input type="time" name="heure_depart" value="<?= date('H:i') ?>" style="width:100%; padding:12px; border-radius:10px; border:1px solid #fecaca;">
+                    <label style="font-size:11px; font-weight:700; color:var(--brand-orange-dark);">H. SORTIE</label>
+                    <input type="time" name="heure_depart" value="<?= date('H:i') ?>" style="width:100%; padding:12px; border-radius:10px; border:1px solid var(--brand-orange-border);">
                 </div>
                 <div class="form-group">
-                    <label style="font-size:11px; font-weight:700; color:#991b1b;">H. RETOUR</label>
-                    <input type="time" name="heure_arrivee" placeholder="Retour" style="width:100%; padding:12px; border-radius:10px; border:1px solid #fecaca;">
+                    <label style="font-size:11px; font-weight:700; color:var(--brand-orange-dark);">H. RETOUR</label>
+                    <input type="time" name="heure_arrivee" placeholder="Retour" style="width:100%; padding:12px; border-radius:10px; border:1px solid var(--brand-orange-border);">
                 </div>
              </div>
-            <textarea name="commentaire" placeholder="Plus de détails..." style="width:100%; padding:12px; border-radius:10px; border:1px solid #fecaca; min-height:60px; margin-bottom:15px;"></textarea>
-            <button type="submit" style="width:100%; background:#ef4444; color:white; border:none; padding:15px; border-radius:12px; font-weight:800; cursor:pointer;"><i class="bi bi-check-circle"></i> Enregistrer</button>
+            <textarea name="commentaire" placeholder="Plus de détails..." style="width:100%; padding:12px; border-radius:10px; border:1px solid var(--brand-orange-border); min-height:60px; margin-bottom:15px;"></textarea>
+            <button type="submit" style="width:100%; background:var(--brand-orange); color:white; border:none; padding:15px; border-radius:12px; font-weight:800; cursor:pointer;"><i class="bi bi-check-circle"></i> Enregistrer</button>
         </form>
     </div>
 
@@ -302,17 +302,17 @@ $urgence_types = ['Absence justifiée', 'Congé maladie', 'Congé personnel', 'T
                     <tr>
                         <td style="font-weight:700;">
                             <?php if ($is_grouped): ?>
-                                <span style="color:#2563eb;">Du <?= date('d/m', strtotime($g_start)) ?> Au <?= date('d/m', strtotime($g_end)) ?></span>
+                                <span style="color:var(--brand-orange-dark);">Du <?= date('d/m', strtotime($g_start)) ?> Au <?= date('d/m', strtotime($g_end)) ?></span>
                             <?php else: ?>
                                 <?= formatDateLongue($h['date_pointage']) ?>
                             <?php endif; ?>
                         </td>
                         <td>
                             <?php if ($h['type'] === 'URGENCE'): ?>
-                                <span style="background:#fff5f5; color:#ef4444; padding:4px 8px; border-radius:6px; font-size:11px; font-weight:700;"><i class="bi bi-exclamation-diamond"></i> <?= htmlspecialchars($h['motif_urgence']) ?></span>
+                                <span style="background:var(--brand-orange-soft); color:var(--brand-orange-dark); padding:4px 8px; border-radius:6px; font-size:11px; font-weight:700;"><i class="bi bi-exclamation-diamond"></i> <?= htmlspecialchars($h['motif_urgence']) ?></span>
                             <?php else: ?>
-                                <span style="background:#f0fdf4; color:#16a34a; padding:4px 8px; border-radius:6px; font-size:11px; font-weight:700;"><i class="bi bi-check-circle"></i> NORMAL</span>
-                                <?= $h['est_en_retard'] ? '<span style="color:#ea580c; font-size:10px; margin-left:5px;"><i class="bi bi-exclamation-triangle"></i> RETARD</span>' : '' ?>
+                                <span style="background:var(--brand-green-soft); color:var(--brand-green-dark); padding:4px 8px; border-radius:6px; font-size:11px; font-weight:700;"><i class="bi bi-check-circle"></i> NORMAL</span>
+                                <?= $h['est_en_retard'] ? '<span style="color:var(--brand-orange-dark); font-size:10px; margin-left:5px;"><i class="bi bi-exclamation-triangle"></i> RETARD</span>' : '' ?>
                             <?php endif; ?>
                         </td>
                         <td>
@@ -322,7 +322,7 @@ $urgence_types = ['Absence justifiée', 'Congé maladie', 'Congé personnel', 'T
                         </td>
                         <td style="font-weight:800; color:#475569;">
                             <?php 
-                                if ($is_grouped) echo "<span style='color:#2563eb;'>$g_jours Jours</span>";
+                                if ($is_grouped) echo "<span style='color:var(--brand-orange-dark);'>$g_jours Jours</span>";
                                 elseif ($h['heure_arrivee'] && $h['heure_depart']) {
                                     $d = new DateTime($h['heure_arrivee']); $f = new DateTime($h['heure_depart']);
                                     echo $f->diff($d)->format('%hh %im');
