@@ -79,7 +79,7 @@ try {
                     <a href="/admin/gestion_pointages.php"><i class="bi bi-geo-alt nav-link-icon"></i><span>Pointages</span></a>
                     <a href="/stock/gest_stock.php"><i class="bi bi-box-seam nav-link-icon"></i><span>Stock</span></a>
                 <?php else: ?>
-                    <a href="/admin/pointage.php"><i class="bi bi-geo-alt nav-link-icon"></i><span>PrÃ©sence</span></a>
+                    <a href="/admin/pointage.php"><i class="bi bi-geo-alt nav-link-icon"></i><span>Présence</span></a>
                 <?php endif; ?>
             </div>
 
@@ -156,7 +156,7 @@ try {
                 </div>
 
                 <a href="/admin/view_profile.php" class="user-profile-btn"><i class="bi bi-person-circle"></i> <span class="desktop-text"><?= htmlspecialchars($prenom) ?></span></a>
-                <a href="/admin/logout.php" class="logout-desktop-btn"><i class="bi bi-box-arrow-right"></i> DÃ©connexion</a>
+                <a href="/admin/logout.php" class="logout-desktop-btn"><i class="bi bi-box-arrow-right"></i> Déconnexion</a>
                 <div class="hamburger" id="hamburger"><span></span><span></span><span></span></div>
             </div>
         </nav>

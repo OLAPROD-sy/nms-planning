@@ -57,8 +57,8 @@ $notifications = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 }
                 $config = [
                     'programmation' => ['icon' => 'bi-calendar-check', 'label' => 'Programmation', 'color' => '#b45309', 'bg' => '#fff7ed'],
-                    'arrivee' => ['icon' => 'bi-box-arrow-in-right', 'label' => 'ArrivÃ©e', 'color' => '#2e7d32', 'bg' => '#e8f5e9'],
-                    'depart'  => ['icon' => 'bi-box-arrow-right', 'label' => 'DÃ©part',  'color' => '#1565c0', 'bg' => '#e3f2fd'],
+                    'arrivee' => ['icon' => 'bi-box-arrow-in-right', 'label' => 'Arrivée', 'color' => '#2e7d32', 'bg' => '#e8f5e9'],
+                    'depart'  => ['icon' => 'bi-box-arrow-right', 'label' => 'Départ',  'color' => '#1565c0', 'bg' => '#e3f2fd'],
                     'urgence' => ['icon' => 'bi-exclamation-diamond', 'label' => 'Urgence', 'color' => '#c62828', 'bg' => '#ffebee'],
                     'default' => ['icon' => 'bi-info-circle', 'label' => 'Info', 'color' => '#546e7a', 'bg' => '#eceff1'],
                 ];
@@ -84,7 +84,7 @@ $notifications = $stmt->fetchAll(PDO::FETCH_ASSOC);
                             </div>
 
                             <div style="font-size: 12px; color: #95a5a6;">
-                                <i class="bi bi-clock"></i> <?= date('d/m/Y Ã  H:i', strtotime($n['created_at'])) ?>
+                                <i class="bi bi-clock"></i> <?= date('d/m/Y à H:i', strtotime($n['created_at'])) ?>
                             </div>
                         </div>
 
