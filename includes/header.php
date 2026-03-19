@@ -167,10 +167,10 @@ try {
         <a href="/admin/gestion_pointages.php"><i class="bi bi-geo-alt nav-link-icon"></i><span>Pointages</span></a>
         <a href="/admin/gest_stock.php"><i class="bi bi-box-seam nav-link-icon"></i><span>Stock</span></a>
     <?php else: ?>
-        <a href="/admin/pointage.php"><i class="bi bi-geo-alt nav-link-icon"></i><span>PrÃ©sence</span></a>
+        <a href="/admin/pointage.php"><i class="bi bi-geo-alt nav-link-icon"></i><span>Présence</span></a>
     <?php endif; ?>
     <a href="/admin/view_profile.php"><i class="bi bi-person-circle nav-link-icon"></i><span>Mon Profil</span></a>
-    <a href="/admin/logout.php" style="color: var(--danger);"><i class="bi bi-box-arrow-right nav-link-icon"></i><span>DÃ©connexion</span></a>
+    <a href="/admin/logout.php" style="color: var(--danger);"><i class="bi bi-box-arrow-right nav-link-icon"></i><span>Déconnexion</span></a>
 </div>
     </header>
     <?php if ($flash_success || $flash_error): ?>
