@@ -93,7 +93,7 @@ $jours_fr = [
         <?php if (empty($plannings)): ?>
             <div class="no-data">
                 <img src="https://cdn-icons-png.flaticon.com/512/4076/4076549.png" width="80" style="opacity: 0.3; margin-bottom: 15px;"><br>
-                Aucune programmation trouvÃ©e pour cette semaine.
+                Aucune programmation trouvée pour cette semaine.
             </div>
         <?php else: ?>
             <?php foreach ($plannings as $p): 
@@ -114,7 +114,7 @@ $jours_fr = [
                             <span><?= substr($p['heure_fin'], 0, 5) ?></span>
                         </div>
                         <div class="duration-badge">
-                            <i class="bi bi-clock"></i> DurÃ©e : <strong><?= calculerDuree($p['heure_debut'], $p['heure_fin']) ?></strong>
+                            <i class="bi bi-clock"></i> Durée : <strong><?= calculerDuree($p['heure_debut'], $p['heure_fin']) ?></strong>
                         </div>
                         <div style="margin-top:10px; font-size: 0.85em; color: #888;">
                             <i class="bi bi-buildings"></i> Site : <?= htmlspecialchars($p['nom_site'] ?? 'Non spÃ©cifiÃ©') ?>
