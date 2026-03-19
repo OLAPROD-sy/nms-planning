@@ -115,6 +115,8 @@ body.notif-open {
 
 .notif-item.arrivee { border-left-color: var(--success); }
 
+.notif-item.programmation { border-left-color: var(--primary); background: #fff7ed; }
+
 .notif-item.depart { border-left-color: var(--info); }
 
 .notif-item.urgence { border-left-color: var(--danger); background: #fff5f5; } 

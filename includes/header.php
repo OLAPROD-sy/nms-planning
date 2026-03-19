@@ -1,10 +1,10 @@
-<?php
-// S'assurer que la session est démarrée
+﻿<?php
+// S'assurer que la session est dÃ©marrÃ©e
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// Vérifier que l'utilisateur est connecté
+// VÃ©rifier que l'utilisateur est connectÃ©
 if (!isset($_SESSION['id_user'])) {
     header('Location: /auth/login.php');
     exit;
@@ -79,7 +79,7 @@ try {
                     <a href="/admin/gestion_pointages.php"><i class="bi bi-geo-alt nav-link-icon"></i><span>Pointages</span></a>
                     <a href="/stock/gest_stock.php"><i class="bi bi-box-seam nav-link-icon"></i><span>Stock</span></a>
                 <?php else: ?>
-                    <a href="/admin/pointage.php"><i class="bi bi-geo-alt nav-link-icon"></i><span>Présence</span></a>
+                    <a href="/admin/pointage.php"><i class="bi bi-geo-alt nav-link-icon"></i><span>PrÃ©sence</span></a>
                 <?php endif; ?>
             </div>
 
@@ -96,16 +96,19 @@ try {
                             <?php else: ?>
                                 <?php foreach ($recent_notifications as $notif): 
                                 $type = strtolower($notif['type'] ?? '');
-                                $is_unread = isset($notif['is_read']) && $notif['is_read'] == 0; // Vérifie si non lu
+                                $is_unread = isset($notif['is_read']) && $notif['is_read'] == 0; // VÃ©rifie si non lu
+                                $msg_raw = $notif['message'] ?? '';
                                 $class = 'normal';
-                                if (strpos($type, 'arrivee') !== false) $class = 'arrivee';
+                                if (stripos($msg_raw, 'Nouvelle programmation') !== false) {
+                                    $class = 'programmation';
+                                } elseif (strpos($type, 'arrivee') !== false) $class = 'arrivee';
                                 elseif (strpos($type, 'depart') !== false) $class = 'depart';
                                 elseif (strpos($type, 'urgence') !== false) $class = 'urgence';
-                                $msg_raw = $notif['message'] ?? '';
                                 $type_label = 'Info';
                                 $type_color = '#475569';
                                 $type_bg = '#eef2f7';
-                                if ($class === 'arrivee') { $type_label = 'Arrivee'; $type_color = '#166534'; $type_bg = '#e8f5e9'; }
+                                if ($class === 'programmation') { $type_label = 'Programmation'; $type_color = '#b45309'; $type_bg = '#fff7ed'; }
+                                elseif ($class === 'arrivee') { $type_label = 'Arrivee'; $type_color = '#166534'; $type_bg = '#e8f5e9'; }
                                 elseif ($class === 'depart') { $type_label = 'Depart'; $type_color = '#1d4ed8'; $type_bg = '#e3f2fd'; }
                                 elseif ($class === 'urgence') { $type_label = 'Urgence'; $type_color = '#b91c1c'; $type_bg = '#ffebee'; }
                                 $role_tag = '';
@@ -153,7 +156,7 @@ try {
                 </div>
 
                 <a href="/admin/view_profile.php" class="user-profile-btn"><i class="bi bi-person-circle"></i> <span class="desktop-text"><?= htmlspecialchars($prenom) ?></span></a>
-                <a href="/admin/logout.php" class="logout-desktop-btn"><i class="bi bi-box-arrow-right"></i> Déconnexion</a>
+                <a href="/admin/logout.php" class="logout-desktop-btn"><i class="bi bi-box-arrow-right"></i> DÃ©connexion</a>
                 <div class="hamburger" id="hamburger"><span></span><span></span><span></span></div>
             </div>
         </nav>
@@ -164,10 +167,10 @@ try {
         <a href="/admin/gestion_pointages.php"><i class="bi bi-geo-alt nav-link-icon"></i><span>Pointages</span></a>
         <a href="/admin/gest_stock.php"><i class="bi bi-box-seam nav-link-icon"></i><span>Stock</span></a>
     <?php else: ?>
-        <a href="/admin/pointage.php"><i class="bi bi-geo-alt nav-link-icon"></i><span>Présence</span></a>
+        <a href="/admin/pointage.php"><i class="bi bi-geo-alt nav-link-icon"></i><span>PrÃ©sence</span></a>
     <?php endif; ?>
     <a href="/admin/view_profile.php"><i class="bi bi-person-circle nav-link-icon"></i><span>Mon Profil</span></a>
-    <a href="/admin/logout.php" style="color: var(--danger);"><i class="bi bi-box-arrow-right nav-link-icon"></i><span>Déconnexion</span></a>
+    <a href="/admin/logout.php" style="color: var(--danger);"><i class="bi bi-box-arrow-right nav-link-icon"></i><span>DÃ©connexion</span></a>
 </div>
     </header>
     <?php if ($flash_success || $flash_error): ?>
@@ -182,3 +185,9 @@ try {
     <?php endif; ?>
 </body>
 </html>
+
+
+
+
+
+

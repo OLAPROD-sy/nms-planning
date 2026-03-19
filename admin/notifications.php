@@ -1,24 +1,24 @@
-<?php
+﻿<?php
 require_once __DIR__ . '/../includes/auth_check.php';
 require_once __DIR__ . '/../config/database.php';
 
-// Détecter schéma de la table notifications
+// DÃ©tecter schÃ©ma de la table notifications
 $cols = $pdo->query("SHOW COLUMNS FROM notifications")->fetchAll(PDO::FETCH_COLUMN);
 $colUser = in_array('id_user', $cols) ? 'id_user' : (in_array('user_id', $cols) ? 'user_id' : null);
 $colId = in_array('id_notify', $cols) ? 'id_notify' : (in_array('id', $cols) ? 'id' : null);
 
 if (!$colUser || !$colId) {
-    $_SESSION['flash_error'] = 'Table notifications mal configurée.';
+    $_SESSION['flash_error'] = 'Table notifications mal configurÃ©e.';
     header('Location: /');
     exit;
 }
 
-// Marquer comme lu si demandé
+// Marquer comme lu si demandÃ©
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['mark_read']) && is_numeric($_POST['mark_read'])) {
     try {
         $stmt = $pdo->prepare("UPDATE notifications SET is_read = 1 WHERE $colId = ? AND $colUser = ?");
         $stmt->execute([intval($_POST['mark_read']), $_SESSION['id_user']]);
-        $_SESSION['flash_success'] = 'Notification marquée comme lue.';
+        $_SESSION['flash_success'] = 'Notification marquÃ©e comme lue.';
     } catch (Exception $e) {
         error_log('notifications.php mark_read: ' . $e->getMessage());
         $_SESSION['flash_error'] = 'Impossible de marquer la notification.';
@@ -27,7 +27,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['mark_read']) && is_nu
     exit;
 }
 
-// Récupérer les notifications de l'utilisateur
+// RÃ©cupÃ©rer les notifications de l'utilisateur
 $stmt = $pdo->prepare("SELECT * FROM notifications WHERE $colUser = ? ORDER BY created_at DESC LIMIT 100");
 $stmt->execute([$_SESSION['id_user']]);
 $notifications = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -46,6 +46,9 @@ $notifications = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 // Configuration selon le type
                 $type_clean = strtolower($n['type'] ?? '');
                 $msg_raw = $n['message'] ?? '';
+                if (stripos($msg_raw, 'Nouvelle programmation') !== false) {
+                    $type_clean = 'programmation';
+                }
                 $role_tag = '';
                 if (stripos($msg_raw, "Le superviseur") === 0) {
                     $role_tag = "Superviseur";
@@ -53,8 +56,9 @@ $notifications = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     $role_tag = "Agent";
                 }
                 $config = [
-                    'arrivee' => ['icon' => 'bi-box-arrow-in-right', 'label' => 'Arrivée', 'color' => '#2e7d32', 'bg' => '#e8f5e9'],
-                    'depart'  => ['icon' => 'bi-box-arrow-right', 'label' => 'Départ',  'color' => '#1565c0', 'bg' => '#e3f2fd'],
+                    'programmation' => ['icon' => 'bi-calendar-check', 'label' => 'Programmation', 'color' => '#b45309', 'bg' => '#fff7ed'],
+                    'arrivee' => ['icon' => 'bi-box-arrow-in-right', 'label' => 'ArrivÃ©e', 'color' => '#2e7d32', 'bg' => '#e8f5e9'],
+                    'depart'  => ['icon' => 'bi-box-arrow-right', 'label' => 'DÃ©part',  'color' => '#1565c0', 'bg' => '#e3f2fd'],
                     'urgence' => ['icon' => 'bi-exclamation-diamond', 'label' => 'Urgence', 'color' => '#c62828', 'bg' => '#ffebee'],
                     'default' => ['icon' => 'bi-info-circle', 'label' => 'Info', 'color' => '#546e7a', 'bg' => '#eceff1'],
                 ];
@@ -80,7 +84,7 @@ $notifications = $stmt->fetchAll(PDO::FETCH_ASSOC);
                             </div>
 
                             <div style="font-size: 12px; color: #95a5a6;">
-                                <i class="bi bi-clock"></i> <?= date('d/m/Y à H:i', strtotime($n['created_at'])) ?>
+                                <i class="bi bi-clock"></i> <?= date('d/m/Y Ã  H:i', strtotime($n['created_at'])) ?>
                             </div>
                         </div>
 
@@ -104,3 +108,4 @@ $notifications = $stmt->fetchAll(PDO::FETCH_ASSOC);
 </div>
 
 <?php include_once __DIR__ . '/../includes/footer.php'; ?>
+
