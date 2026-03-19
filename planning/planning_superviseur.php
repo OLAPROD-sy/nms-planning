@@ -56,6 +56,16 @@ if (isset($_POST['programmer'])) {
 
     if (!empty($dates_selectionnees)) {
         try {
+            $posteStmt = $pdo->prepare("SELECT libelle FROM postes WHERE id_poste = ?");
+            $posteStmt->execute([$id_poste]);
+            $poste_nom = $posteStmt->fetchColumn() ?: 'Poste';
+
+            $siteStmt = $pdo->prepare("SELECT nom_site FROM sites WHERE id_site = ?");
+            $siteStmt->execute([$id_site]);
+            $site_nom = $siteStmt->fetchColumn() ?: 'Site';
+
+            $notifStmt = $pdo->prepare("INSERT INTO notifications (id_user, from_user, type, message, created_at) VALUES (?, ?, 'arrivee', ?, NOW())");
+
             foreach ($dates_selectionnees as $date_p) {
                 // Correction du bug ENUM : On s'assure que le jour correspond aux valeurs attendues
                 // Si votre base attend 'LUNDI', on traduit. Si elle attend 'Monday', on adapte.
@@ -74,6 +84,10 @@ if (isset($_POST['programmer'])) {
                         (id_semaine, id_site, id_agent, id_poste, jour, heure_debut, heure_fin, date_planning, id_superviseur)
                         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
                     $insert->execute([$id_semaine, $id_site, $id_agent, $id_poste, $jour_final, $heure_debut, $heure_fin, $date_p, $_SESSION['id_user']]);
+
+                    $date_fr = date('d/m/Y', strtotime($date_p));
+                    $msg = "Nouvelle programmation : $date_fr ($jour_final) de $heure_debut à $heure_fin, Poste $poste_nom, Site $site_nom.";
+                    $notifStmt->execute([$id_agent, $_SESSION['id_user'], $msg]);
                 }
             }
             $message = "Programmation enregistrée !";

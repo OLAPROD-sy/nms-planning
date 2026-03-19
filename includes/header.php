@@ -84,7 +84,6 @@ try {
             </div>
 
             <div class="nav-right-group">
-                <?php if ($role !== 'AGENT'): ?>
                 <div style="position: relative;">
                     <div class="bell-container" id="notifBell">
                         <i class="bi bi-bell-fill bell-icon"></i><?php if ($notifications_count > 0): ?><span class="notif-badge"><?= $notifications_count ?></span><?php endif; ?>
@@ -152,7 +151,6 @@ try {
                         <a href="/admin/notifications.php" class="notif-footer">Voir toutes les notifications</a>
                     </div>
                 </div>
-                <?php endif; ?>
 
                 <a href="/admin/view_profile.php" class="user-profile-btn"><i class="bi bi-person-circle"></i> <span class="desktop-text"><?= htmlspecialchars($prenom) ?></span></a>
                 <a href="/admin/logout.php" class="logout-desktop-btn"><i class="bi bi-box-arrow-right"></i> Déconnexion</a>
